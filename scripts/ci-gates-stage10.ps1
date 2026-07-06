@@ -111,7 +111,9 @@ Write-Host "==> Agent budget + tamper prod guard" -ForegroundColor Cyan
 Push-Location crates/era-agent-core
 $code = Invoke-CargoTest -Filter "budget_guard::"
 if ($code -eq 0) {
-    $code = Invoke-CargoTest -Filter "tamper::"
+    $ErrorActionPreference = "Continue"
+    cargo test tamper:: -- --test-threads=1
+    $code = $LASTEXITCODE
 }
 if ($code -ne 0) { Pop-Location; exit 1 }
 Pop-Location

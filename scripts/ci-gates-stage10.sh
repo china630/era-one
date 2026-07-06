@@ -66,7 +66,7 @@ run_rust_gates() {
   (cd crates/era-agent && cargo test golden_pii)
 
   echo "==> Agent budget + tamper prod guard"
-  (cd crates/era-agent-core && cargo test budget_guard:: && cargo test tamper::)
+  (cd crates/era-agent-core && cargo test budget_guard:: && cargo test tamper:: -- --test-threads=1)
 
   echo "==> era-plugin-vuln (L-05)"
   (cd crates/era-plugin-vuln && cargo test )
