@@ -88,10 +88,25 @@ jobs:
   stage10:
     name: stage10 gates (full)
     runs-on: ubuntu-latest
-    # Полный прогон на merge в dev и на PR в main
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/dev') ||
       (github.event_name == 'pull_request' && github.base_ref == 'main')
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: era
+          POSTGRES_PASSWORD: era_ci_pw
+          POSTGRES_DB: era_cp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U era"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      ERA_STORE_PG_DSN: postgres://era:era_ci_pw@localhost:5432/era_cp?sslmode=disable
     steps:
       - uses: actions/checkout@v4
 
@@ -104,5 +119,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Stage 10 CI gates
-        run: bash scripts/ci-gates-stage10.sh
+      - name: stage10 — go gates
+        run: bash scripts/ci-gates-stage10.sh go
+
+      - name: stage10 — rust gates
+        run: bash scripts/ci-gates-stage10.sh rust
