@@ -37,5 +37,7 @@ deploy/prod/.env
 # Site build output (artifact for deploy)
 dist/
 
-# Generated proto (if regenerated locally)
-gen/
+# Generated proto (local regen via scripts/gen-proto.ps1)
+gen/*
+!gen/go/
+!gen/go/**
