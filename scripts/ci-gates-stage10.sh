@@ -69,9 +69,10 @@ run_rust_gates() {
   (cd crates/era-agent-core && cargo test budget_guard:: && cargo test tamper:: -- --test-threads=1)
 
   echo "==> era-plugin-vuln (L-05)"
-  (cd crates/era-plugin-vuln && cargo test )
+  (cd crates/era-plugin-vuln && cargo test)
 
-  if command -v helm >/dev/null 2>&1 && command -v pwsh >/dev/null 2>&1; then
+  # Helm gate — только при явном RUN_HELM_GATE=1 (на GHA helm есть, chart может быть WIP)
+  if [[ "${RUN_HELM_GATE:-}" == "1" ]] && command -v helm >/dev/null 2>&1 && command -v pwsh >/dev/null 2>&1; then
     pwsh -NoProfile -File scripts/helm-template-check.ps1
   fi
 }

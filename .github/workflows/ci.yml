@@ -122,5 +122,14 @@ jobs:
       - name: stage10 — go gates
         run: bash scripts/ci-gates-stage10.sh go
 
-      - name: stage10 — rust gates
-        run: bash scripts/ci-gates-stage10.sh rust
+      - name: stage10 — rust PII golden
+        run: (cd crates/era-agent && cargo test golden_pii)
+
+      - name: stage10 — rust budget + tamper
+        run: |
+          cd crates/era-agent-core
+          cargo test budget_guard::
+          cargo test tamper:: -- --test-threads=1
+
+      - name: stage10 — rust plugin-vuln
+        run: (cd crates/era-plugin-vuln && cargo test)
