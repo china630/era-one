@@ -1,0 +1,12 @@
+id: era-curated-064
+title: Curated detection 064 (TA0009)
+status: stable
+level: medium
+tags:
+  - attack.T1063
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-curated-064"
+  condition: selection

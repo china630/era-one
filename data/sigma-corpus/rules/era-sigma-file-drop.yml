@@ -1,0 +1,10 @@
+id: era-sigma-file-drop
+title: Suspicious file write
+status: experimental
+level: low
+logsource:
+  category: file
+detection:
+  selection:
+    Path|contains: "Temp"
+  condition: selection

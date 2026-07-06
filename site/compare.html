@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Compare — ERA One</title>
+
+<meta name="description" content="ERA One head-to-head comparisons — ERA Control, ERA Communications and ERA Office vs leading vendors." />
+
+<link rel="stylesheet" href="assets/site.css" />
+
+</head>
+
+<body data-page="company">
+
+
+
+<header class="top" id="site-header"></header>
+
+
+
+<div id="compare-root">
+
+<section class="hero subhero">
+
+  <div class="wrap">
+
+    <nav class="ds-breadcrumb" id="compare-breadcrumb">
+
+      <a href="index.html" data-i18n="compare.crumbHome">Home</a>
+
+      <span>/</span>
+
+      <a href="compare.html" id="compare-crumb-index" data-i18n="nav.compare">Compare</a>
+
+      <span id="compare-crumb-sep2" hidden>/</span>
+
+      <span id="compare-crumb-vs" hidden></span>
+
+    </nav>
+
+    <div class="eyebrow" data-i18n="nav.compare">Compare</div>
+
+    <h1 id="compare-title" data-i18n="compare.h1">Head-to-head</h1>
+
+    <p class="lead" data-i18n="compare.lead">Compare ERA One product families with leading vendors — on-prem, air-gap and Sovereign Hybrid.</p>
+
+  </div>
+
+</section>
+
+
+
+<section class="ds-section" id="compare-detail" style="display:none"></section>
+
+
+
+<section class="ds-section">
+
+  <div class="wrap">
+
+    <div id="compare-tabs"></div>
+
+    <div class="ds-toolbar" id="compare-toolbar" style="display:none">
+
+      <button type="button" class="pdf-btn" id="compare-pdf-btn">
+
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+
+        <span data-i18n="common.download">Download PDF</span>
+
+      </button>
+
+    </div>
+
+    <div id="compare-content" class="ds-content" style="display:none"></div>
+
+    <div class="section-head" id="compare-list-head">
+
+      <h2 data-i18n="compare.pick">Choose a competitor</h2>
+
+    </div>
+
+    <div class="mod-grid" id="compare-list"></div>
+
+  </div>
+
+</section>
+
+</div>
+
+
+
+<footer class="ftr" id="site-footer"></footer>
+
+
+
+<script src="assets/i18n-data.js"></script>
+
+<script src="assets/products-catalog.js"></script>
+
+<script src="assets/compare-catalog.js"></script>
+
+<script src="assets/site.js"></script>
+
+<script src="assets/compare-view.js"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  var vs = new URLSearchParams(location.search).get("vs");
+
+  if (vs) {
+
+    document.getElementById("compare-list-head").style.display = "none";
+
+    document.getElementById("compare-list").style.display = "none";
+
+    document.getElementById("compare-tabs").style.display = "none";
+
+    document.getElementById("compare-content").style.display = "";
+
+    document.getElementById("compare-toolbar").style.display = "";
+
+    var lead = document.querySelector(".hero.subhero .lead");
+
+    if (lead) lead.style.display = "none";
+
+  }
+
+});
+
+</script>
+
+</body>
+
+</html>
+
+

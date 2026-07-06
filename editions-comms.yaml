@@ -1,0 +1,78 @@
+# ERA Communications — манифест изданий
+#
+# ADR-0027. Имена изданий = как на сайте/в RFQ.
+# Pricing SSOT: docs/distributor/pricing-comms-data.yaml
+
+schema_version: "1.0"
+product: era-communications
+
+editions:
+  era-mail-server:
+    title: ERA Mail Server
+    status: roadmap
+    license_module: { name: comms-mail-server, exists: false }
+    description: Почтовый backend — SMTP/IMAP, Autodiscover, CalDAV; EWS subset (Outlook).
+    services: [comms-mail]
+    pricing_ref: comms-mail-server
+    attachments:
+      without_drive: inline_storage
+      with_drive: platform-drive-api
+
+  era-mail-client:
+    title: ERA Mail Client
+    status: roadmap
+    license_module: { name: comms-mail-client, exists: false }
+    description: Webmail + desktop/mobile, Zero-Touch Autodiscover.
+    services: [comms-mail-client]
+    included_with: [era-mail-server]
+
+  era-mail-connect:
+    title: ERA Mail Connect
+    status: roadmap
+    license_module: { name: comms-mail-connect, exists: false }
+    description: >
+      Migration tier: Mail Client + BFF к внешнему IMAP/JMAP/EWS.
+      Отдельная лицензия; не заменяет Mail Server в Full Suite GA narrative.
+    services: [comms-mail-connect]
+    tier: migration
+    pricing_ref: comms-mail-connect
+
+  era-conference:
+    title: ERA Conference
+    status: roadmap
+    license_module: { name: comms-conference, exists: false }
+    description: Видеоконференции on-prem (LiveKit, 1000+ участников).
+    services: [comms-conference]
+    pricing_ref: comms-conference
+
+  era-chat:
+    title: ERA Chat
+    status: roadmap
+    license_module: { name: comms-chat, exists: false }
+    description: Корпоративный мессенджер; интеграция с ERA Conference и почтой.
+    services: [comms-chat]
+    pricing_ref: comms-chat
+
+  era-comms-ai:
+    title: ERA Comms AI
+    status: roadmap
+    license_module: { name: comms-ai, exists: false }
+    description: >
+      Air-Gap LLM — аудит почты, саммари переписки и встреч.
+      Отдельно от ERA Control AI.
+    services: [comms-ai]
+    pricing_ref: comms-ai
+
+integrations:
+  era-office:
+    co_editing: deep_link_requires_office_license
+    drive: optional_edition_era-drive
+
+shared_editions_ref: editions-shared.yaml
+
+bundles:
+  comms-full:
+    title: ERA Communications Full Suite
+    editions: [era-mail-server, era-mail-client, era-conference, era-chat, era-comms-ai]
+    pricing_ref: comms-full
+    note: ERA Drive и ERA Office — отдельные лицензии (optional / upsell)

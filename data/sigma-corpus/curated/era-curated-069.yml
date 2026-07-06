@@ -1,0 +1,12 @@
+id: era-curated-069
+title: Curated detection 069 (TA0003)
+status: stable
+level: medium
+tags:
+  - attack.T1068
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-069"
+  condition: selection

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERA XDR — Cases</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.5rem; }
+    h1 { font-size: 1.25rem; margin: 0 0 1rem; }
+    .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    input, button, select { background: var(--card); border: 1px solid #30363d; color: var(--text); padding: 0.5rem; border-radius: 6px; }
+    button { cursor: pointer; background: #238636; border-color: #238636; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); font-size: 0.875rem; }
+    th, td { padding: 0.6rem; border-bottom: 1px solid #21262d; text-align: left; }
+    th { color: var(--muted); }
+    #status { color: var(--muted); margin-bottom: 0.5rem; }
+    nav a { color: var(--accent); margin-right: 1rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/ui/cases/">Cases</a>
+    <a href="/ui/workbench/">Workbench</a>
+    <a href="/ui/assets/">Assets</a>
+    <a href="http://127.0.0.1:8089/ui/">Events</a>
+  </nav>
+  <h1>Case Management</h1>
+  <div id="status">Загрузка…</div>
+  <div class="toolbar">
+    <input id="title" placeholder="Название кейса" />
+    <input id="nodeId" placeholder="node_id" />
+    <button id="create">Создать case</button>
+    <button id="refresh">Обновить</button>
+  </div>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Assignee</th><th>Node</th><th>Actions</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <script>
+    const API = '/api/v1/cases';
+    async function load() {
+      const res = await fetch(API);
+      const data = await res.json();
+      const tbody = document.getElementById('rows');
+      tbody.innerHTML = '';
+      for (const c of data.cases || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code>${c.id.slice(0,8)}…</code></td>
+          <td>${c.title}</td>
+          <td>${c.status}</td>
+          <td>${c.assignee || '—'}</td>
+          <td>${c.node_id || '—'}</td>
+          <td>
+            ${c.node_id ? `<a href="/ui/workbench/?case_id=${c.id}&node_id=${encodeURIComponent(c.node_id)}">Timeline</a> · ` : ''}
+            <select data-id="${c.id}" class="statusSel">
+              <option value="new">new</option>
+              <option value="assigned">assigned</option>
+              <option value="investigating">investigating</option>
+              <option value="closed">closed</option>
+            </select>
+            <button data-id="${c.id}" class="saveBtn">Save</button>
+          </td>`;
+        tbody.appendChild(tr);
+        tr.querySelector('.statusSel').value = c.status;
+      }
+      document.getElementById('status').textContent = `Cases: ${(data.cases||[]).length}`;
+      document.querySelectorAll('.saveBtn').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const status = btn.parentElement.querySelector('.statusSel').value;
+          await fetch(`${API}/${id}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status, assignee: 'soc-analyst' })});
+          load();
+        };
+      });
+    }
+    document.getElementById('create').onclick = async () => {
+      await fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ title: document.getElementById('title').value || 'New incident', node_id: document.getElementById('nodeId').value })});
+      load();
+    };
+    document.getElementById('refresh').onclick = load;
+    load();
+  </script>
+</body>
+</html>

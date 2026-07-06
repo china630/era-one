@@ -1,0 +1,12 @@
+id: era-curated-rundll32
+title: Rundll32 execution
+status: stable
+level: medium
+tags:
+  - attack.T1218.011
+logsource:
+  category: process
+detection:
+  selection:
+    ImagePath|contains: "rundll32"
+  condition: selection

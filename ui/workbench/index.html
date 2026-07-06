@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERA XDR — Workbench</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --det: #f85149; --evt: #3fb950; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.5rem; }
+    h1 { font-size: 1.25rem; margin: 0 0 1rem; }
+    nav a { color: var(--accent); margin-right: 1rem; }
+    .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    input, button, select { background: var(--card); border: 1px solid #30363d; color: var(--text); padding: 0.5rem; border-radius: 6px; }
+    button { cursor: pointer; background: #238636; border-color: #238636; }
+    #status { color: var(--muted); margin-bottom: 0.5rem; }
+    .layout { display: grid; grid-template-columns: 1fr 280px; gap: 1rem; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+    .timeline { background: var(--card); border-radius: 8px; padding: 0.5rem 1rem; }
+    .entry { border-left: 3px solid var(--evt); padding: 0.6rem 0.8rem; margin: 0.5rem 0; background: #161b22; border-radius: 4px; }
+    .entry.detection { border-left-color: var(--det); }
+    .entry .meta { font-size: 0.75rem; color: var(--muted); }
+    .entry .summary { margin-top: 0.25rem; }
+    .exposure { background: var(--card); border-radius: 8px; padding: 0.75rem; font-size: 0.875rem; }
+    .exposure h2 { font-size: 0.95rem; margin: 0 0 0.5rem; }
+    .exposure ol { margin: 0; padding-left: 1.2rem; }
+    .exposure li { margin: 0.35rem 0; }
+    .score { color: #ffa657; font-weight: 600; }
+    .filter { min-width: 120px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/ui/cases/">Cases</a>
+    <a href="/ui/workbench/">Workbench</a>
+    <a href="/ui/assets/">Assets</a>
+    <a href="/api/proxy/events">Events API</a>
+  </nav>
+  <h1>ERA Workbench — Incident Timeline</h1>
+  <div id="status">Загрузка…</div>
+  <div class="toolbar">
+    <input id="caseId" placeholder="case_id" />
+    <input id="nodeId" placeholder="node_id" />
+    <input id="corrId" placeholder="correlation_id" />
+    <select id="sourceFilter" class="filter">
+      <option value="">Все источники</option>
+      <option value="agent">agent</option>
+      <option value="sigma">sigma</option>
+      <option value="byo-edr">byo-edr</option>
+    </select>
+    <button id="load">Загрузить timeline</button>
+  </div>
+  <div class="layout">
+    <div class="timeline" id="timeline"></div>
+    <aside class="exposure">
+      <h2>Exposure — Top 10</h2>
+      <ol id="top10"></ol>
+    </aside>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    if (params.get('case_id')) document.getElementById('caseId').value = params.get('case_id');
+    if (params.get('node_id')) document.getElementById('nodeId').value = params.get('node_id');
+
+    async function loadTimeline() {
+      const q = new URLSearchParams();
+      const caseId = document.getElementById('caseId').value.trim();
+      const nodeId = document.getElementById('nodeId').value.trim();
+      const corrId = document.getElementById('corrId').value.trim();
+      if (caseId) q.set('case_id', caseId);
+      if (nodeId) q.set('node_id', nodeId);
+      if (corrId) q.set('correlation_id', corrId);
+      const src = document.getElementById('sourceFilter').value;
+      const res = await fetch('/api/v1/workbench/timeline?' + q.toString());
+      if (!res.ok) {
+        document.getElementById('status').textContent = 'Ошибка: ' + res.status;
+        return;
+      }
+      const data = await res.json();
+      let items = data.timeline || [];
+      if (src) items = items.filter(e => (e.source || '').includes(src) || (src === 'byo-edr' && (e.payload || '').includes('byo-edr')));
+      const el = document.getElementById('timeline');
+      el.innerHTML = '';
+      for (const e of items) {
+        const div = document.createElement('div');
+        div.className = 'entry' + (e.kind === 'detection' ? ' detection' : '');
+        div.innerHTML = `
+          <div class="meta">${e.at} · ${e.kind} · ${e.severity} · ${e.source || '—'} · ${e.node_id || ''}</div>
+          <div class="summary">${e.summary || e.category || '—'}</div>`;
+        el.appendChild(div);
+      }
+      document.getElementById('status').textContent = `Timeline: ${items.length} записей`;
+    }
+
+    async function loadExposure() {
+      const res = await fetch('/api/v1/exposure?top=10');
+      if (!res.ok) return;
+      const data = await res.json();
+      const ol = document.getElementById('top10');
+      ol.innerHTML = '';
+      for (const a of (data.top || [])) {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="score">${a.score.toFixed(1)}</span> ${a.hostname || a.node_id}`;
+        li.style.cursor = 'pointer';
+        li.onclick = () => {
+          document.getElementById('nodeId').value = a.node_id;
+          loadTimeline();
+        };
+        ol.appendChild(li);
+      }
+    }
+
+    document.getElementById('load').onclick = loadTimeline;
+    loadExposure();
+    if (params.get('case_id') || params.get('node_id')) loadTimeline();
+  </script>
+</body>
+</html>

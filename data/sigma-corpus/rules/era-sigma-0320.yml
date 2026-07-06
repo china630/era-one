@@ -1,0 +1,10 @@
+id: era-sigma-0320
+title: ERA detection rule 0320 (file)
+status: experimental
+level: medium
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-pattern-0320"
+  condition: selection

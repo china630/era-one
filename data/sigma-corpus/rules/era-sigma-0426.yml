@@ -1,0 +1,10 @@
+id: era-sigma-0426
+title: ERA detection rule 0426 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0426"
+  condition: selection

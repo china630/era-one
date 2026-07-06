@@ -1,0 +1,12 @@
+id: era-curated-017
+title: Curated detection 017 (TA0006)
+status: stable
+level: medium
+tags:
+  - attack.T1016
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-017"
+  condition: selection

@@ -1,0 +1,12 @@
+id: era-curated-045
+title: Curated detection 045 (TA0001)
+status: stable
+level: medium
+tags:
+  - attack.T1044
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-045"
+  condition: selection

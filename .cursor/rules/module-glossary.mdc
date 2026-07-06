@@ -1,0 +1,31 @@
+---
+description: Канонические имена модулей ERA XDR и их синонимы (RU/EN) для обращения
+alwaysApply: true
+---
+
+# Глоссарий модулей ERA XDR
+
+Обращение к модулям допускается по любому синониму (рус/англ). Канон — путь в репо.
+
+| Канон (путь) | RU-синонимы | EN-синонимы |
+|---|---|---|
+| `crates/era-agent` | агент, сенсор, клиент, эндпоинт-агент | agent, sensor, endpoint |
+| `crates/era-collectors` | коллекторы, сборщики доменов | collectors |
+| `crates/era-license` | верификатор лицензий (агент) | license verifier (rust) |
+| `services/ingest-gateway` | шлюз приёма, ингест, приёмник | ingest, gateway |
+| `services/control-plane` | контрол-плейн, управление, политики | control plane, control |
+| `services/detection-engine` | движок детекции, детект, корреляция, процессоры | detection, processors |
+| `services/vm` | сканер уязвимостей, ВМ, аудит уязвимостей | vuln scanner, vm |
+| `services/license` | лицензирование, кейген | licensing, era-keygen |
+| `ai-core` | ИИ-ядро, мозг, SOC-аналитик, threat hunting | ai core, ai |
+| `soar` | реагирование, плейбуки, соар | response, soar |
+| `data-lake` (ClickHouse+MinIO) | озеро данных, хранилище, кликхаус | data lake, storage |
+| `proto/era/v1` | контракты, конверт, схемы | contracts, envelope, schema |
+| `ui` | интерфейс, дашборды, app-shell | ui, dashboards |
+
+## Издания (editions, ADR-0005/0010)
+
+`ERA Core` (база) · `ERA Vuln` (`vm`) · `ERA AI` (`ai-core`) ·
+`ERA Response` (`soar`) · `ERA Federated` (опция) · `ERA National` (опция).
+
+При упоминании модуля кратко указывай его канонический путь, чтобы избежать путаницы.

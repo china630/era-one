@@ -1,0 +1,10 @@
+id: era-sigma-0118
+title: ERA detection rule 0118 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0118"
+  condition: selection

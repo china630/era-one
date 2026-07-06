@@ -1,0 +1,12 @@
+id: era-curated-054
+title: Curated detection 054 (TA0010)
+status: stable
+level: medium
+tags:
+  - attack.T1053
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-curated-054"
+  condition: selection

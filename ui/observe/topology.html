@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>ERA Observe — Topology</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --accent: #58a6ff; --edge: #3d444d; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1rem; }
+    header { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    button, a.btn { background: #238636; border: none; color: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; text-decoration: none; }
+    .layout { display: grid; grid-template-columns: 1fr 320px; gap: 1rem; margin-top: 1rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 1rem; min-height: 420px; }
+    #canvas { width: 100%; height: 480px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; }
+    .node { fill: #1f6feb; stroke: #58a6ff; stroke-width: 2; cursor: pointer; }
+    .node.core { fill: #8957e5; }
+    .node.offline { fill: #6e7681; }
+    .edge { stroke: var(--edge); stroke-width: 2; }
+    .legend span { display: inline-block; margin-right: 1rem; font-size: 0.9rem; }
+    .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { padding: 0.35rem 0; border-bottom: 1px solid #30363d; font-size: 0.9rem; }
+    code { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ERA Observe — NMS Topology</h1>
+    <button id="refresh">Обновить</button>
+    <a class="btn" href="index.html">Список устройств</a>
+  </header>
+  <p>Базовый граф: CMDB-узлы + связь с ingest/control-plane. API: <code>/api/v1/devices</code>, <code>/api/v1/topology</code>.</p>
+  <div class="layout">
+    <div class="card">
+      <div class="legend">
+        <span><i style="background:#1f6feb"></i>endpoint</span>
+        <span><i style="background:#8957e5"></i>core service</span>
+        <span><i style="background:#6e7681"></i>unmanaged</span>
+      </div>
+      <svg id="canvas" viewBox="0 0 800 480"></svg>
+    </div>
+    <div class="card">
+      <h3>Узлы</h3>
+      <ul id="nodeList"></ul>
+    </div>
+  </div>
+  <script>
+    const API = 'http://127.0.0.1:8132';
+    const CORE = [
+      { id: 'ingest', label: 'ingest-gateway', x: 400, y: 60, kind: 'core' },
+      { id: 'cp', label: 'control-plane', x: 200, y: 180, kind: 'core' },
+      { id: 'ch', label: 'clickhouse', x: 600, y: 180, kind: 'core' }
+    ];
+
+    async function fetchTopology() {
+      try {
+        const r = await fetch(API + '/api/v1/topology');
+        if (r.ok) return await r.json();
+      } catch (_) {}
+      const dev = await fetch(API + '/api/v1/devices').then(r => r.json());
+      const nodes = (dev.devices || []).map((d, i) => ({
+        id: d.node_id || ('dev-' + i),
+        label: d.hostname || d.node_id || 'device',
+        kind: d.managed === false ? 'offline' : 'endpoint',
+        x: 120 + (i % 4) * 160,
+        y: 300 + Math.floor(i / 4) * 80
+      }));
+      return { nodes, edges: nodes.map(n => ({ from: 'ingest', to: n.id })) };
+    }
+
+    function render(data) {
+      const svg = document.getElementById('canvas');
+      svg.innerHTML = '';
+      const all = [...CORE, ...(data.nodes || [])];
+      const byId = Object.fromEntries(all.map(n => [n.id, n]));
+      (data.edges || []).forEach(e => {
+        const a = byId[e.from], b = byId[e.to];
+        if (!a || !b) return;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+        line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+        line.setAttribute('class', 'edge');
+        svg.appendChild(line);
+      });
+      all.forEach(n => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        c.setAttribute('cx', n.x); c.setAttribute('cy', n.y); c.setAttribute('r', 22);
+        c.setAttribute('class', 'node ' + (n.kind || 'endpoint'));
+        const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        t.setAttribute('x', n.x); t.setAttribute('y', n.y + 38);
+        t.setAttribute('text-anchor', 'middle'); t.setAttribute('fill', '#e6edf3');
+        t.setAttribute('font-size', '11'); t.textContent = n.label;
+        g.appendChild(c); g.appendChild(t);
+        svg.appendChild(g);
+      });
+      const ul = document.getElementById('nodeList');
+      ul.innerHTML = '';
+      all.forEach(n => {
+        const li = document.createElement('li');
+        li.textContent = n.label + ' (' + (n.kind || 'endpoint') + ')';
+        ul.appendChild(li);
+      });
+    }
+
+    document.getElementById('refresh').onclick = async () => render(await fetchTopology());
+    render(await fetchTopology());
+  </script>
+</body>
+</html>

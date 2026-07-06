@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>ERA Service — ITSM-lite</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --muted: #8b949e; --accent: #3fb950; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 1.5rem; }
+    nav a { color: #58a6ff; margin-right: 1rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+    input, textarea, select { width: 100%; background: #0d1117; border: 1px solid #30363d; color: var(--text); border-radius: 6px; padding: 0.5rem; margin: 0.25rem 0; }
+    button { background: #238636; border: none; color: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 0.5rem; }
+    th, td { padding: 0.5rem; border-bottom: 1px solid #21262d; text-align: left; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/ui/cases/">Cases (SOC)</a>
+    <a href="/ui/assets/">CMDB</a>
+    <a href="/ui/service-desk/">Service Desk</a>
+  </nav>
+  <h1>ERA Service — Incidents & Requests</h1>
+  <div class="card">
+    <h2>Новый инцидент</h2>
+    <input id="title" placeholder="Заголовок" />
+    <input id="node" placeholder="Node ID (CMDB)" />
+    <input id="requester" placeholder="Заявитель" value="user1" />
+    <button id="createInc">Создать</button>
+  </div>
+  <div class="card">
+    <h2>Портал заявок</h2>
+    <input id="reqTitle" placeholder="Запрос" />
+    <button id="createReq">Отправить</button>
+  </div>
+  <div class="card">
+    <h2>Инциденты</h2>
+    <table><thead><tr><th>ID</th><th>Title</th><th>Node</th><th>Status</th><th>SLA</th></tr></thead><tbody id="inc"></tbody></table>
+  </div>
+  <script>
+    const API = 'http://127.0.0.1:8122';
+    async function load() {
+      const r = await fetch(API + '/api/v1/incidents');
+      const d = await r.json();
+      const tb = document.getElementById('inc'); tb.innerHTML = '';
+      for (const i of d.incidents || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i.id.slice(0,8)}</td><td>${i.title}</td><td>${i.node_id||''}</td><td>${i.status}</td><td>${i.sla_due_at||'—'}</td>`;
+        tb.appendChild(tr);
+      }
+    }
+    document.getElementById('createInc').onclick = async () => {
+      await fetch(API + '/api/v1/incidents', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ title: document.getElementById('title').value, node_id: document.getElementById('node').value, requester: document.getElementById('requester').value, sla_hours: 8 })});
+      load();
+    };
+    document.getElementById('createReq').onclick = async () => {
+      await fetch(API + '/api/v1/requests', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ title: document.getElementById('reqTitle').value, requester: document.getElementById('requester').value })});
+    };
+    load();
+  </script>
+</body>
+</html>

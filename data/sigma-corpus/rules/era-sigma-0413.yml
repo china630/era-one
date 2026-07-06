@@ -1,0 +1,10 @@
+id: era-sigma-0413
+title: ERA detection rule 0413 (process)
+status: experimental
+level: medium
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-pattern-0413"
+  condition: selection

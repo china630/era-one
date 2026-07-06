@@ -1,0 +1,12 @@
+id: era-curated-062
+title: Curated detection 062 (TA0007)
+status: stable
+level: medium
+tags:
+  - attack.T1061
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-curated-062"
+  condition: selection

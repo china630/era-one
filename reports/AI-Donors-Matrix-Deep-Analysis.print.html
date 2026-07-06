@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<title>AI-Donors Matrix Report</title>
+<style>
+  body { font-family: "Segoe UI", Arial, sans-serif; font-size: 11pt; line-height: 1.45; margin: 2cm; color: #111; }
+  h1 { font-size: 18pt; border-bottom: 1px solid #ccc; padding-bottom: 0.3em; }
+  h2 { font-size: 14pt; margin-top: 1.2em; }
+  h3 { font-size: 12pt; margin-top: 1em; }
+  table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 10pt; }
+  th, td { border: 1px solid #999; padding: 6px 8px; vertical-align: top; }
+  th { background: #f0f0f0; }
+  pre.code { background: #f5f5f5; border: 1px solid #ddd; padding: 10px; font-size: 9pt; white-space: pre-wrap; }
+  code { font-family: Consolas, monospace; font-size: 0.95em; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 1.2em 0; }
+  a { color: #0645ad; }
+  ul, ol { margin: 0.5em 0 0.5em 1.2em; }
+</style>
+</head>
+<body>
+<h1>Глубокий аналитический отчёт: матрица ИИ-доноров и архитектура Cloud-Native DevSecOps-платформы</h1>
+<p><strong>Версия документа:</strong> 1.0</p>
+<p><strong>Дата:</strong> 3 апреля 2026 г.</p>
+<p><strong>Источник матрицы:</strong> <a href="https://docs.google.com/spreadsheets/d/1zDUfpraWc_hfnfTvd0bNFMpixWy2wnxn2F_XJkQDxXY/edit?gid=80495403#gid=80495403">Матрица ИИ-доноров (Google Sheets)</a></p>
+<hr>
+<p>## 1. Executive Summary</p>
+<p>### Архитектурная концепция</p>
+<p>Проектируется <strong>единая Cloud-Native DevSecOps-платформа</strong> с ощущением монолитного продукта: общий app-shell, единые дашборды и UX в духе современных ERP. Ядро <strong>проприетарное</strong>; развёртывание — <strong>SaaS (multi-tenant)</strong> и <strong>On-Premise / air-gapped</strong> из <strong>одной кодовой базы</strong>, упаковки в контейнеры и оркестрации через <strong>Kubernetes</strong>, с «умным» инсталлятором (Terraform/Helm).</p>
+<p>Ключевая стратегия разработки — <strong>AI-Driven Reverse Engineering</strong>: не оборачивать чужой зоопарк API и не писать с нуля весь объём доменной логики, а брать <strong>проверенные open-source доноры</strong> (преимущественно CNCF, Go/Rust, MIT/Apache 2.0), извлекать из них <strong>алгоритмы, модели данных и правила</strong>, затем <strong>транслировать</strong> на целевой стек (Go/Rust) с <strong>унифицированными контрактами логов и API</strong>.</p>
+<p>### Оценка жизнеспособности подхода ИИ-трансляции</p>
+<p>Подход <strong>жизнеспособен как инженерный процесс</strong>, но <strong>не как полная автоматизация без человека</strong>. По классам из матрицы:</p>
+<table>
+<thead><tr>
+<th>Фактор</th>
+<th>Вывод</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Совпадение стека</strong></td>
+<td>Доноры уже на Go/Rust — снижает трение при переносе типов, контрактов и паттернов.</td>
+</tr>
+<tr>
+<td><strong>Декларативные артефакты</strong></td>
+<td>YAML-правила (Nuclei), конфиги пайплайнов — <strong>легче</strong> нормализовать в вашу модель, чем «спагетти» из императивного C.</td>
+</tr>
+<tr>
+<td><strong>Сложность домена</strong></td>
+<td>eBPF/Cilium, распределённые SIEM, session recording — требуют <strong>глубокой верификации</strong> и тестов на железе/кластерах; ИИ ускоряет черновик, не заменяет SRE/SecOps-экспертизу.</td>
+</tr>
+<tr>
+<td><strong>Лицензии</strong></td>
+<td>MIT/Apache 2.0 дружелюбны к проприетарной переработке идей и <strong>собственной</strong> реализации; MPL 2.0 (Vector) и смежные случаи требуют <strong>юридической дисциплины</strong> при смешивании кода.</td>
+</tr>
+</tbody></table>
+<p><strong>Итог:</strong> AI-трансляция хорошо подходит как <strong>ускоритель</strong> для модулей с чёткими границами (сканеры, коллекторы, часть правил WAF/SIEM). Для <strong>низкоуровневой сети и ядра ОС</strong> критична комбинация: ИИ + ручной аудит + формальные тесты + поэтапное внедрение.</p>
+<hr>
+<p>## 2. Анализ векторов и доноров (фокус: «Вариант 1 — Идеал»)</p>
+<p>Ниже — восемь классов из <a href="https://docs.google.com/spreadsheets/d/1zDUfpraWc_hfnfTvd0bNFMpixWy2wnxn2F_XJkQDxXY/edit?gid=80495403#gid=80495403">матрицы</a> с акцентом на первый вариант в каждой строке.</p>
+<p>### 2.1. Сканеры уязвимостей (VM) — <strong>Nuclei</strong> (ProjectDiscovery, Go, MIT)</p>
+<p><strong>Суть донора:</strong> огромная экосистема <strong>YAML-шаблонов</strong> проверок + движок матчинга/HTTP.</p>
+<p><strong>Извлекаемость логики для ИИ:</strong> <strong>высокая</strong> для слоя правил и сценариев проверок: шаблоны структурированы, их можно парсить, классифицировать и маппить на ваш DSL или внутренний формат. Движок на Go можно разобрать на <strong>потоки: диспетчеризация, HTTP-клиент, матчинг, отчётность</strong>.</p>
+<p><strong>Узкие места:</strong></p>
+<ul>
+<li>Семантика «как в Nuclei» vs «как в вашем продукте» — риск <strong>потери совместимости</strong> с community-templates без явной стратегии импорта/версионирования.</li>
+<li>Сетевые edge-case, TLS, rate limits, безопасное выполнение пользовательских шаблонов — <strong>не сводятся к копипасту</strong>.</li>
+<li>Юридически шаблоны часто отдельно лицензированы; нужен <strong>скан лицензий</strong> на корпус правил.</li>
+</ul>
+<p>### 2.2. Защита Web (WAF) — <strong>Coraza WAF</strong> (Go, Apache 2.0)</p>
+<p><strong>Суть донора:</strong> WAF как библиотека/встраиваемый компонент с правилами в духе ModSecurity/CRS.</p>
+<p><strong>Извлекаемость:</strong> <strong>средне-высокая</strong> для <strong>правил, парсеров, фаз запроса/ответа</strong>. Go-код обычно хорошо читается моделями; CRS — большой, но структурированный вход.</p>
+<p><strong>Узкие места:</strong></p>
+<ul>
+<li><strong>Ложные срабатывания и тюнинг</strong> — продуктовая ценность не в «есть WAF», а в управляемости политиками и обучением на трафике клиента.</li>
+<li>Производительность на высоком RPS и интеграция с вашим <strong>единым шлюзом</strong> (ingress/service mesh) — отдельный инженерный слой.</li>
+<li>Зависимость от <strong>эволюции CRS</strong> — нужен процесс синхронизации и регрессии.</li>
+</ul>
+<p>### 2.3. Маршрутизация логов (пайплайн / сбор) — <strong>Vector</strong> (Rust, <strong>MPL 2.0</strong>)</p>
+<p><strong>Суть донора:</strong> высокопроизводительный агент/роутер событий, богатые трансформации и sinks.</p>
+<p><strong>Извлекаемость:</strong> <strong>средняя</strong>. Rust-AST сложнее для «механического» переноса, чем Go, но <strong>архитектурные идеи</strong> (топология графа, backpressure, буферы, контракты источников) извлекаются из документации и кода. Практичный путь — не «построчный» перенос, а <strong>реимплементация паттернов</strong> на Rust/Go в вашем каркасе.</p>
+<p><strong>Узкие места:</strong></p>
+<ul>
+<li><strong>MPL 2.0:</strong> при смешивании с проприетарным кодом в одних бинарниках/модулях нужна <strong>юридическая схема</strong> (границы процессов, dynamic linking, отдельные сервисы — по консультации с юристом).</li>
+<li>Эквивалентность <strong>всех</strong> source/sink/transform из Vector без многолетней команды — нереалистична; нужен <strong>поднабор MVP</strong>.</li>
+</ul>
+<p>### 2.4. Мониторинг (ITIM / метрики) — <strong>Prometheus</strong> (Go, Apache 2.0)</p>
+<p><strong>Суть донора:</strong> модель метрик, pull-модель, PromQL, exporters.</p>
+<p><strong>Извлекаемость:</strong> <strong>очень высокая</strong> для <strong>модели данных и протоколов</strong> ( exposition format, labels, типы метрик). Код на Go — эталон для трансляции серверных компонентов.</p>
+<p><strong>Узкие места:</strong></p>
+<ul>
+<li><strong>PromQL и хранилище временных рядов</strong> — если вы не форк, а переписываете, нужна <strong>верификация</strong> корректности запросов и совместимости с Grafana/вашими дашбордами.</li>
+<li>Масштабирование (долгосрочное хранение, федерация) — это уже <strong>продуктовая архитектура</strong>, а не «перенос файла».</li>
+</ul>
+<p>### 2.5. Сеть и фаервол (NGFW) — <strong>Cilium</strong> (Go / eBPF, Apache 2.0)</p>
+<p><strong>Суть донора:</strong> политики сети/K8s, идентичность сервисов, глубокая интеграция с ядром через eBPF.</p>
+<p><strong>Извлекаемость для «чистой» AI-трансляции:</strong> <strong>низкая-средняя</strong>. Идеи <strong>политик и модели угроз</strong> извлекаются; <strong>eBPF-программы и ядерные контракты</strong> — зона <strong>высокого риска</strong> при автогенерации.</p>
+<p><strong>Узкие места:</strong></p>
+<ul>
+<li>Безопасность и стабильность ядра; <strong>certification</strong> в регулируемых отраслях.</li>
+<li>Жёсткая привязка к версиям ядра и дистрибутивов On-Premise.</li>
+<li>Конкуренция с тем, что клиенты уже используют Cilium/Calico — нужна ясная <strong>ценность вашего слоя</strong> (политика, UI, аудит).</li>
+</ul>
+<p>### 2.6. Аудит конечных точек (EDR/UEM) — <strong>Fleet</strong> (Go, MIT, над Osquery)</p>
+<p><strong>Суть донора:</strong> управление агентами, API, инвентаризация и запросы к данным с хостов через osquery.</p>
+<p><strong>Извлекаемость:</strong> <strong>высокая</strong> для <strong>оркестрации, API-слоя, модели узлов и запросов</strong>. Сама <strong>osquery</strong> — отдельный C++ агент; стратегия «переписать Fleet-подход на Go» логична, <strong>переписать osquery</strong> — отдельный мегапроект.</p>
+<p><strong>Узкие места:</strong></p>
+<ul>
+<li>Зависимость от <strong>Osquery-схем и производительности</strong> на Windows/macOS/Linux.</li>
+<li>EDR-ожидания рынка (поведенческий анализ, response playbooks) <strong>шире</strong>, чем inventory/query.</li>
+</ul>
+<p>### 2.7. Аналитика логов (SIEM) — <strong>Matano</strong> (Rust / Go, Apache 2.0)</p>
+<p><strong>Суть донора:</strong> современный SIEM-подход, Iceberg, serverless-паттерны, пайплайн детекций.</p>
+<p><strong>Извлекаемость:</strong> <strong>средняя</strong>. Идеи <strong>хранения в табличных форматах, пайплайна нормализации, detection-as-code</strong> хорошо переносятся концептуально. Полный перенос «как есть» завязан на облачный стек клиента (SaaS vs air-gap).</p>
+<p><strong>Узкие места:</strong></p>
+<ul>
+<li><strong>On-Premise air-gapped</strong> может не совпасть с исходной serverless-архитектурой — нужны <strong>абстракции поставщика объектного хранилища и вычислений</strong>.</li>
+<li>Корреляции, retention, compliance — продуктовый слой поверх «движка».</li>
+</ul>
+<p>### 2.8. Контроль инсайдеров и утечек (DLP / UAM) — <strong>Teleport</strong> (Go, Apache 2.0)</p>
+<p><strong>Суть донора:</strong> privileged access, сессии, аудит, запись сессий, доступ к инфраструктуре.</p>
+<p><strong>Извлекаемость:</strong> <strong>средняя</strong>. Протоколы, модель ролей, журналирование — извлекаемы; <strong>криптография, хранение записей, производительность прокси</strong> — требуют жёсткого security review.</p>
+<p><strong>Узкие места:</strong></p>
+<ul>
+<li>Сравнение с зрелыми коммерческими UAM/DLP — ожидания по <strong>UX для расследований и отчётности</strong>.</li>
+<li>Запись и хранение сессий — <strong>ПДн, объём данных, шифрование</strong>.</li>
+</ul>
+<hr>
+<p>## 3. Пайплайн интеграции (техническое видение)</p>
+<p>### 3.1. Принципы</p>
+<ul>
+<li><strong>Единый идентификатор сущности</strong> в платформе: tenant → environment → cluster → node/workload → user/session (где применимо).</li>
+<li><strong>Единый конверт события</strong> (envelope): обязательные поля времени, источника, корреляционного ID, severity, тип схемы (schema version).</li>
+<li><strong>Разделение плоскостей:</strong> data plane (агенты, коллекторы, сканеры) / control plane (политики, каталоги, RBAC) / analytics plane (хранилища, детекции).</li>
+</ul>
+<p>### 3.2. Коммуникации в Kubernetes</p>
+<table>
+<thead><tr>
+<th>Слой</th>
+<th>Рекомендация</th>
+<th>Комментарий</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Синхронные API</strong></td>
+<td><strong>gRPC</strong> (внутри кластера) + <strong>REST/OpenAPI</strong> для внешних интеграций и UI-gateway</td>
+<td>Контракты через protobuf; REST — тонкий BFF под app-shell.</td>
+</tr>
+<tr>
+<td><strong>Асинхронный поток событий</strong></td>
+<td><strong>Apache Kafka</strong> или <strong>NATS JetStream</strong></td>
+<td>Kafka — если упор на долговременный буфер, репликацию и экосистему; NATS — если важны простота ops и lower footprint для On-Premise. Практичный компромисс: <strong>Kafka как bus для тяжёлого лог/метрик потока</strong>, NATS для команд/стриминга control plane (опционально).</td>
+</tr>
+<tr>
+<td><strong>Метрики</strong></td>
+<td><strong>Prometheus-совместимый exposition</strong> + центральный scraper/VM/Prometheus</td>
+<td>Снижает трение для дашбордов и SLO.</td>
+</tr>
+<tr>
+<td><strong>Трассировка</strong></td>
+<td><strong>OpenTelemetry</strong> (OTLP)</td>
+<td>Единый стандарт для связки сервисов при отладке MVP→prod.</td>
+</tr>
+</tbody></table>
+<p>### 3.3. Формат логов и событий</p>
+<ul>
+<li>Нормализация в <strong>JSON</strong> (или <strong>CBOR</strong> для высоких объёмов) с <strong>JSON Schema / protobuf</strong> для версионирования.</li>
+<li>Транспорт: предпочтительно <strong>OTLP для телеметрии</strong> там, где уместно; для SIEM-сырья — <strong>topic per domain</strong> (<code>sec.vm</code>, <code>sec.waf</code>, <code>ops.metrics</code>, <code>iam.session</code>).</li>
+<li>Обязательная <strong>линияка PII/redaction</strong> до записи в долговременное хранилище.</li>
+</ul>
+<p>### 3.4. Сервисная карта (логическая)</p>
+<pre class="code">[Agents / Scanners / WAF sidecar] 
+        → ingest-gateway (validate, enrich, tenant routing)
+        → message bus (Kafka/NATS)
+        → processors (normalize, detections)
+        → storage (TSDB / object store / index)
+        ← query &amp; dashboard API ← unified UI</pre>
+<p>Control plane (политики, версии правил, feature flags) — отдельные сервисы с <strong>GitOps-совместимым</strong> хранением конфигурации (внутри продукта), без привязки клиента к внешнему GitHub.</p>
+<hr>
+<p>## 4. Roadmap MVP (Фаза 1): 2–3 класса для первой волны</p>
+<p><strong>Цель фазы:</strong> доказать <strong>единый продуктовый опыт</strong> — один shell, сквозной дашборд, сквозной tenant/RBAC, общий поток событий — с <strong>реальными</strong> данными, а не моками.</p>
+<p>### Рекомендуемый набор (3 класса)</p>
+<ol>
+<li><strong>Маршрутизация логов / сбор</strong> — в качестве <strong>каркаса конвейера</strong> (идея и подмножество паттернов Vector; реализация на вашем стеке с чётким scope).</li>
+<li><strong>Мониторинг метрик</strong> — <strong>Prometheus-модель</strong> как стандарт де-факто для дашбордов и алертинга.</li>
+<li><strong>Сканеры уязвимостей (VM)</strong> — <strong>Nuclei-подобный</strong> слой правил (импорт/адаптация YAML → ваш runtime) для <strong>наглядного SecOps-виджета</strong> в том же UI.</li>
+</ol>
+<p>### Обоснование</p>
+<table>
+<thead><tr>
+<th>Критерий</th>
+<th>Почему эта тройка</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Сквозной сценарий «Ops + Sec»</strong></td>
+<td>Метрики + логи + findings сканера дают содержательный демо для заказчика.</td>
+</tr>
+<tr>
+<td><strong>Техническая достижимость</strong></td>
+<td>Высокая степень структурированности входов (метрики, YAML-правила, события конвейера).</td>
+</tr>
+<tr>
+<td><strong>Единый UX</strong></td>
+<td>Все три потока естественно сходятся в <strong>один bus</strong> и <strong>одну модель дашборда</strong> (сводка, drill-down, корреляция по времени/хосту).</td>
+</tr>
+<tr>
+<td><strong>Отложенная сложность</strong></td>
+<td>WAF, eBPF-NGFW, полноформатный SIEM и session-heavy DLP тянут <strong>тяжёлую верификацию и юридику</strong> — логично на Фазу 2+.</td>
+</tr>
+</tbody></table>
+<p><strong>Альтернатива на 2 класса (ещё быстрее):</strong> только <strong>сбор/маршрутизация + метрики</strong> — если SecOps-демо в MVP можно заменить статичным «плейбуком» интеграции без собственного сканера.</p>
+<hr>
+<p>## 5. Риски и митигация</p>
+<p>### 5.1. Качество и безопасность сгенерированного кода</p>
+<p><strong>Риск:</strong> ИИ даёт <strong>правдоподобный</strong>, но ошибочный код (особенно криптография, конкурентность, парсинг протоколов).</p>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Обязательные <strong>SAST/DAST</strong>, <strong>fuzzing</strong> для парсеров, <strong>code review</strong> владельцем сервиса.</li>
+<li>Запрет на «тихий» merge без <strong>тестов на регрессию</strong> и <strong>контрактных тестов</strong> API.</li>
+<li>Выделенный <strong>security champion</strong> на модуль.</li>
+</ul>
+<p>### 5.2. Тестирование эквивалентности с донором</p>
+<p><strong>Риск:</strong> Продукт <strong>не эквивалентен</strong> донору по поведению; клиенты ожидают feature-parity.</p>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Формальное <strong>определение MVP-scope</strong> и публичная матрица возможностей.</li>
+<li><strong>Golden tests</strong>: фиксированные входы (pcap, лог-файлы, metric scrape) → ожидаемые выходы.</li>
+<li>Для правил — <strong>корпус тестов</strong> на синтетических и обезличенных реальных данных.</li>
+</ul>
+<p>### 5.3. Актуальность относительно upstream</p>
+<p><strong>Риск:</strong> Open-source эволюционирует; ваш форк/перепись <strong>отстаёт</strong> по CVE и фичам.</p>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Процесс <strong>версионирования доноров</strong> и периодический <strong>diff-аудит</strong> критичных путей.</li>
+<li>Автоматизированный <strong>импорт</strong> обновлений для декларативных артефактов (например, шаблоны сканирования) отдельно от кода движка.</li>
+</ul>
+<p>### 5.4. Лицензирование и комплаенс</p>
+<p><strong>Риск:</strong> Смешение кода с <strong>copyleft</strong> или патентными оговорками; ошибки в шаблонах community.</p>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Юридический аудит <strong>каждого</strong> донора и <strong>корпуса</strong> импортируемых правил/шаблонов.</li>
+<li>Политика: <strong>идеи и алгоритмы</strong> vs <strong>копирование кода</strong> — явные границы; для MPL — отдельная схема границ модулей.</li>
+</ul>
+<p>### 5.5. On-Premise и air-gap</p>
+<p><strong>Риск:</strong> Cloud-native доноры (serverless, managed services) <strong>плохо ложатся</strong> на изолированную среду.</p>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li><strong>Абстракции</strong> объектного хранилища, очередей, KMS с первого дня.</li>
+<li>Инсталлятор с <strong>preflight-checks</strong> (ядро, диск, сеть, TLS, time sync).</li>
+</ul>
+<p>### 5.6. Операционная сложность K8s у Enterprise</p>
+<p><strong>Риск:</strong> Клиент не тянет содержание кластера.</p>
+<p><strong>Митигация:</strong></p>
+<ul>
+<li>Профили развёртывания: <strong>минимальный</strong> (одна зона, без mesh) vs <strong>полный</strong>.</li>
+<li>Мониторинг здоровья платформы как <strong>часть продукта</strong>, не опция.</li>
+</ul>
+<hr>
+<p>## Заключение</p>
+<p>Матрица доноров из <a href="https://docs.google.com/spreadsheets/d/1zDUfpraWc_hfnfTvd0bNFMpixWy2wnxn2F_XJkQDxXY/edit?gid=80495403#gid=80495403">Google Sheets</a> согласуется с целевым стеком и стратегией <strong>AI-трансляции</strong> как <strong>ускорителя инженерии</strong>, при условии дисциплины в тестировании, лицензиях и поэтапном scope. Для <strong>MVP</strong> рационально начать с <strong>конвейера телеметрии, метрик Prometheus-модели и VM-слоя на декларативных правилах</strong>, оставив WAF, NGFW/eBPF, полноразмерный SIEM и DLP/UAM на последующие фазы с усиленным security и compliance контуром.</p>
+<hr>
+<p>## Экспорт в PDF</p>
+<p>Файл отчёта сохранён как <code>reports/AI-Donors-Matrix-Deep-Analysis.md</code>. Варианты получения PDF:</p>
+<ol>
+<li><strong>Cursor / VS Code:</strong> расширение вроде «Markdown PDF» — открыть <code>.md</code> и выполнить команду экспорта.</li>
+<li><strong>Pandoc</strong> (если установите):</li>
+</ol>
+<p>   <code>pandoc AI-Donors-Matrix-Deep-Analysis.md -o AI-Donors-Matrix-Deep-Analysis.pdf</code></p>
+<ol>
+<li><strong>Печать из браузера:</strong> открыть отрендеренный Markdown в предпросмотре и <strong>Печать → Сохранить как PDF</strong>.</li>
+</ol>
+</body>
+</html>

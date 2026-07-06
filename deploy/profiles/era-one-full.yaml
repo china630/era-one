@@ -1,0 +1,44 @@
+# ERA One — full stack deploy profile
+# Control + Communications + Office в одном изолированном контуре
+
+schema_version: "1.0"
+id: era-one-full
+product: era-one-full
+title: ERA One Full Stack
+status: roadmap
+
+description: >
+  Полная экосystema ERA One: ERA Control (GA) + ERA Communications (roadmap) +
+  ERA Office (roadmap). Единый shared platform (identity, tenant, admin-portal).
+
+includes_profiles:
+  - deploy/profiles/control.yaml
+  - deploy/profiles/comms.yaml
+  - deploy/profiles/office.yaml
+
+shared_platform:
+  required: true
+  single_instance: true
+  services:
+    - admin-portal
+    - postgres
+
+compose:
+  file: deploy/docker-compose.prod.yml
+  project_name: era-one-full
+  recommended_profiles:
+    - pg
+    - itops
+    - observe
+
+products:
+  - era-control
+  - era-communications
+  - era-office
+
+bundle_ref: products.yaml#bundles.era-one-full
+
+docs:
+  - products.yaml
+  - docs/adr/0024-era-one-product-families.md
+  - docs/adr/0025-era-one-shared-platform.md

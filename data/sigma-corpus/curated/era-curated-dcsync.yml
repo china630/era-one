@@ -1,0 +1,12 @@
+id: era-curated-dcsync
+title: DCSync pattern
+status: stable
+level: critical
+tags:
+  - attack.T1003.006
+logsource:
+  category: auth
+detection:
+  selection:
+    User|contains: "DC"
+  condition: selection

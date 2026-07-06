@@ -1,0 +1,12 @@
+id: era-curated-046
+title: Curated detection 046 (TA0002)
+status: stable
+level: medium
+tags:
+  - attack.T1045
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-curated-046"
+  condition: selection

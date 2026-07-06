@@ -1,0 +1,18 @@
+# ERA XDR — Rust workspace (Data Plane / агенты и коллекторы).
+# Go-сервисы живут в services/, контракты — в proto/, документация — в docs/.
+[workspace]
+resolver = "2"
+members = [
+    "crates/era-agent",
+    "crates/era-agent-core",
+    "crates/era-plugin-sdk",
+    "crates/era-plugin-inventory",
+    "crates/era-plugin-vuln",
+    "crates/era-plugin-appcontrol",
+    "crates/era-plugin-devicecontrol",
+    "crates/era-plugin-bitlocker",
+    "crates/era-plugin-deploy",
+    "crates/era-collectors",
+    "crates/era-license",
+    "crates/era-proto",
+]

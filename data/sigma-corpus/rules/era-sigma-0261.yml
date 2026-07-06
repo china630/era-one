@@ -1,0 +1,10 @@
+id: era-sigma-0261
+title: ERA detection rule 0261 (process)
+status: experimental
+level: medium
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-pattern-0261"
+  condition: selection

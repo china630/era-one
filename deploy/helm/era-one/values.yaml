@@ -1,0 +1,299 @@
+global:
+
+  imagePullPolicy: IfNotPresent
+
+
+
+kafka:
+
+  enabled: true
+
+  image: apache/kafka:3.8.0
+
+  replicas: 1
+
+  servicePort: 9092
+
+
+
+clickhouse:
+
+  enabled: true
+
+  image: clickhouse/clickhouse-server:24.8
+
+  replicas: 1
+
+  httpPort: 8123
+
+  nativePort: 9000
+
+  user: era
+
+  password: era_prod_pw
+
+
+
+minio:
+
+  enabled: true
+
+  image: minio/minio:latest
+
+  apiPort: 9000
+
+  consolePort: 9001
+
+  rootUser: minioadmin
+
+  rootPassword: minioadmin
+
+  persistence:
+
+    size: 50Gi
+
+
+
+postgres:
+
+  enabled: false
+
+  image: postgres:16-alpine
+
+  port: 5432
+
+  user: era
+
+  password: era_cp_pw
+
+  database: era_cp
+
+  persistence:
+
+    size: 10Gi
+
+
+
+controlPlane:
+
+  enabled: true
+
+  image: era-one/control-plane:ga3
+
+  replicas: 1
+
+  httpPort: 8090
+
+  storePath: /data/control-plane.db
+
+  storeDriver: sqlite
+
+  storeDsn: ""
+
+
+
+# Core + platform services (stages 7–9); enable per edition bundle.
+
+platformServices:
+
+  ingest-gateway:
+
+    enabled: true
+
+    image: era-one/ingest-gateway:ga3
+
+    port: 8082
+
+    grpcPort: 50051
+
+    replicas: 2
+
+    env:
+
+      ERA_HTTP_ADDR: ":8082"
+
+      ERA_GRPC_ADDR: ":50051"
+
+      ERA_KAFKA_BROKERS: "era-one-kafka:29092"
+
+  event-writer:
+
+    enabled: true
+
+    image: era-one/event-writer:ga3
+
+    port: 8089
+
+    replicas: 2
+
+    env:
+
+      ERA_HTTP_ADDR: ":8089"
+
+      ERA_KAFKA_BROKERS: "era-one-kafka:29092"
+
+      ERA_CH_ADDR: "era-one-clickhouse:9000"
+
+      ERA_CH_USER: era
+
+      ERA_CH_PASSWORD: era_prod_pw
+
+      ERA_CONSUMER_GROUP: era-event-writer
+
+  detection-engine:
+
+    enabled: true
+
+    image: era-one/detection-engine:ga3
+
+    port: 8097
+
+    replicas: 2
+
+    env:
+
+      ERA_CONSUMER_GROUP: era-detection-engine
+
+      ERA_KAFKA_BROKERS: "era-one-kafka:29092"
+
+      ERA_CH_ADDR: "era-one-clickhouse:9000"
+
+      ERA_CH_USER: era
+
+      ERA_CH_PASSWORD: era_prod_pw
+
+      ERA_CONTROL_PLANE_URL: "http://era-one-control-plane:8090"
+
+  ai-core:
+
+    enabled: true
+
+    image: era-one/ai-core:ga3
+
+    port: 8091
+
+    replicas: 1
+
+    env:
+
+      ERA_HTTP_ADDR: ":8091"
+
+      ERA_CH_ADDR: "era-one-clickhouse:9000"
+
+      ERA_CH_USER: era
+
+      ERA_CH_PASSWORD: era_prod_pw
+
+      ERA_CONTROL_PLANE_URL: "http://era-one-control-plane:8090"
+
+  soar:
+
+    enabled: true
+
+    image: era-one/soar:ga3
+
+    port: 8092
+
+    replicas: 1
+
+    env:
+
+      ERA_HTTP_ADDR: ":8092"
+
+      ERA_CONTROL_PLANE_URL: "http://era-one-control-plane:8090"
+
+  vm:
+
+    enabled: false
+
+    image: era-one/vm-engine:ga3
+
+    port: 8081
+
+    replicas: 1
+
+    env:
+
+      ERA_HTTP_ADDR: ":8081"
+
+  cloud-portal:
+
+    enabled: false
+
+    image: era-one/cloud-portal:ga3
+
+    port: 8120
+
+    env: {}
+
+  update-service:
+
+    enabled: false
+
+    image: era-one/update-service:ga3
+
+    port: 8110
+
+    env: {}
+
+  service-desk:
+
+    enabled: false
+
+    image: era-one/service-desk:ga3
+
+    port: 8122
+
+    env:
+
+      ERA_CONTROL_PLANE_URL: "http://era-one-control-plane:8090"
+
+  provision:
+
+    enabled: false
+
+    image: era-one/provision:ga3
+
+    port: 8124
+
+    env:
+
+      ERA_CONTROL_PLANE_URL: "http://era-one-control-plane:8090"
+
+      ERA_MINIO_ENDPOINT: "http://era-one-minio:9000"
+
+  pam:
+
+    enabled: false
+
+    image: era-one/pam:ga3
+
+    port: 8130
+
+    persistence:
+
+      size: 2Gi
+
+      mountPath: /data/pam
+
+    env:
+
+      ERA_KMS_PROVIDER: software-sealed-dev
+
+  observe:
+
+    enabled: false
+
+    image: era-one/observe:ga3
+
+    port: 8132
+
+    env:
+
+      ERA_INGEST_URL: "http://era-one-ingest-gateway:8082"
+
+      ERA_CONTROL_PLANE_URL: "http://era-one-control-plane:8090"
+
+      ERA_TENANT_ID: default
+
+

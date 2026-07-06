@@ -1,0 +1,12 @@
+id: era-curated-091
+title: Curated detection 091 (TA0003)
+status: stable
+level: medium
+tags:
+  - attack.T1090
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-curated-091"
+  condition: selection

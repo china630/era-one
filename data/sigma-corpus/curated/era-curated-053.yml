@@ -1,0 +1,12 @@
+id: era-curated-053
+title: Curated detection 053 (TA0009)
+status: stable
+level: medium
+tags:
+  - attack.T1052
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-053"
+  condition: selection

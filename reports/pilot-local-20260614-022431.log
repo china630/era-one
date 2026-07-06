@@ -1,0 +1,15 @@
+[02:24:31] ==> ERA XDR pilot-local runner
+[02:24:31] Report: D:\My Projects\era-xdr\reports\pilot-local-20260614-022431.log
+[02:24:55] PASS health control-plane
+[02:24:55] PASS health event-writer
+[02:24:55] PASS health ingest
+[02:24:55] PASS health ai-core
+[02:24:55] PASS health soar
+[02:25:24] Demo seed: run-distributor-demo -SkipCompose -Quick
+[02:25:29] PASS PII gate
+[02:25:31] WARN ga-e2e skipped
+[02:25:31] PASS proxy events count=3
+[02:25:31] CP case marker: pilot-local-022531
+[02:25:31] SSO lab: docker compose -f deploy/docker-compose.prod.yml --profile sso up -d -> :8443
+[02:25:31] Portal: http://127.0.0.1:8090/ui/portal/ (expect demo v2 badge)
+[02:25:31] ==> pilot-local PASS (see D:\My Projects\era-xdr\reports\pilot-local-20260614-022431.log)

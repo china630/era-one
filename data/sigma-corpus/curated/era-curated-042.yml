@@ -1,0 +1,12 @@
+id: era-curated-042
+title: Curated detection 042 (TA0009)
+status: stable
+level: medium
+tags:
+  - attack.T1041
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-curated-042"
+  condition: selection

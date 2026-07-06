@@ -1,0 +1,36 @@
+# ERA One — shared platform издания (лицензируемые capabilities)
+#
+# Технический слой — ADR-0025. Не отдельное продуктовое семейство в RFQ.
+# Identity/tenant/admin — включены в любой продукт ERA One (отдельно не продаются).
+#
+# Связано: products.yaml (shared_platform), editions-office.yaml, editions-comms.yaml
+
+schema_version: "1.0"
+layer: era-one-shared-platform
+adr: docs/adr/0025-era-one-shared-platform.md
+
+editions:
+  era-drive:
+    title: ERA Drive
+    status: roadmap
+    license_module: { name: platform-drive, exists: false }
+    description: >
+      Файловое хранилище, sync, ACL, версии. API для Mail (вложения) и Office (документы).
+      Отдельная строка RFQ; всегда включён в ERA Office Suite.
+    services: [platform-drive]
+    consumers: [era-communications, era-office]
+    pricing_ref: platform-drive
+
+  era-sign:
+    title: ERA Sign
+    status: roadmap
+    license_module: { name: platform-sign, exists: false }
+    description: >
+      Электронная подпись (ASAN Imza, SİMA): browser, desktop helper, mobile (roadmap).
+      Platform/signing; UI в Documents и Mail.
+    services: [platform-signing]
+    consumers: [era-office, era-communications]
+
+bundles:
+  office-suite-includes:
+    note: ERA Office Suite (editions-office.yaml) always includes era-drive

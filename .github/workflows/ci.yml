@@ -1,0 +1,109 @@
+# Монорепо CI: PR → dev, push dev, PR dev → main.
+# Production merge в main только после зелёных чеков на PR.
+
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  site:
+    name: site (build + golden)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Build site artifact
+        run: bash scripts/build-site.sh
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: dist/site/
+          retention-days: 14
+
+  go-test:
+    name: go (smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: go test (platform + ingest)
+        run: |
+          go test ./services/platform/licensegate/...
+          go test ./services/platform/httpserver/...
+          go test ./services/ingest-gateway/internal/server/...
+          go test ./services/ingest-gateway/internal/pipeline/...
+
+  rust-agent:
+    name: rust (agent PII + budget)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: PII golden + budget guard
+        run: |
+          cd crates/era-agent
+          cargo test golden_pii
+          cd ../era-agent-core
+          cargo test budget_guard::
+
+  compose-config:
+    name: deploy (compose validate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate prod compose
+        run: docker compose -f deploy/docker-compose.prod.yml config --quiet
+
+  stage10:
+    name: stage10 gates (full)
+    runs-on: ubuntu-latest
+    # Полный прогон на merge в dev и на PR в main
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'main')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Stage 10 CI gates
+        shell: pwsh
+        run: ./scripts/ci-gates-stage10.ps1

@@ -1,0 +1,10 @@
+id: era-sigma-0357
+title: ERA detection rule 0357 (process)
+status: experimental
+level: medium
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-pattern-0357"
+  condition: selection

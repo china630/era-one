@@ -1,0 +1,12 @@
+id: era-curated-072
+title: Curated detection 072 (TA0006)
+status: stable
+level: medium
+tags:
+  - attack.T1071
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-curated-072"
+  condition: selection

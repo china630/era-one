@@ -1,0 +1,8 @@
+{
+  "name": "inventory",
+  "mode": "cron",
+  "license_module": "manage",
+  "schedule_secs": 3600,
+  "budget_hint_mb": 20,
+  "binary": "era-plugin-inventory"
+}

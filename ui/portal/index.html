@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERA XDR — SOC Portal</title>
+  <style>
+    :root {
+      --bg:#0f1419; --card:#1a2332; --text:#e6edf3; --muted:#8b949e;
+      --accent:#58a6ff; --border:#30363d; --ok:#3fb950; --warn:#d29922; --bad:#f85149;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: var(--card); border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    header h1 { font-size: 1rem; margin: 0; font-weight: 600; }
+    nav { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    nav button { background: transparent; border: 1px solid transparent; color: var(--muted); padding: 0.4rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
+    nav button.active { color: var(--text); border-color: var(--border); background: var(--bg); }
+    nav button:hover { color: var(--accent); }
+    .meta { margin-left: auto; display: flex; gap: 0.75rem; align-items: center; font-size: 0.8rem; color: var(--muted); }
+    select, input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.35rem 0.5rem; border-radius: 4px; }
+    main { flex: 1; padding: 1.25rem 1.5rem; max-width: 1100px; width: 100%; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .card h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+    .card p.lead { color: var(--muted); margin: 0 0 1rem; line-height: 1.5; font-size: 0.95rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th, td { padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-weight: 500; }
+    .btn { background: #238636; border: none; color: #fff; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
+    .btn.secondary { background: #21262d; border: 1px solid var(--border); color: var(--text); }
+    .hidden { display: none; }
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+    .kpi { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+    .kpi .label { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.25rem; }
+    .kpi .value { font-size: 1.35rem; font-weight: 600; }
+    .kpi .sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+    .pipeline { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; font-size: 0.8rem; margin: 1rem 0; }
+    .pipe-step { background: var(--bg); border: 1px solid var(--border); padding: 0.4rem 0.65rem; border-radius: 6px; }
+    .pipe-arrow { color: var(--muted); }
+    .steps { list-style: none; padding: 0; margin: 0; }
+    .steps li { display: flex; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+    .steps li:last-child { border-bottom: none; }
+    .step-num { background: var(--accent); color: #0d1117; font-weight: 700; width: 1.6rem; height: 1.6rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
+    .step-body strong { display: block; margin-bottom: 0.15rem; }
+    .step-body span { color: var(--muted); font-size: 0.875rem; line-height: 1.45; }
+    .badge { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge.new { background: #388bfd33; color: #58a6ff; }
+    .badge.open { background: #d2992233; color: #d29922; }
+    .badge.high { background: #f8514933; color: #f85149; }
+    .badge.medium { background: #d2992233; color: #d29922; }
+    .badge.ok { background: #3fb95033; color: #3fb950; }
+    .badge.bad { background: #f8514933; color: #f85149; }
+    .verdict-box { background: var(--bg); border-left: 3px solid var(--bad); padding: 0.75rem 1rem; border-radius: 0 6px 6px 0; margin-top: 0.75rem; }
+    .timeline-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+    .timeline-item time { color: var(--muted); font-size: 0.75rem; display: block; }
+    .hint { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+    code { font-size: 0.8rem; background: var(--bg); padding: 0.1rem 0.35rem; border-radius: 3px; }
+    tr.row-alert { background: #f851490d; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ERA XDR <span class="badge new" style="font-size:0.65rem;vertical-align:middle">demo v2</span></h1>
+    <nav id="nav">
+      <button data-view="story" class="active">Сценарий</button>
+      <button data-view="incident">Инцидент</button>
+      <button data-view="assets">Хосты</button>
+      <button data-view="events">События</button>
+      <button data-view="detections">Детекции</button>
+      <button data-view="ai">AI</button>
+      <button data-view="response">Response</button>
+    </nav>
+    <div class="meta">
+      <label>Роль
+        <select id="role">
+          <option value="analyst">analyst</option>
+          <option value="admin">admin</option>
+          <option value="viewer">viewer</option>
+        </select>
+      </label>
+      <span id="health">…</span>
+    </div>
+  </header>
+  <main>
+    <!-- Сценарий -->
+    <div id="view-story">
+      <div class="card">
+        <h2>Что показываем Оксане</h2>
+        <p class="lead">
+          На рабочей станции финансового отдела (<strong>WS-FIN-042</strong>) агент зафиксировал подозрительный
+          запуск PowerShell. Платформа собрала телеметрию в озеро данных, сработало правило детекции,
+          AI построил цепочку событий, аналитик ведёт кейс, SOAR изолировал хост — всё <strong>on-prem</strong>, без облака.
+        </p>
+        <div class="kpi-row" id="kpi-row">
+          <div class="kpi"><div class="label">Хосты под охраной</div><div class="value" id="kpi-assets">—</div></div>
+          <div class="kpi"><div class="label">Событий в lake</div><div class="value" id="kpi-events">—</div><div class="sub">ClickHouse</div></div>
+          <div class="kpi"><div class="label">Открытых кейсов</div><div class="value" id="kpi-cases">—</div></div>
+          <div class="kpi"><div class="label">AI-вердикт</div><div class="value" id="kpi-ai">—</div><div class="sub" id="kpi-ai-sub"></div></div>
+          <div class="kpi"><div class="label">SOAR-действий</div><div class="value" id="kpi-soar">—</div></div>
+        </div>
+        <div class="pipeline">
+          <span class="pipe-step">Агент на хосте</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">Ingest</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">Kafka</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">Detection + Lake</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">SOC UI</span><span class="pipe-arrow">→</span>
+          <span class="pipe-step">AI + SOAR</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Маршрут демо (15 мин, кликайте вкладки сверху)</h2>
+        <ol class="steps">
+          <li><span class="step-num">1</span><div class="step-body"><strong>Хосты</strong><span>Сколько машин видит платформа, Win/Linux, last seen.</span></div></li>
+          <li><span class="step-num">2</span><div class="step-body"><strong>События</strong><span>«Сырьё» от агентов: process create, cmd.exe — PII уже вычищен на агенте.</span></div></li>
+          <li><span class="step-num">3</span><div class="step-body"><strong>Детекции</strong><span>600+ Sigma-правил; пример срабатывания PowerShell + MITRE T1059.001.</span></div></li>
+          <li><span class="step-num">4</span><div class="step-body"><strong>Инцидент</strong><span>Кейс аналитика: статус, хост, заметки, хронология.</span></div></li>
+          <li><span class="step-num">5</span><div class="step-body"><strong>AI</strong><span>Расследование: storyline → verdict → narrative (LLM внутри контура).</span></div></li>
+          <li><span class="step-num">6</span><div class="step-body"><strong>Response</strong><span>Изоляция хоста + тикет в ITSM — журнал действий SOAR.</span></div></li>
+        </ol>
+        <p class="hint">Перед встречей: <code>.\scripts\run-distributor-demo.cmd -SkipCompose -Quick</code></p>
+      </div>
+    </div>
+
+    <!-- Инцидент -->
+    <div id="view-incident" class="hidden">
+      <div class="card">
+        <h2>Кейс SOC</h2>
+        <div id="incident-status" class="hint">Загрузка…</div>
+        <div id="incident-detail"></div>
+      </div>
+    </div>
+
+    <!-- Хосты -->
+    <div id="view-assets" class="hidden">
+      <div class="card">
+        <h2>Инвентарь эндпоинтов</h2>
+        <p class="lead">Каждый агент при регистрации сообщает hostname, ОС и версию. В пилоте — реальные хосты заказчика.</p>
+        <div id="assets-status"></div>
+        <table><thead><tr><th>ID</th><th>Имя</th><th>ОС</th><th>Агент</th><th>Last seen</th></tr></thead><tbody id="assets-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- События -->
+    <div id="view-events" class="hidden">
+      <div class="card">
+        <h2>Последние события (озеро данных)</h2>
+        <p class="lead">Process-события из ClickHouse. В демо — симуляция loadgen; в пилоте — Sysmon / auditd с агентов.</p>
+        <div id="events-status"></div>
+        <table><thead><tr><th>Время</th><th>Хост</th><th>Действие</th><th>Процесс</th><th>PII</th></tr></thead><tbody id="events-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- Детекции -->
+    <div id="view-detections" class="hidden">
+      <div class="card">
+        <h2>Срабатывания детекции</h2>
+        <p class="lead">Движок обрабатывает поток по Sigma и curated-правилам. Ниже — пример алерта по нашему сценарию + статус движка.</p>
+        <div id="det-status"></div>
+        <table><thead><tr><th>Правило</th><th>Хост</th><th>Severity</th><th>MITRE</th><th>Статус</th></tr></thead><tbody id="det-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- AI -->
+    <div id="view-ai" class="hidden">
+      <div class="card">
+        <h2>ERA AI — расследование</h2>
+        <p class="lead">AI собирает цепочку событий по хосту и выдаёт вердикт. Модель работает внутри контура заказчика (air-gap).</p>
+        <button class="btn" id="btn-investigate">Запустить расследование</button>
+        <div id="ai-status" class="hint" style="margin-top:0.75rem"></div>
+        <div id="ai-result"></div>
+      </div>
+    </div>
+
+    <!-- Response -->
+    <div id="view-response" class="hidden">
+      <div class="card">
+        <h2>ERA Response — SOAR</h2>
+        <p class="lead">Автоматические playbooks: изоляция хоста, блок IP, тикет в ITSM. В демо — simulated; в пилоте — webhook/скрипты заказчика.</p>
+        <div id="soar-status"></div>
+        <table><thead><tr><th>Время</th><th>Playbook</th><th>Статус</th><th>Что сделано</th></tr></thead><tbody id="soar-tbody"></tbody></table>
+      </div>
+    </div>
+  </main>
+  <script>
+    const CP = location.origin.includes('8090') ? '' : 'http://127.0.0.1:8090';
+    const API = {
+      events: CP + '/api/proxy/events',
+      soar: CP + '/api/proxy/soar/actions',
+      investigate: CP + '/api/proxy/ai/investigate',
+      ingestHealth: CP + '/api/proxy/ingest/healthz',
+    };
+    const DEMO_NODE = 'node-load-0000';
+    const DEMO_TENANT = 'tenant-load-000';
+    const DEMO_CASE_TITLE = 'Suspicious PowerShell - WS-FIN-042';
+
+    const DEMO_ALERTS = [
+      { rule: 'Suspicious PowerShell Encoded Command', host: 'WS-FIN-042', severity: 'high', mitre: 'T1059.001', status: 'открыт' },
+      { rule: 'Office spawned suspicious process', host: 'WS-FIN-042', severity: 'medium', mitre: 'T1204.002', status: 'корреляция' },
+      { rule: 'Lateral movement — SMB exec', host: 'SRV-LNX-DB01', severity: 'medium', mitre: 'T1021.002', status: 'закрыт' },
+    ];
+
+    let cachedInvestigation = null;
+    let demoCaseId = null;
+
+    function headers() {
+      const h = { 'Content-Type': 'application/json', 'X-ERA-Role': document.getElementById('role').value };
+      const actor = localStorage.getItem('era-actor') || 'demo-analyst';
+      h['X-ERA-Actor'] = actor;
+      return h;
+    }
+
+    async function api(url, opts = {}) {
+      const r = await fetch(url, { ...opts, headers: { ...headers(), ...(opts.headers || {}) } });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+
+    function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+    function fmtTime(iso) {
+      if (!iso) return '—';
+      try { return new Date(iso).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'medium' }); }
+      catch { return iso; }
+    }
+
+    function parseProcess(payload) {
+      try {
+        const o = typeof payload === 'string' ? JSON.parse(payload) : payload;
+        return {
+          action: o.action || 'create',
+          image: o.image_path || o.image || '—',
+          cmd: o.command_line || '',
+        };
+      } catch { return { action: '—', image: '—', cmd: '' }; }
+    }
+
+    function badgeSeverity(s) {
+      const c = s === 'high' || s === 'critical' ? 'high' : 'medium';
+      return `<span class="badge ${c}">${esc(s)}</span>`;
+    }
+
+    function badgeStatus(s) {
+      const map = { new: 'new', open: 'open', closed: 'ok' };
+      const cls = map[s] || 'new';
+      const labels = { new: 'новый', open: 'в работе', closed: 'закрыт' };
+      return `<span class="badge ${cls}">${esc(labels[s] || s)}</span>`;
+    }
+
+    document.getElementById('nav').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-view]');
+      if (!btn) return;
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      ['story','incident','assets','events','detections','ai','response'].forEach(v => {
+        document.getElementById('view-' + v).classList.toggle('hidden', v !== btn.dataset.view);
+      });
+      const v = btn.dataset.view;
+      if (v === 'story') loadStory();
+      if (v === 'incident') loadIncident();
+      if (v === 'assets') loadAssets();
+      if (v === 'events') loadEvents();
+      if (v === 'detections') loadDetections();
+      if (v === 'ai') showAI();
+      if (v === 'response') loadResponse();
+    });
+
+    async function loadStory() {
+      try {
+        const [assets, events, cases, soar] = await Promise.all([
+          api(CP + '/api/v1/assets').catch(() => ({ assets: [] })),
+          fetch(API.events + '?limit=500').then(r => r.ok ? r.json() : { events: [] }).catch(() => ({ events: [] })),
+          api(CP + '/api/v1/cases').catch(() => ({ cases: [] })),
+          fetch(API.soar).then(r => r.ok ? r.json() : { actions: [] }).catch(() => ({ actions: [] })),
+        ]);
+        const assetList = assets.assets || assets || [];
+        const eventList = events.events || [];
+        const caseList = cases.cases || cases || [];
+        const openCases = caseList.filter(c => c.status !== 'closed').length;
+        document.getElementById('kpi-assets').textContent = assetList.length;
+        document.getElementById('kpi-events').textContent = eventList.length >= 500 ? '500+' : eventList.length;
+        document.getElementById('kpi-cases').textContent = openCases;
+        document.getElementById('kpi-soar').textContent = (soar.actions || []).length;
+        if (cachedInvestigation) {
+          document.getElementById('kpi-ai').innerHTML = cachedInvestigation.verdict === 'malicious'
+            ? '<span class="badge bad">malicious</span>' : esc(cachedInvestigation.verdict);
+          document.getElementById('kpi-ai-sub').textContent = 'confidence ' + Math.round((cachedInvestigation.confidence || 0) * 100) + '%';
+        } else {
+          document.getElementById('kpi-ai').textContent = '—';
+          document.getElementById('kpi-ai-sub').textContent = 'вкладка AI';
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    async function loadIncident() {
+      const st = document.getElementById('incident-status');
+      const box = document.getElementById('incident-detail');
+      try {
+        const data = await api(CP + '/api/v1/cases');
+        const cases = data.cases || data || [];
+        const c = cases.find(x => x.title === DEMO_CASE_TITLE) || cases[0];
+        if (!c) { st.textContent = 'Нет кейсов — запустите demo-скрипт'; box.innerHTML = ''; return; }
+        demoCaseId = c.id;
+        st.textContent = '';
+        let detail = { notes: [], timeline: [] };
+        try { detail = await api(CP + '/api/v1/cases/' + c.id); } catch (_) {}
+        const notes = detail.notes || [];
+        const timeline = detail.timeline || [];
+        box.innerHTML = `
+          <table style="margin-bottom:1rem">
+            <tr><th style="width:140px">Название</th><td>${esc(c.title)}</td></tr>
+            <tr><th>Статус</th><td>${badgeStatus(c.status)}</td></tr>
+            <tr><th>Хост</th><td><code>${esc(c.node_id || DEMO_NODE)}</code> (WS-FIN-042)</td></tr>
+            <tr><th>Detection</th><td><code>${esc(c.detection_id || 'sigma-powershell-encoded-001')}</code></td></tr>
+            <tr><th>Assignee</th><td>${esc(c.assignee || '—')}</td></tr>
+            <tr><th>Создан</th><td>${fmtTime(c.created_at)}</td></tr>
+          </table>
+          ${notes.length ? '<h3 style="font-size:0.95rem;margin:0 0 0.5rem">Заметки аналитика</h3>' + notes.map(n =>
+            `<div class="timeline-item"><strong>${esc(n.author)}</strong>: ${esc(n.body)}<time>${fmtTime(n.created_at)}</time></div>`).join('') : ''}
+          ${timeline.length ? '<h3 style="font-size:0.95rem;margin:1rem 0 0.5rem">Хронология</h3>' + timeline.map(t =>
+            `<div class="timeline-item"><strong>${esc(t.kind)}</strong> — ${esc(t.detail)}<time>${esc(t.actor)} · ${fmtTime(t.created_at)}</time></div>`).join('') : ''}
+        `;
+      } catch (e) { st.textContent = 'Ошибка: ' + e.message; }
+    }
+
+    async function loadAssets() {
+      const st = document.getElementById('assets-status');
+      try {
+        const data = await api(CP + '/api/v1/assets');
+        const assets = data.assets || data;
+        const plat = { windows: 'Windows', linux: 'Linux', macos: 'macOS' };
+        document.getElementById('assets-tbody').innerHTML = assets.map(a => {
+          const highlight = a.node_id === DEMO_NODE ? ' style="background:#388bfd14"' : '';
+          return `<tr${highlight}><td><code>${esc(a.node_id)}</code></td><td><strong>${esc(a.hostname)}</strong></td><td>${esc(plat[a.platform] || a.platform)}</td><td>${esc(a.agent_version)}</td><td>${fmtTime(a.last_seen)}</td></tr>`;
+        }).join('');
+        st.textContent = `${assets.length} хостов · выделен — объект инцидента`;
+      } catch (e) { st.textContent = 'Ошибка: ' + e.message; }
+    }
+
+    async function loadEvents() {
+      const st = document.getElementById('events-status');
+      try {
+        const r = await fetch(API.events + '?limit=25');
+        if (!r.ok) throw new Error('event-writer недоступен');
+        const data = await r.json();
+        const events = (data.events || []).slice(0, 25);
+        document.getElementById('events-tbody').innerHTML = events.map(e => {
+          const p = parseProcess(e.payload);
+          const alert = p.image.includes('cmd.exe') || p.image.includes('powershell');
+          const pii = e.pii_sanitized ? '<span class="badge ok">sanitized</span>' : '—';
+          return `<tr class="${alert ? 'row-alert' : ''}"><td>${fmtTime(e.observed_at)}</td><td>${esc(e.hostname || e.node_id)}</td><td>${esc(p.action)}</td><td><code>${esc(p.image)}</code>${p.cmd ? '<br><span style="color:var(--muted);font-size:0.75rem">' + esc(p.cmd.slice(0,60)) + '</span>' : ''}</td><td>${pii}</td></tr>`;
+        }).join('') || '<tr><td colspan="5">Нет событий — запустите demo-скрипт</td></tr>';
+        st.textContent = `Показано ${events.length} последних · красная строка = подозрительный process`;
+      } catch (e) { st.textContent = 'Ошибка: ' + e.message; }
+    }
+
+    async function loadDetections() {
+      const st = document.getElementById('det-status');
+      try {
+        const deOk = await fetch(API.ingestHealth).then(r => r.ok).catch(() => false);
+        let policyVer = '3.0.0-ga';
+        try {
+          const policy = await api(CP + '/api/v1/policy');
+          policyVer = policy.version || policyVer;
+        } catch (_) {}
+        document.getElementById('det-tbody').innerHTML = DEMO_ALERTS.map(d =>
+          `<tr class="${d.host === 'WS-FIN-042' && d.status === 'открыт' ? 'row-alert' : ''}"><td><strong>${esc(d.rule)}</strong></td><td>${esc(d.host)}</td><td>${badgeSeverity(d.severity)}</td><td><code>${esc(d.mitre)}</code></td><td>${esc(d.status)}</td></tr>`
+        ).join('');
+        st.innerHTML = deOk
+          ? `<span class="badge ok">detection-engine OK</span> · загружено <strong>600+</strong> Sigma-правил · policy ${esc(policyVer)}`
+          : 'detection-engine недоступен (остальное работает)';
+      } catch (e) { st.textContent = 'Ошибка: ' + e.message; }
+    }
+
+    function renderAI(res) {
+      const box = document.getElementById('ai-result');
+      if (!res) { box.innerHTML = ''; return; }
+      const verdictCls = res.verdict === 'malicious' ? 'bad' : 'medium';
+      const steps = (res.storyline || []).slice(0, 8).map(s =>
+        `<div class="timeline-item"><strong>${esc(s.category || 'event')}</strong> — ${esc(s.summary || s.event_id)}<time>${fmtTime(s.observed_at)}</time></div>`
+      ).join('');
+      box.innerHTML = `
+        <div class="verdict-box">
+          <strong>Вердикт:</strong> <span class="badge ${verdictCls}">${esc(res.verdict)}</span>
+          &nbsp;·&nbsp; уверенность ${Math.round((res.confidence || 0) * 100)}%
+          ${res.mitre_techniques && res.mitre_techniques.length ? '<br><span class="hint">MITRE: ' + esc(res.mitre_techniques.join(', ')) + '</span>' : ''}
+        </div>
+        <p style="margin:0.75rem 0;line-height:1.5">${esc(res.narrative || '')}</p>
+        ${steps ? '<h3 style="font-size:0.95rem">Storyline (' + (res.storyline||[]).length + ' шагов)</h3>' + steps : ''}
+      `;
+    }
+
+    async function runInvestigate() {
+      const st = document.getElementById('ai-status');
+      st.textContent = 'Расследование…';
+      try {
+        const res = await api(API.investigate, {
+          method: 'POST',
+          body: JSON.stringify({
+            node_id: DEMO_NODE,
+            tenant_id: DEMO_TENANT,
+            detection_id: 'sigma-powershell-encoded-001',
+          }),
+        });
+        cachedInvestigation = res;
+        renderAI(res);
+        st.textContent = 'Готово';
+        loadStory();
+      } catch (e) {
+        st.textContent = 'Ошибка: ' + e.message + ' — сначала run-distributor-demo.cmd';
+      }
+    }
+
+    function showAI() {
+      if (cachedInvestigation) renderAI(cachedInvestigation);
+      else document.getElementById('ai-result').innerHTML = '<p class="hint">Нажмите кнопку или данные подгрузятся автоматически…</p>';
+    }
+
+    async function loadResponse() {
+      const st = document.getElementById('soar-status');
+      try {
+        const data = await fetch(API.soar).then(r => {
+          if (!r.ok) throw new Error('SOAR недоступен');
+          return r.json();
+        });
+        const actions = (data.actions || []).slice().reverse();
+        const labels = {
+          isolate_host: 'Изоляция хоста',
+          create_ticket: 'Тикет ITSM',
+          block_ip: 'Блок IP',
+        };
+        document.getElementById('soar-tbody').innerHTML = actions.length ? actions.map(a =>
+          `<tr><td>${fmtTime(a.created_at)}</td><td><strong>${esc(labels[a.playbook] || a.playbook)}</strong></td><td><span class="badge ok">${esc(a.status)}</span></td><td>${esc(a.detail)}</td></tr>`
+        ).join('') : '<tr><td colspan="4">Нет действий — запустите demo-скрипт</td></tr>';
+        st.textContent = `${actions.length} записей в журнале`;
+      } catch (e) { st.textContent = 'Ошибка: ' + e.message; }
+    }
+
+    document.getElementById('btn-investigate').onclick = runInvestigate;
+    document.getElementById('role').onchange = () => { loadIncident(); loadAssets(); };
+
+    fetch(CP + '/healthz').then(r => r.json()).then(() => {
+      document.getElementById('health').innerHTML = '<span class="badge ok">online</span>';
+    }).catch(() => { document.getElementById('health').textContent = 'offline'; });
+
+    loadStory();
+    runInvestigate().catch(() => {});
+  </script>
+</body>
+</html>

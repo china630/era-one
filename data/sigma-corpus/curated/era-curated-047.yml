@@ -1,0 +1,12 @@
+id: era-curated-047
+title: Curated detection 047 (TA0003)
+status: stable
+level: medium
+tags:
+  - attack.T1046
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-curated-047"
+  condition: selection

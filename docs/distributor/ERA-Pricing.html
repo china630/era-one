@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ERA One — ценовая политика (внутренний)</title>
+<link rel="stylesheet" href="assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr">
+    <img class="logo-full" src="assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+<style>
+.body p { font-size: 9.8pt; }
+.body ul, .body ol { margin: 4px 0 8px 18px; font-size: 9.6pt; }
+.body li { margin: 3px 0; }
+.body a { color: var(--teal-d); text-decoration: none; }
+.body code {
+  background: #eef2f5; padding: 1px 4px; border-radius: 3px;
+  font-family: Consolas, "Cascadia Code", monospace; font-size: 8.6pt; color: #0b2a3a;
+}
+.body table.cmp td:first-child { white-space: normal; }
+.body hr { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
+</style>
+<h1>ERA One — ценовая политика (внутренний)</h1>
+<div class="note-int">
+<p><strong>ONE AGENT. ONE PLATFORM. ONE CONTROL.</strong></p>
+</div>
+<p><strong>Версия:</strong> 1.0
+<strong>Дата:</strong> 1 июля 2026 г.
+<strong>Аудитория:</strong> отдел продаж, пресейл, дистрибьюторы, deal-desk
+<strong>Позиционирование:</strong> EU-компания (HQ Geneva, инженерный центр Warsaw), основной рынок продаж — AZ/CIS.
+<strong>Связано:</strong> <a href="../../editions-control.yaml"><code>editions-control.yaml</code></a> · <a href="./ERA-Product-Line.md"><code>ERA-Product-Line.md</code></a> ·
+<a href="../adr/0005-module-independence-and-packaging.md"><code>ADR-0005</code></a> (модульность) ·
+<a href="../adr/0010-licensing-and-activation.md"><code>ADR-0010</code></a> (лицензирование).</p>
+<div class="note-int">
+<p><strong>Дисклеймер:</strong> ориентиры для формирования КП, не публичный прайс. Финальная цена крупных сделок —
+через deal-desk. Все суммы в EUR без НДС; локальная валюта/налоги — при выпуске КП.</p>
+</div>
+<hr />
+<h2>0. Как устроена монетизация (важно понимать перед торгом)</h2>
+<p><strong>Один агент — платные модули по лицензии.</strong> Агент (<code>era-agent-core</code>, ADR-0019) — один лёгкий
+бинарник-хост плагинов. Каждый модуль гейтится лицензией отдельно (<code>crates/era-agent-core/src/license_gate.rs</code>,
+<code>services/platform/licensegate</code>): плагин/сервис стартует, только если флаг есть в <code>claims.modules</code> (ADR-0010).</p>
+<p>Следствия для продаж:
+- Клиент платит <strong>за включённые модули</strong>, не за агента. Агент и SOC-портал — в составе базы.
+- Апселл = <strong>новая лицензия с доп. флагом</strong>, без переустановки агента (land-and-expand).
+- «Один агент» — операционный аргумент (нет зоопарка из 5 клиентов, единый бюджет CPU&lt;2%/RAM&lt;150МБ,
+  один канал обновлений), <strong>не</strong> «все модули бесплатно».
+- Под-функции внутри модуля включены: <strong>ERA Manage</strong> уже содержит BitLocker, Application/Device Control
+  и console-пользователей (у ManageEngine — отдельные SKU).</p>
+<p><strong>Две модели поставки (клиент выбирает):</strong>
+- <strong>Подписка</strong> (annual) — рекомендуется, повторяемая выручка; цены ниже — прайс §1.
+- <strong>Perpetual + maintenance</strong> — для гос/КИИ, кому подписка неудобна — §6.</p>
+<hr />
+<h2>1. Прайс по модулям (годовая подписка)</h2>
+<p>Базовая единица — за год. <strong>AZ regional = EU list − 50%</strong> (региональный прайс-лист, не «скидка в КП»).
+<strong>Сервер = ×3</strong> к цене workstation (критичнее, больше телеметрии), если не указано иное.</p>
+<div class="note-int">
+<p><strong>Как читать цену за агента:</strong> каждый модуль лицензируется и тарифицируется <strong>отдельно</strong> (свой флаг в
+лицензии), цена — <strong>за endpoint с агентом</strong>, и на одном агенте модули <strong>суммируются</strong>
+(напр. Core €6 + Manage €6 + AI €4 = €16/ws AZ). Не куплен модуль — плагин не стартует, в цену не входит.
+<strong>Серверная платформа</strong> (ingest, ClickHouse-lake, control-plane, SOC-портал) ставится <strong>один раз</strong> в контуре
+и <strong>входит в поставку</strong> — отдельно за неё и «за каждый агент» не платят.</p>
+</div>
+<table class="cmp">
+<thead>
+<tr>
+<th>Издание</th>
+<th>Единица</th>
+<th>EU list /год</th>
+<th>AZ regional /год</th>
+<th>Статус</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ERA Core</strong> (XDR-база: агент-телеметрия + детекция на endpoint; даёт доступ к кейсам, SOC-порталу, Workbench)</td>
+<td>endpoint</td>
+<td>€12</td>
+<td>€6</td>
+<td>GA</td>
+</tr>
+<tr>
+<td><strong>ERA Control AI</strong> (ИИ-аналитик, LLM в контуре)</td>
+<td>endpoint</td>
+<td>€8</td>
+<td>€4</td>
+<td>GA</td>
+</tr>
+<tr>
+<td><strong>ERA Response</strong> (SOAR)</td>
+<td>endpoint</td>
+<td>€4</td>
+<td>€2</td>
+<td>GA</td>
+</tr>
+<tr>
+<td><strong>ERA Vuln</strong> (CVE-скан)</td>
+<td>endpoint</td>
+<td>€4</td>
+<td>€2</td>
+<td>GA-опция</td>
+</tr>
+<tr>
+<td><strong>ERA Exposure</strong> (risk score; треб. Core+Vuln)</td>
+<td>endpoint</td>
+<td>€4</td>
+<td>€2</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td><strong>ERA Manage</strong> (UEM: CMDB/ITAM, deploy/patch, <strong>BitLocker + App/Device Control + console — включены</strong>)</td>
+<td>endpoint</td>
+<td>€12</td>
+<td>€6</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td><strong>ERA Observe</strong> (SNMP/NetFlow/discovery)</td>
+<td>monitored device</td>
+<td>€6</td>
+<td>€3</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td><strong>ERA BYO-EDR Hub</strong> (приём стороннего EDR)</td>
+<td>source endpoint</td>
+<td>€4</td>
+<td>€2</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td><strong>ERA Service</strong> (ITSM)</td>
+<td><strong>technician</strong> (портал-юзеры €0)</td>
+<td>€900</td>
+<td>€450</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td><strong>ERA Provision</strong> (PXE/imaging)</td>
+<td>node</td>
+<td>€8</td>
+<td>€4</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td><strong>ERA PAM</strong> — сейф/checkout/SSH-запись</td>
+<td><strong>admin</strong></td>
+<td>€50</td>
+<td>€25</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td><strong>ERA PAM</strong> — управляемая цель (target)</td>
+<td>target</td>
+<td>€30</td>
+<td>€15</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td><strong>ERA Federated</strong> (обмен IoC внутри орг.)</td>
+<td>site</td>
+<td>€24,000</td>
+<td>€12,000</td>
+<td>GA-опция</td>
+</tr>
+<tr>
+<td><strong>ERA National</strong> (STIX/TAXII хаб)</td>
+<td>hub</td>
+<td>€36,000</td>
+<td>€18,000</td>
+<td>GA-опция</td>
+</tr>
+<tr>
+<td>Console / portal-пользователи, ERA Workbench</td>
+<td>—</td>
+<td>€0</td>
+<td>€0</td>
+<td>вкл.</td>
+</tr>
+</tbody>
+</table>
+<div class="note-int">
+<p><strong>MVP-издания</strong> (см. <a href="./ERA-Product-Line.md"><code>ERA-Product-Line.md</code></a> §1/§4): код готов и в тестах,
+но продаём <strong>как пилот с GA-гейтами</strong> (WHQL-подпись драйвера для боевого enforce, RDP/HSM для PAM),
+не как GA. Для пилота MVP-издания — доп. скидка §5 (launch/reference).</p>
+</div>
+<h3>ERA Control AI — альтернатива flat (для крупных парков)</h3>
+<p>ИИ-инференс — на сервере (AI Core), не на агенте, поэтому per-endpoint при 10k+ узлах душит сделку.
+Предлагай <strong>min(per-endpoint, flat)</strong> — что клиенту выгоднее:</p>
+<table class="cmp">
+<thead>
+<tr>
+<th>Парк endpoints</th>
+<th>EU list flat /год</th>
+<th>AZ regional /год</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>≤ 1,000</td>
+<td>€18,000</td>
+<td>€9,000</td>
+</tr>
+<tr>
+<td>1,001 – 5,000</td>
+<td>€45,000</td>
+<td>€22,500</td>
+</tr>
+<tr>
+<td>5,001 – 15,000</td>
+<td>€90,000</td>
+<td>€45,000</td>
+</tr>
+<tr>
+<td>15,000+</td>
+<td>deal-desk</td>
+<td>deal-desk</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. Скидки за оптовость (volume)</h2>
+<p>Применяется к per-endpoint позициям (Core + per-endpoint модули), к <strong>AZ regional</strong> цене.
+Скидка на <strong>весь объём</strong> (не маржинально по «полкам»). Flat-издания (AI-flat, Federated/National) объёмом не дисконтируются.</p>
+<table class="cmp">
+<thead>
+<tr>
+<th>Кол-во endpoints</th>
+<th>Скидка</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 – 250</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>251 – 1,000</td>
+<td>10%</td>
+</tr>
+<tr>
+<td>1,001 – 5,000</td>
+<td>20%</td>
+</tr>
+<tr>
+<td>5,001 – 10,000</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>10,001 – 25,000</td>
+<td>40%</td>
+</tr>
+<tr>
+<td>25,000+</td>
+<td>45–55% (deal-desk)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. Скидки за срок лицензии (term)</h2>
+<table class="cmp">
+<thead>
+<tr>
+<th>Условие</th>
+<th>Скидка (эфф./год)</th>
+<th>Комментарий</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1 год</strong></td>
+<td>0%</td>
+<td>база</td>
+</tr>
+<tr>
+<td><strong>3 года, оплата ежегодно</strong></td>
+<td>10%</td>
+<td>commit без предоплаты</td>
+</tr>
+<tr>
+<td><strong>3 года, предоплата целиком</strong></td>
+<td>20%</td>
+<td>лучший кэшфлоу → макс. скидка</td>
+</tr>
+<tr>
+<td><strong>5 лет, предоплата</strong></td>
+<td>25%</td>
+<td>длинные гос/КИИ-контракты</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>4. Bundle-скидки (стимул брать платформу)</h2>
+<p>Пакеты из <a href="../../editions-control.yaml"><code>editions-control.yaml</code></a> <code>bundles</code> — скидка к сумме à la carte:</p>
+<table class="cmp">
+<thead>
+<tr>
+<th>Bundle</th>
+<th>Состав</th>
+<th>Скидка</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Старт SecOps</strong></td>
+<td>Core + AI + Response</td>
+<td>20%</td>
+</tr>
+<tr>
+<td><strong>SecOps + Vuln</strong></td>
+<td>+ Vuln</td>
+<td>22%</td>
+</tr>
+<tr>
+<td><strong>ERA IT-Ops</strong></td>
+<td>Core/Manage + Service + Provision</td>
+<td>25%</td>
+</tr>
+<tr>
+<td><strong>ERA Unified / Sovereign Stack</strong></td>
+<td>XDR + Manage + Service + Observe</td>
+<td>30%</td>
+</tr>
+<tr>
+<td><strong>Full</strong></td>
+<td>вся линейка (+ PAM по спец-цене)</td>
+<td>35%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>5. Правила комбинирования, пол и спец-скидки</h2>
+<p><strong>Формула:</strong> <code>цена = EU list → AZ regional (−50%) → × (1−bundle) × (1−volume) × (1−term)</code>.
+Скидки bundle/volume/term <strong>перемножаются</strong> (не складываются).</p>
+<p><strong>Пол (floor):</strong>
+- Совокупная скидка от <strong>EU list</strong> — не глубже <strong>75%</strong> на коммерции (т.е. AZ regional −50% + доп. стек до ~75%).
+- Гос/нацмасштаб — глубже только через deal-desk.
+- Всегда резервировать <strong>20–30% партнёрской маржи</strong> дистрибьютору/интегратору.
+- <strong>Минимальная сделка:</strong> €5,000 или 250 endpoints.</p>
+<p><strong>Спец-скидки (в пределах floor):</strong></p>
+<table class="cmp">
+<thead>
+<tr>
+<th>Тип</th>
+<th>Скидка</th>
+<th>Когда</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gov / edu</td>
+<td>−10…15%</td>
+<td>госзаказчик, вуз</td>
+</tr>
+<tr>
+<td>Competitive displacement</td>
+<td>до −15%</td>
+<td>rip-replace ManageEngine / Ivanti / Trend Micro</td>
+</tr>
+<tr>
+<td>Launch / reference (первые 3–5 клиентов AZ)</td>
+<td>договорная</td>
+<td>референс-кейс, право на публикацию</td>
+</tr>
+<tr>
+<td>MVP-пилот</td>
+<td>−10…20%</td>
+<td>издание в статусе MVP, поэтапный rollout</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Renewal cap:</strong> рост при продлении ≤ +7–10%/год (защита от ценовой атаки конкурента на перезаключении).</p>
+<hr />
+<h2>6. Perpetual + maintenance (для гос/КИИ)</h2>
+<ul>
+<li><strong>Perpetual (вечная лицензия)</strong> = <strong>3× годовой подписки</strong> (после применимых скидок), разовый платёж.</li>
+<li><strong>Maintenance 20%/год — обязателен</strong>: обновления Sigma/CVE/AI-паков + поддержка.</li>
+<li><strong>Air-gap:</strong> без активного maintenance нет offline-бандлов обновлений (детект устаревает) — включать в каждую сделку.</li>
+<li>Sovereign Hybrid (lease + Update Service + Managed View) — доп. подписка сопровождения <strong>+10…15%</strong> к лицензии.</li>
+</ul>
+<hr />
+<h2>7. Пример расчёта (по BOM ManageEngine)</h2>
+<p>Реальный запрос: банк, <strong>7,500 workstation + 400 servers</strong>, UEM + Vulnerability Mgmt + BitLocker +
+Application Control + 50 console users + PAM на 200 админов, <strong>3 года</strong>. Ivanti предложил <strong>$150K/год (~€139K)</strong>.</p>
+<p><strong>Маппинг на ERA</strong> (BitLocker, App Control, console — включены в Manage → €0 отдельно):</p>
+<table class="cmp">
+<thead>
+<tr>
+<th>Позиция</th>
+<th>Кол-во</th>
+<th>AZ regional /ед.</th>
+<th>Сумма /год</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ERA Manage (ws)</td>
+<td>7,500</td>
+<td>€6</td>
+<td>€45,000</td>
+</tr>
+<tr>
+<td>ERA Manage (server ×3)</td>
+<td>400</td>
+<td>€18</td>
+<td>€7,200</td>
+</tr>
+<tr>
+<td>ERA Vuln</td>
+<td>7,500</td>
+<td>€2</td>
+<td>€15,000</td>
+</tr>
+<tr>
+<td>ERA PAM (admins)</td>
+<td>200</td>
+<td>€25</td>
+<td>€5,000</td>
+</tr>
+<tr>
+<td>BitLocker + App Control + 50 console users</td>
+<td>—</td>
+<td>€0</td>
+<td>€0</td>
+</tr>
+<tr>
+<td><strong>AZ regional list</strong></td>
+<td></td>
+<td></td>
+<td><strong>€72,200/год</strong></td>
+</tr>
+</tbody>
+</table>
+<p><em>(для справки: EU list той же корзины ≈ €144K/год — паритет с ценой Ivanti €139K)</em></p>
+<p><strong>Скидки:</strong> volume (7,900 → 30%) × 3-year prepaid (20%) = ×0.56 → <strong>€40,432/год</strong>.
+При competitive displacement (−13%, в пределах floor) → <strong>≈ €35,000/год</strong>, <strong>≈ €105K за 3 года</strong>.</p>
+<p><strong>Итог в КП:</strong>
+- ERA: <strong>€35K/год</strong> (€105K/3 года).
+- Ivanti: €139K/год (€417K/3 года) → <strong>экономия ~75% (~€312K за контракт)</strong>.
+- vs ManageEngine: та же цена, но <strong>один агент</strong>, air-gap штатно, BitLocker/App Control/console <strong>в базе</strong>,
+  и бонусом <strong>XDR-фундамент</strong> на том же агенте (дозажигается лицензией).</p>
+<hr />
+<h2>8. Связанные документы</h2>
+<ul>
+<li><a href="./ERA-Pricing-Client.md"><code>ERA-Pricing-Client.md</code></a> — клиентская версия прайса (регион СНГ, без floor/маржи)</li>
+<li><a href="./pricing-data.yaml"><code>pricing-data.yaml</code></a> — SSOT цен для калькулятора портала (ADR-0021)</li>
+<li><a href="./ERA-Product-Line.md"><code>ERA-Product-Line.md</code></a> — карта изданий и статусы готовности</li>
+<li><a href="../../editions-control.yaml"><code>editions-control.yaml</code></a> — модули, лицензионные флаги, bundle</li>
+<li><a href="./head-to-head/"><code>head-to-head/</code></a> — сравнения с ManageEngine / Ivanti / Trend Micro</li>
+<li>ADR: <a href="../adr/0005-module-independence-and-packaging.md"><code>0005</code></a> · <a href="../adr/0010-licensing-and-activation.md"><code>0010</code></a> · <a href="../adr/0021-product-portal-and-pricing-calculator.md"><code>0021</code></a></li>
+</ul>
+<hr />
+<p><em>Внутренний материал. Не публиковать как открытый прайс. MVP-издания — только как пилот с GA-гейтами.</em></p>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Head Office</b>Geneva, Switzerland</div>
+      <div class="col"><b>Engineering Center</b>Warsaw, Poland</div>
+      <div class="col"><b>Contact</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

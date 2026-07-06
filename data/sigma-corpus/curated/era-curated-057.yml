@@ -1,0 +1,12 @@
+id: era-curated-057
+title: Curated detection 057 (TA0002)
+status: stable
+level: medium
+tags:
+  - attack.T1056
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-057"
+  condition: selection

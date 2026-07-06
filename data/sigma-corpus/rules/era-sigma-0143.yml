@@ -1,0 +1,10 @@
+id: era-sigma-0143
+title: ERA detection rule 0143 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0143"
+  condition: selection

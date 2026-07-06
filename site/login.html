@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Log in — ERA One</title>
+<meta name="description" content="Sign in to the unified ERA One admin portal." />
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body data-page="login">
+
+<header class="top" id="site-header"></header>
+
+<section class="hero subhero">
+  <div class="wrap">
+    <div class="eyebrow" data-i18n="nav.login">Log in</div>
+    <h1 data-i18n="login.h1">Sign in to ERA One</h1>
+    <p class="lead" data-i18n="login.lead">Access the unified admin portal for ERA Control, Communications and Office.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="login-wrap">
+      <form class="form login-card" onsubmit="return false;">
+        <div class="fld">
+          <label data-i18n="login.user">Email or username</label>
+          <input type="text" name="user" autocomplete="username" />
+        </div>
+        <div class="fld">
+          <label data-i18n="login.pass">Password</label>
+          <input type="password" name="pass" autocomplete="current-password" />
+        </div>
+        <button class="btn-lg btn-primary" type="submit" style="width:100%" data-i18n="login.btn">Sign in</button>
+        <div style="text-align:center;margin-top:14px">
+          <a href="#" data-i18n="login.sso">Sign in with corporate SSO</a>
+        </div>
+        <div class="fnote" data-i18n="login.note">Prototype screen — authentication is handled by the on-prem admin portal in your contour.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="ftr" id="site-footer"></footer>
+
+<script src="assets/i18n-data.js"></script>
+<script src="assets/products-catalog.js"></script>
+<script src="assets/auth-store.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/login-view.js"></script>
+</body>
+</html>

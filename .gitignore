@@ -1,0 +1,41 @@
+# Build / cache
+target/
+**/target/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Go
+**/vendor/
+
+# Node (if added later)
+node_modules/
+
+# IDE / OS
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Env / secrets (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+deploy/tls/*.key
+deploy/tls/*.crt
+deploy/tls/*.csr
+deploy/tls/*.srl
+deploy/prod/.env
+
+# Site build output (artifact for deploy)
+dist/
+
+# Generated proto (if regenerated locally)
+gen/

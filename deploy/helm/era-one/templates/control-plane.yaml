@@ -1,0 +1,67 @@
+{{- if .Values.controlPlane.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "era-one.fullname" . }}-control-plane
+spec:
+  ports:
+    - port: {{ .Values.controlPlane.httpPort }}
+      targetPort: {{ .Values.controlPlane.httpPort }}
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "era-one.name" . }}
+    app.kubernetes.io/component: control-plane
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "era-one.fullname" . }}-control-plane
+spec:
+  replicas: {{ .Values.controlPlane.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "era-one.name" . }}
+      app.kubernetes.io/component: control-plane
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "era-one.name" . }}
+        app.kubernetes.io/component: control-plane
+    spec:
+      containers:
+        - name: control-plane
+          image: {{ .Values.controlPlane.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.controlPlane.httpPort }}
+          env:
+            - name: ERA_HTTP_ADDR
+              value: ":{{ .Values.controlPlane.httpPort }}"
+            {{- if eq .Values.controlPlane.storeDriver "postgres" }}
+            - name: ERA_STORE_DRIVER
+              value: postgres
+            - name: ERA_STORE_DSN
+              value: {{ default (printf "postgres://%s:%s@%s-postgres:%d/%s?sslmode=disable" .Values.postgres.user .Values.postgres.password (include "era-one.fullname" .) (.Values.postgres.port | int) .Values.postgres.database) .Values.controlPlane.storeDsn | quote }}
+            {{- else }}
+            - name: ERA_STORE_PATH
+              value: {{ .Values.controlPlane.storePath | quote }}
+            {{- end }}
+            - name: ERA_EVENT_WRITER_URL
+              value: "http://{{ include "era-one.fullname" . }}-event-writer:8089"
+            - name: ERA_SOAR_URL
+              value: "http://{{ include "era-one.fullname" . }}-soar:8092"
+            - name: ERA_AI_CORE_URL
+              value: "http://{{ include "era-one.fullname" . }}-ai-core:8091"
+            - name: ERA_INGEST_URL
+              value: "http://{{ include "era-one.fullname" . }}-ingest-gateway:8082"
+          volumeMounts:
+            - name: cp-data
+              mountPath: /data
+      volumes:
+        - name: cp-data
+          {{- if eq .Values.controlPlane.storeDriver "postgres" }}
+          emptyDir: {}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}

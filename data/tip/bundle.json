@@ -1,0 +1,21 @@
+{
+  "type": "bundle",
+  "id": "bundle--era-internal-tip",
+  "spec_version": "2.1",
+  "objects": [
+    {
+      "type": "indicator",
+      "id": "indicator--c2-domain",
+      "pattern": "[domain-name:value = 'c2.internal.evil']",
+      "pattern_type": "stix",
+      "confidence": 80
+    },
+    {
+      "type": "indicator",
+      "id": "indicator--hash",
+      "pattern": "deadbeefcafebabe",
+      "pattern_type": "stix",
+      "confidence": 70
+    }
+  ]
+}

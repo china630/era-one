@@ -1,0 +1,205 @@
+syntax = "proto3";
+
+package era.v1;
+
+option go_package = "era/contracts/gen/era/v1;erav1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+// ============================================================================
+// ERA XDR — Unified Event Envelope (единый конверт события)
+//
+// Один Envelope = одно атомарное наблюдение от агента/коллектора.
+// Конверт = транспорт + идентификация + контроль.
+// Семантика события (payload) нормализуется в OCSF.
+//
+// Правила эволюции: только ДОБАВЛЕНИЕ полей; номера полей НЕ переиспользуем.
+// Совместимость проверяется Apicurio Registry в CI (BACKWARD/FULL).
+// См. docs/adr/0001-unified-event-envelope.md
+// ============================================================================
+
+// Корневой конверт. Генерируется Rust-агентом, сериализуется через prost,
+// отправляется в Kafka с ключом партиции = tenant_id || node_id.
+message Envelope {
+  // Версия КОНТРАКТА конверта (semver), напр. "1.0.0". Для роутинга и миграций.
+  string schema_version = 1;
+
+  // ULID (16 байт). Сортируемый по времени уникальный ID события.
+  bytes event_id = 2;
+
+  // Корреляционный ID цепочки (storyline). Связывает дочерние события
+  // в один инцидент. Назначается агентом (process tree) или ядром.
+  bytes correlation_id = 3;
+
+  // Distributed tracing (OTLP-совместимо), опционально.
+  bytes trace_id = 4;
+  bytes span_id = 5;
+
+  // Время события на хосте (источник истины).
+  google.protobuf.Timestamp observed_at = 6;
+  // Время приёма Ingest Gateway (заполняется на стороне Go-шлюза).
+  google.protobuf.Timestamp ingested_at = 7;
+
+  Source source = 8;
+  Severity severity = 9;
+
+  // Категория для быстрой маршрутизации в topic-per-domain.
+  EventCategory category = 10;
+
+  // Нормализация под XDR-корреляцию. Обязательна для типизированных payload.
+  OcsfMeta ocsf = 11;
+  MitreMeta mitre = 12;
+
+  // Результат локальной (on-agent) детекции, если сработала.
+  Detection detection = 13;
+
+  // Полезная нагрузка — строго типизированная.
+  oneof payload {
+    ProcessEvent  process  = 20;
+    NetworkEvent  network  = 21;
+    FileEvent     file     = 22;
+    RegistryEvent registry = 23;
+    AuthEvent     auth     = 24;
+    DnsEvent      dns      = 25;
+    ModuleEvent   module   = 26; // image/driver load
+    // Сырое/нетипизированное событие для расширения без слома схемы.
+    RawEvent      raw      = 99;
+  }
+
+  // Флаг: PII уже вычищены/маскированы на агенте ДО отправки.
+  bool pii_sanitized = 30;
+}
+
+// ── Идентификация источника (иерархия tenant -> ... -> agent). ──
+message Source {
+  string tenant_id      = 1;
+  string environment    = 2; // prod | staging | dmz | airgap-zone-1 ...
+  string cluster_id     = 3;
+  string node_id        = 4; // стабильный machine-id хоста
+  string hostname       = 5;
+  string agent_id       = 6; // уникальный ID инсталляции агента
+  string agent_version  = 7;
+  Platform platform     = 8;
+  repeated string ip    = 9; // адреса хоста на момент события
+}
+
+enum Platform {
+  PLATFORM_UNSPECIFIED = 0;
+  PLATFORM_WINDOWS     = 1;
+  PLATFORM_LINUX       = 2;
+  PLATFORM_MACOS       = 3;
+}
+
+enum Severity {
+  SEVERITY_UNSPECIFIED = 0;
+  SEVERITY_INFO        = 1;
+  SEVERITY_LOW         = 2;
+  SEVERITY_MEDIUM      = 3;
+  SEVERITY_HIGH        = 4;
+  SEVERITY_CRITICAL    = 5;
+}
+
+enum EventCategory {
+  EVENT_CATEGORY_UNSPECIFIED = 0;
+  EVENT_CATEGORY_PROCESS     = 1;
+  EVENT_CATEGORY_NETWORK     = 2;
+  EVENT_CATEGORY_FILE        = 3;
+  EVENT_CATEGORY_REGISTRY    = 4;
+  EVENT_CATEGORY_AUTH        = 5;
+  EVENT_CATEGORY_DNS         = 6;
+  EVENT_CATEGORY_MODULE      = 7;
+}
+
+// OCSF (Open Cybersecurity Schema Framework) — стандарт нормализации XDR.
+message OcsfMeta {
+  uint32 class_uid    = 1; // напр. 1007 Process Activity
+  uint32 category_uid = 2;
+  uint32 activity_id  = 3;
+}
+
+message MitreMeta {
+  repeated string tactic_ids    = 1; // TA0002 ...
+  repeated string technique_ids = 2; // T1059.001 ...
+}
+
+// Результат on-agent детекции. confidence — точка входа для federated learning.
+message Detection {
+  string   rule_id    = 1; // Sigma rule id
+  string   rule_name  = 2;
+  Severity severity   = 3;
+  string   engine     = 4; // "sigma-agent" | "ai-core"
+  float    confidence = 5; // 0..1
+}
+
+// ── Типизированные тела событий (срез под MVP / Sysmon-паритет). ──
+message ProcessEvent {
+  string action       = 1; // create | terminate | access
+  uint64 pid          = 2;
+  uint64 ppid         = 3;
+  string image_path   = 4;
+  string command_line = 5;
+  string user         = 6; // маскированный при pii_sanitized=true
+  string hash_sha256  = 7;
+  bytes  parent_image = 8;
+  bool   is_elevated  = 9;
+}
+
+message NetworkEvent {
+  string direction  = 1; // inbound | outbound
+  string protocol   = 2; // tcp | udp
+  string src_ip     = 3;
+  uint32 src_port   = 4;
+  string dst_ip     = 5;
+  uint32 dst_port   = 6;
+  uint64 pid        = 7;
+  uint64 bytes_sent = 8;
+  uint64 bytes_recv = 9;
+}
+
+message FileEvent {
+  string action      = 1; // create | write | delete | rename
+  string path        = 2;
+  string hash_sha256 = 3;
+  uint64 pid         = 4;
+  uint64 size        = 5;
+}
+
+message RegistryEvent {
+  string action     = 1; // set | delete | create_key
+  string key_path   = 2;
+  string value_name = 3;
+  string value_data = 4;
+  uint64 pid        = 5;
+}
+
+message AuthEvent {
+  string action     = 1; // logon | logoff | failed
+  string user       = 2;
+  string logon_type = 3;
+  string src_ip     = 4;
+  bool   success    = 5;
+}
+
+message DnsEvent {
+  string          query      = 1;
+  string          query_type = 2; // A | AAAA | TXT ...
+  repeated string answers    = 3;
+  uint64          pid        = 4;
+}
+
+message ModuleEvent {
+  string action      = 1; // load
+  string module_path = 2;
+  string hash_sha256 = 3;
+  bool   signed      = 4;
+  string signer      = 5;
+  uint64 pid         = 6;
+}
+
+// Универсальный контейнер для нетипизированных источников
+// (email logs, identity logs, кастомные коллекторы).
+message RawEvent {
+  string                 source_type = 1; // "m365.audit" | "auditd" | ...
+  google.protobuf.Struct fields      = 2;
+}

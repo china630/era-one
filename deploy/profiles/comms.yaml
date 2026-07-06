@@ -1,0 +1,62 @@
+# ERA Communications — deploy profile (roadmap)
+# ADR-0027 | PRD: docs/products/PRD-Comms-MVP.md
+
+schema_version: "1.0"
+id: era-comms
+product: era-communications
+title: ERA Communications
+status: roadmap
+
+compose:
+  file: deploy/docker-compose.prod.yml
+  project_name: era-one-comms
+  note: Standalone; не требует ERA Core agent.
+
+shared_platform:
+  required: true
+  editions_ref: editions-shared.yaml
+  packages:
+    - platform/identity
+    - platform/tenant
+    - platform/adminportal
+    - platform/drive
+    - platform/workspace
+  services:
+    - admin-portal
+    - postgres
+  compose_profiles:
+    pg: [postgres]
+
+# ClickHouse audit — обязателен (PRD-Comms-MVP AC-C7)
+infra:
+  required:
+    - clickhouse
+    - minio
+
+workspace:
+  url: https://app.customer.local
+  routes: [/mail, /chat, /conference]
+
+planned_services:
+  - id: comms-mail
+    description: Rust core + Go API — SMTP/IMAP/EWS subset/Autodiscover
+  - id: comms-mail-connect
+    description: BFF → external IMAP/JMAP (migration tier)
+  - id: comms-calendar
+    description: CalDAV full read/write
+  - id: comms-chat
+    description: Corporate messenger
+  - id: comms-vcs
+    description: LiveKit on-prem adapter
+  - id: comms-ai
+    description: ERA Comms AI
+
+editions_ref: editions-comms.yaml
+pricing_model: per-user
+pricing_ref: docs/distributor/pricing-comms-data.yaml
+service_stub: services/comms
+
+docs:
+  - docs/products/ERA-Communications-Vision.md
+  - docs/products/PRD-Comms-MVP.md
+  - docs/adr/0027-era-communications-architecture.md

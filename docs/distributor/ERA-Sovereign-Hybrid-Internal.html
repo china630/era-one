@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ERA One — Sovereign Hybrid (internal)</title>
+<link rel="stylesheet" href="assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr">
+    <img class="logo-full" src="assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA Sovereign Hybrid — операционная модель<span class="sub">Внутренний справочник presales · v1.0 · 1 июля 2026</span></h1>
+    <p class="meta">Аудитория: пресейл, дистрибьюторы, ИБ-архитекторы. Клиентский one-pager — <b>ERA-Sovereign-Hybrid.pdf</b> (без статусов/ADR).</p>
+    <p class="lead">Ответ на протест «без cloud/hybrid не возьмут»: отделяем <b>data plane</b> (всегда в контуре)
+      от <b>control plane</b> (обновления/лицензии/сопровождение — из облака ERA). <b>Не</b> строим SaaS-клон
+      Cortex Cloud как ближайший шаг. Полная детализация — <b>ADR-0018</b>.</p>
+
+    <div class="legend">
+      <span class="badge ga">GA</span> Sovereign сегодня &nbsp;
+      <span class="badge road">Roadmap</span> Sovereign Hybrid (MVP Hybrid-0) &nbsp;
+      <span class="badge opt">вне scope</span> Cloud SaaS (по спросу)
+    </div>
+
+    <h2>1. Профили развёртывания</h2>
+    <table class="cmp"><tr><th>Критерий</th><th>Sovereign (air-gap)</th><th>Sovereign Hybrid</th><th>Cloud (SaaS)</th></tr><tr><td>Данные / озеро / ИИ / кейсы</td><td>В контуре заказчика</td><td>В контуре заказчика</td><td>У заказчика или private cloud</td></tr><tr><td>Связь с вендором</td><td>Нет (air-gap)</td><td>Outbound-only через Relay</td><td>Полная (SaaS)</td></tr><tr><td>Лицензия</td><td>Offline Ed25519</td><td>Offline + lease</td><td>Subscription + metering</td></tr><tr><td>Обновления (Sigma/CVE/AI)</td><td>Offline-пакет (носитель)</td><td>Pull из ERA Update Service</td><td>Управляется вендором</td></tr><tr><td>Health / сопровождение</td><td>Нет</td><td>По policy (уровни A/B/C)</td><td>Полное у вендора</td></tr><tr><td>Целевой клиент</td><td>Госсектор, КИИ, air-gap</td><td>Банк: данные дома, ops у вендора</td><td>Mid-market, филиалы</td></tr><tr><td>Статус ERA</td><td>GA (текущий фокус)</td><td>Roadmap (Hybrid-0)</td><td>Вне scope — по спросу</td></tr></table>
+    <p class="note-int"><b>Инвариант:</b> сырьё, PII и кейсы не покидают контур ни в одном режиме. Наружу —
+      только метаданные, обновления, лицензии и (opt-in) обезличенные индикаторы.</p>
+
+    <h2>2. Именованные компоненты (ADR-0018 §1.1)</h2>
+    <table class="cmp"><tr><th>Компонент</th><th>Где / деплой</th><th>Роль</th></tr><tr><td><b>ERA Cloud Portal</b></td><td>Вендор — ядро-сервис</td><td>Лицензии/контракты, выпуск lease, CRL, приём health; зонтик control plane</td></tr><tr><td><b>ERA Update Service</b></td><td>Вендор — отдельный сервис</td><td>Конвейер подписи + доставка контента (Sigma/CVE/коннекторы/AI-паки); работает и в air-gap (носитель)</td></tr><tr><td><b>ERA Hybrid Relay</b></td><td>Контур клиента — модуль control-plane</td><td>Единственный outbound-only канал: lease/CRL/updates + health/opt-in TI; egress allowlist + audit</td></tr><tr><td><b>ERA Managed View</b></td><td>Вендор — модуль Portal (RBAC)</td><td>Мульти-клиентский пульт для MSSP/партнёра: health, лицензии, версии — без доступа к сырью и кейсам</td></tr></table>
+    <p class="note-int"><b>Гранулярность (§1.1.1):</b> Update Service — отдельный сервис (свой конвейер подписи, dual-use pull+offline);
+      Managed View — модуль Portal с RBAC (выносится при white-label / мультитенантности партнёров).</p>
+
+    <h2>3. Уровни opt-in (что разрешено наружу)</h2>
+    <table class="cmp"><tr><th>Уровень opt-in</th><th>Что наружу</th><th>Кому</th></tr><tr><td><b>hybrid-base</b> (минимум)</td><td>lease + updates + CRL</td><td>почти все connected</td></tr><tr><td>+ <b>health</b></td><td>эксплуатационные метрики (A/B/C)</td><td>наше / партнёрское сопровождение</td></tr><tr><td>+ <b>TI-share</b></td><td>обезличенные IoC / metadata / FP</td><td>зрелые SOC</td></tr></table>
+    <p class="note-int">Health: A Minimal (default) · B Operational (MSSP) · C Support (break-glass, TTL). Сырьё/PII/кейсы — запрещены на любом уровне.</p>
+
+    <h2>4. Лицензирование: lease поверх ADR-0010</h2>
+    <p class="lead" style="margin-bottom:6px">Offline Ed25519 остаётся ядром проверки; lease — верхний слой для connected. Всё в настройках, без хардкода.</p>
+    <table class="cmp"><tr><th>Параметр</th><th>Старт</th><th>Где задаётся</th></tr><tr><td>lease_period_days</td><td>30</td><td>лицензия / Portal / контракт</td></tr><tr><td>lease_renewal_interval</td><td>24 ч</td><td>tenant policy</td></tr><tr><td>grace_days</td><td>30</td><td>лицензия</td></tr><tr><td>offline_max_days</td><td>90 → деградация</td><td>tenant policy</td></tr><tr><td>degradation_mode</td><td>no_new_nodes + no_updates (детект работает)</td><td>политика</td></tr></table>
+
+    <h2>5. AZ и BYO-EDR</h2>
+    <p class="lead" style="margin-top:0"><b>AZ:</b> режим «hybrid minimal» (lease + updates + CRL, health A, TI off) + DPA + схема потоков; Portal region AZ/EU или self-hosted для госа.
+      <br><b>BYO-EDR ≠ hybrid:</b> BYO-EDR — чужой EDR в наш lake (ADR-0017); hybrid — канал к вендору ERA. Не смешивать в пресейле.</p>
+
+    <p class="note-int">Связанные материалы: ERA-Sovereign-Hybrid.pdf (клиентский) · ERA-Product-Line.pdf §5 · ADR-0018 · ADR-0010 · ADR-0009 · ADR-0017 · editions-control.yaml</p>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Head Office</b>Geneva, Switzerland</div>
+      <div class="col"><b>Engineering Center</b>Warsaw, Poland</div>
+      <div class="col"><b>Contact</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,98 @@
+# ERA One — продуктовые семейства (single source of truth)
+#
+# Продукт в монорепо — НЕ папка верхнего уровня, а композиция сервисов и изданий.
+# Физическая раскладка — по слою (ADR-0014); этот файл — карта продуктовых линейок.
+#
+# Связано: editions-control.yaml, editions-comms.yaml, editions-office.yaml,
+#          editions-shared.yaml, ADR-0014, ADR-0024, ADR-0025, deploy/profiles/*.yaml
+
+schema_version: "1.0"
+
+brand:
+  name: ERA One
+  tagline: "ONE ECOSYSTEM. ONE PERIMETER. ONE VENDOR."
+  domain: era-one.solutions
+  logo: brand/era-one-logo-brand-outlined.svg
+  editions_manifest: editions-control.yaml
+
+shared_platform:
+  editions_ref: editions-shared.yaml
+  packages:
+    - platform/identity
+    - platform/tenant
+    - platform/adminportal
+    - platform/licensegate
+    - platform/drive
+    - platform/docs-engine
+    - platform/signing
+    - platform/workspace
+  services:
+    - admin-portal
+    - postgres
+  docs:
+    - docs/adr/0024-era-one-product-families.md
+    - docs/adr/0025-era-one-shared-platform.md
+
+products:
+  era-control:
+    title: ERA Control
+    tagline: "ONE AGENT. ONE PLATFORM. ONE CONTROL."
+    status: ga
+    description: >
+      Security & IT-Ops: XDR, уязвимости, UEM, ITSM, PAM, мониторинг сети.
+      Один лёгкий endpoint-агент; серверные издания по лицензии.
+    agent: true
+    pricing_model: per-endpoint
+    editions_ref: editions-control.yaml
+    pricing_ref: docs/distributor/pricing-data.yaml
+    deploy_profile: deploy/profiles/control.yaml
+    site_path: /secure
+    docs:
+      - docs/distributor/ERA-Product-Line.md
+      - docs/distributor/ERA-Naming-and-RFQ-Guide.md
+      - docs/ERA-Platform-Vision.md
+
+  era-communications:
+    title: ERA Communications
+    tagline: "ONE IDENTITY. ONE PLATFORM. ONE CONVERSATION."
+    status: roadmap
+    description: >
+      Суверенные коммуникации: почта, календарь, чат, ВКС. Замена Exchange /
+      CommuniGate / IceWarp on-prem. Standalone; без ERA Core.
+    agent: false
+    pricing_model: per-user
+    editions_ref: editions-comms.yaml
+    pricing_ref: docs/distributor/pricing-comms-data.yaml
+    deploy_profile: deploy/profiles/comms.yaml
+    site_path: /communications
+    docs:
+      - docs/products/ERA-Communications-Vision.md
+      - docs/products/PRD-Comms-MVP.md
+      - docs/adr/0027-era-communications-architecture.md
+
+  era-office:
+    title: ERA Office
+    tagline: "ONE WORKSPACE. ONE PLATFORM. ONE TEAM."
+    status: roadmap
+    description: >
+      Офисные приложения: документы, таблицы, co-editing в контуре.
+      Свой engine (ADR-0026). Standalone; без ERA Core.
+    agent: false
+    pricing_model: per-user
+    editions_ref: editions-office.yaml
+    pricing_ref: docs/distributor/pricing-office-data.yaml
+    deploy_profile: deploy/profiles/office.yaml
+    site_path: /office
+    service_stub: services/docs
+    docs:
+      - docs/products/ERA-Office-Vision.md
+      - docs/products/PRD-Office-MVP.md
+      - docs/adr/0026-sovereign-office-engine.md
+
+bundles:
+  era-one-full:
+    title: ERA One Full Stack
+    description: Control + Communications + Office + shared platform в одном контуре.
+    products: [era-control, era-communications, era-office]
+    deploy_profile: deploy/profiles/era-one-full.yaml
+    shared_platform: true

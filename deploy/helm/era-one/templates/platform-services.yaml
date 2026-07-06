@@ -1,0 +1,6 @@
+{{- range $name, $svc := .Values.platformServices }}
+{{- if $svc.enabled }}
+{{ include "era-one.golangService" (list $ $name $svc) }}
+---
+{{- end }}
+{{- end }}

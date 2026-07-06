@@ -1,0 +1,10 @@
+id: era-sigma-0179
+title: ERA detection rule 0179 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0179"
+  condition: selection

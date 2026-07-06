@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERA XDR — CMDB / Assets</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --muted: #8b949e; --accent: #3fb950; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.5rem; }
+    h1 { font-size: 1.25rem; }
+    .metric { font-size: 2rem; color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; background: var(--card); margin-top: 1rem; font-size: 0.875rem; }
+    th, td { padding: 0.6rem; border-bottom: 1px solid #21262d; text-align: left; }
+    nav a { color: #58a6ff; margin-right: 1rem; }
+    button { background: #238636; border: none; color: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem; }
+    .panel { background: var(--card); border-radius: 8px; padding: 1rem; margin-top: 1rem; display: none; }
+    .panel.open { display: block; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+    .warn { color: #ffa657; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/ui/cases/">Cases</a>
+    <a href="/ui/workbench/">Workbench</a>
+    <a href="/ui/assets/">Assets</a>
+  </nav>
+  <h1>CMDB / Asset Inventory</h1>
+  <div>Coverage (active ≤15m): <span class="metric" id="coverage">—</span></div>
+  <button id="refresh">Обновить</button>
+  <button id="reconcile">Reconcile licenses</button>
+  <table>
+    <thead><tr><th>Node</th><th>Hostname</th><th>Platform</th><th>OS</th><th>RAM</th><th>Last seen</th><th></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div id="detail" class="panel">
+    <h2 id="detailTitle">Asset</h2>
+    <div class="grid">
+      <div>
+        <h3>Hardware</h3>
+        <pre id="hw"></pre>
+      </div>
+      <div>
+        <h3>Software</h3>
+        <table><thead><tr><th>Name</th><th>Version</th><th>Source</th></tr></thead><tbody id="sw"></tbody></table>
+      </div>
+    </div>
+    <h3>Financial ITAM — Reconcile</h3>
+    <table><thead><tr><th>Product</th><th>Installed</th><th>Entitled</th><th>Status</th></tr></thead><tbody id="recon"></tbody></table>
+  </div>
+  <script>
+    async function load() {
+      const res = await fetch('/api/v1/assets');
+      const data = await res.json();
+      document.getElementById('coverage').textContent = ((data.coverage || 0) * 100).toFixed(0) + '%';
+      const tbody = document.getElementById('rows');
+      tbody.innerHTML = '';
+      for (const a of data.assets || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code>${a.node_id}</code></td>
+          <td>${a.hostname || '—'}</td>
+          <td>${a.platform || '—'}</td>
+          <td>${a.os_version || a.os_name || '—'}</td>
+          <td>${a.ram_mb ? a.ram_mb + ' MB' : '—'}</td>
+          <td>${a.last_seen || ''}</td>
+          <td><button data-id="${a.node_id}" class="openBtn">Card</button></td>`;
+        tbody.appendChild(tr);
+      }
+      document.querySelectorAll('.openBtn').forEach(btn => {
+        btn.onclick = () => openCard(btn.dataset.id);
+      });
+    }
+    async function openCard(nodeId) {
+      const res = await fetch('/api/v1/cmdb/assets/' + encodeURIComponent(nodeId));
+      if (!res.ok) return;
+      const data = await res.json();
+      const a = data.asset || {};
+      document.getElementById('detail').classList.add('open');
+      document.getElementById('detailTitle').textContent = a.hostname || nodeId;
+      document.getElementById('hw').textContent = JSON.stringify({
+        cpu: a.cpu_model, cores: a.cpu_cores, ram_mb: a.ram_mb, disk_gb: a.disk_total_gb,
+        serial: a.serial_number, macs: a.mac_addrs, ips: a.ip_addrs
+      }, null, 2);
+      const sw = document.getElementById('sw');
+      sw.innerHTML = '';
+      for (const s of data.software || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${s.name}</td><td>${s.version}</td><td>${s.source || '—'}</td>`;
+        sw.appendChild(tr);
+      }
+    }
+    async function loadReconcile() {
+      const res = await fetch('/api/v1/cmdb/reconcile');
+      if (!res.ok) return;
+      const data = await res.json();
+      const tbody = document.getElementById('recon');
+      tbody.innerHTML = '';
+      for (const r of data.reconcile || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.product}</td><td>${r.installed}</td><td>${r.entitled}</td>
+          <td class="${r.compliance !== 'ok' ? 'warn' : ''}">${r.compliance}</td>`;
+        tbody.appendChild(tr);
+      }
+      document.getElementById('detail').classList.add('open');
+    }
+    document.getElementById('refresh').onclick = load;
+    document.getElementById('reconcile').onclick = loadReconcile;
+    load();
+    setInterval(load, 30000);
+  </script>
+</body>
+</html>

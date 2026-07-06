@@ -1,0 +1,10 @@
+id: era-sigma-0395
+title: ERA detection rule 0395 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0395"
+  condition: selection

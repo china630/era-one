@@ -1,0 +1,10 @@
+id: era-sigma-0022
+title: ERA detection rule 0022 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0022"
+  condition: selection

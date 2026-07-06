@@ -1,0 +1,12 @@
+id: era-curated-079
+title: Curated detection 079 (TA0002)
+status: stable
+level: medium
+tags:
+  - attack.T1078
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-curated-079"
+  condition: selection

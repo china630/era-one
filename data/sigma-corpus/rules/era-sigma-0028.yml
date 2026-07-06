@@ -1,0 +1,10 @@
+id: era-sigma-0028
+title: ERA detection rule 0028 (file)
+status: experimental
+level: medium
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-pattern-0028"
+  condition: selection

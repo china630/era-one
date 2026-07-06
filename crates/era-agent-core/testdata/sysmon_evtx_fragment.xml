@@ -1,0 +1,12 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System>
+    <EventID>1</EventID>
+  </System>
+  <EventData>
+    <Data Name="Image">C:\Windows\System32\cmd.exe</Data>
+    <Data Name="ProcessId">4321</Data>
+    <Data Name="ParentProcessId">999</Data>
+    <Data Name="CommandLine">cmd.exe /c whoami</Data>
+    <Data Name="User">DOMAIN\bob</Data>
+  </EventData>
+</Event>

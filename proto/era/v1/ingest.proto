@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package era.v1;
+
+option go_package = "era/contracts/gen/era/v1;erav1";
+
+import "era/v1/envelope.proto";
+
+// ============================================================================
+// ERA XDR — Ingest gRPC contract (era-agent -> ingest-gateway)
+//
+// Транспорт между Rust-агентом и Go-шлюзом приёма. Шлюз валидирует, обогащает
+// (ingested_at, tenant routing) и публикует в Kafka (topic-per-domain).
+//
+// Принципы:
+//  - Батчевая отправка (амортизация сети при 150k хостов).
+//  - At-least-once: агент повторяет батч до получения Ack; дедуп по event_id.
+//  - Backpressure: шлюз отдаёт RETRY/THROTTLE, агент держит disk-buffer.
+//  - mTLS на транспортном уровне; токен агента в metadata.
+// См. docs/adr/0008-ingest-grpc-contract.md
+// ============================================================================
+
+service IngestService {
+  // Основной поток: агент шлёт батчи конвертов, получает Ack по каждому.
+  // Двунаправленный стрим для backpressure и подтверждений в реальном времени.
+  rpc StreamEvents(stream EventBatch) returns (stream BatchAck);
+
+  // Унарный фолбэк для слабых сетей / простых коллекторов.
+  rpc PushEvents(EventBatch) returns (BatchAck);
+
+  // Регистрация/heartbeat агента (control-plane lite на этапе MVP).
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+}
+
+message EventBatch {
+  // Уникальный ID батча (ULID) для идемпотентности на стороне шлюза.
+  bytes batch_id = 1;
+
+  // Идентификация агента (дублирует Source.agent_id для быстрой маршрутизации).
+  string agent_id = 2;
+  string tenant_id = 3;
+
+  // Сами события.
+  repeated Envelope events = 4;
+
+  // Кодек/сжатие тела (информативно; gRPC сжимает на транспорте).
+  string producer_version = 5;
+}
+
+message BatchAck {
+  bytes  batch_id = 1;
+  Status status   = 2;
+
+  // event_id событий, отклонённых валидацией (агент их не повторяет).
+  repeated bytes rejected_event_ids = 3;
+
+  // Подсказка задержки для backpressure (мс) при THROTTLE.
+  uint32 retry_after_ms = 4;
+
+  string message = 5;
+}
+
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_ACCEPTED    = 1; // батч принят полностью
+  STATUS_PARTIAL     = 2; // часть событий отклонена (см. rejected_event_ids)
+  STATUS_RETRY       = 3; // временная ошибка шлюза, повторить весь батч
+  STATUS_THROTTLE    = 4; // backpressure, повторить через retry_after_ms
+  STATUS_REJECTED    = 5; // батч невалиден целиком (не повторять)
+}
+
+message RegisterRequest {
+  string   agent_id      = 1;
+  string   tenant_id     = 2;
+  string   hostname      = 3;
+  Platform platform      = 4;
+  string   agent_version = 5;
+  // Запрос на доставку актуального набора правил (Sigma) и политик.
+  bool     request_policy = 6;
+}
+
+message RegisterResponse {
+  // Версия набора правил/политик, которую агент должен применить.
+  string policy_version = 1;
+  // URL/идентификатор бандла правил во внутреннем хранилище (control-plane).
+  string policy_bundle_ref = 2;
+  // Интервал heartbeat (сек).
+  uint32 heartbeat_interval_sec = 3;
+}

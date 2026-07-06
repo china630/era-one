@@ -1,0 +1,25 @@
+Модуль vm — сборка и запуск (Windows / PowerShell)
+==================================================
+
+1) Ошибка "go не распознано"
+   Это значит: Go не установлен или не в PATH.
+   - Установка: https://go.dev/dl/ (файл .msi для Windows) — самый надёжный способ.
+   - winget (только каталог winget, без Microsoft Store — иначе часто ошибка сертификата msstore):
+     winget install --id GoLang.Go -e --source winget --accept-package-agreements --accept-source-agreements
+     Если снова ругается на msstore: winget source disable msstore
+   - Закройте терминал и откройте снова после установки.
+
+2) Переменные окружения в PowerShell (не bash)
+   Неверно:  GOPROXY=direct go mod tidy
+   Верно:     $env:GOPROXY = "direct"
+              go mod tidy
+
+3) Быстрый старт из каталога vm
+   cd "d:\My Projects\era-one\services\vm"
+   . .\scripts\use-go.ps1
+   go mod tidy
+   go test ./...
+   go run ./cmd/vm-engine
+
+4) Папка templates
+   Должна лежать рядом с рабочей директорией при запуске (по умолчанию ./templates внутри vm).

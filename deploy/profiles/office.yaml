@@ -1,0 +1,53 @@
+# ERA Office — deploy profile (roadmap)
+# ADR-0025, ADR-0026 | PRD: docs/products/PRD-Office-MVP.md
+
+schema_version: "1.0"
+id: era-office
+product: era-office
+title: ERA Office
+status: roadmap
+
+compose:
+  file: deploy/docker-compose.prod.yml
+  project_name: era-one-office
+  note: Shared platform + docs stub until engine MVP.
+
+shared_platform:
+  required: true
+  editions_ref: editions-shared.yaml
+  packages:
+    - platform/identity
+    - platform/tenant
+    - platform/adminportal
+    - platform/drive
+    - platform/docs-engine
+    - platform/workspace
+  services:
+    - admin-portal
+    - postgres
+  compose_profiles:
+    pg: [postgres]
+
+infra:
+  - minio
+
+stub_services:
+  - id: docs
+    cmd: services/docs/cmd/docs
+    port: 8142
+    health: /healthz
+
+workspace:
+  url: https://app.customer.local
+  routes: [/drive, /docs, /tables]
+
+editions_ref: editions-office.yaml
+pricing_model: per-user
+pricing_ref: docs/distributor/pricing-office-data.yaml
+service_stub: services/docs
+
+docs:
+  - docs/products/ERA-Office-Vision.md
+  - docs/products/PRD-Office-MVP.md
+  - docs/adr/0025-era-one-shared-platform.md
+  - docs/adr/0026-sovereign-office-engine.md

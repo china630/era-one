@@ -1,0 +1,12 @@
+apiVersion: v2
+name: era-one
+description: ERA XDR minimal air-gap Helm chart (Kafka + ClickHouse + control-plane)
+type: application
+version: 0.1.0
+appVersion: "1.0.0-ga3"
+keywords:
+  - era-one
+  - security
+  - air-gap
+maintainers:
+  - name: ERA XDR Platform

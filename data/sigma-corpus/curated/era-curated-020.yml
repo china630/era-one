@@ -1,0 +1,12 @@
+id: era-curated-020
+title: Curated detection 020 (TA0009)
+status: stable
+level: medium
+tags:
+  - attack.T1019
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-curated-020"
+  condition: selection

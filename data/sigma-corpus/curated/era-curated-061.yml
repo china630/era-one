@@ -1,0 +1,12 @@
+id: era-curated-061
+title: Curated detection 061 (TA0006)
+status: stable
+level: medium
+tags:
+  - attack.T1060
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-061"
+  condition: selection

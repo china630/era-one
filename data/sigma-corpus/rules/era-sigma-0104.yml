@@ -1,0 +1,10 @@
+id: era-sigma-0104
+title: ERA detection rule 0104 (file)
+status: experimental
+level: medium
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-pattern-0104"
+  condition: selection

@@ -1,0 +1,12 @@
+id: era-curated-018
+title: Curated detection 018 (TA0007)
+status: stable
+level: medium
+tags:
+  - attack.T1017
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-curated-018"
+  condition: selection

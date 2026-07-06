@@ -1,0 +1,18 @@
+[Unit]
+Description=ERA XDR Agent (GA-1)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=ERA_PRODUCTION=1
+Environment=ERA_GATEWAY_ADDR=http://127.0.0.1:50051
+Environment=ERA_CONTROL_PLANE_URL=http://127.0.0.1:8090
+EnvironmentFile=-/etc/era-one/agent.env
+ExecStart=/usr/local/bin/era-agent
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+  ERA XDR — ClickHouse storage policy (ADR-0004 tiering).
+  Положить в /etc/clickhouse-server/config.d/ и перезапустить сервер ДО
+  применения 001_schema.sql (таблицы ссылаются на storage_policy='tiered').
+
+  Уровни:
+    hot  — NVMe SSD (0-7 дней, полная детализация)
+    cold — объектное/дешёвое хранилище (7-365 дней)
+
+  В проде cold заменить на disk типа 's3'/MinIO. Для dev — локальный путь.
+-->
+<clickhouse>
+    <storage_configuration>
+        <disks>
+            <hot>
+                <path>/var/lib/clickhouse/hot/</path>
+            </hot>
+            <cold>
+                <path>/var/lib/clickhouse/cold/</path>
+            </cold>
+            <!--
+            Прод-вариант cold на MinIO/S3:
+            <cold_s3>
+                <type>s3</type>
+                <endpoint>http://minio:9000/era-one-cold/</endpoint>
+                <access_key_id>ENV</access_key_id>
+                <secret_access_key>ENV</secret_access_key>
+            </cold_s3>
+            -->
+        </disks>
+        <policies>
+            <tiered>
+                <volumes>
+                    <hot>
+                        <disk>hot</disk>
+                    </hot>
+                    <cold>
+                        <disk>cold</disk>
+                    </cold>
+                </volumes>
+                <move_factor>0.1</move_factor>
+            </tiered>
+        </policies>
+    </storage_configuration>
+</clickhouse>

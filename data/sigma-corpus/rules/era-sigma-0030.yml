@@ -1,0 +1,10 @@
+id: era-sigma-0030
+title: ERA detection rule 0030 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0030"
+  condition: selection

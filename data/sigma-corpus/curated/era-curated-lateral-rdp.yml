@@ -1,0 +1,12 @@
+id: era-curated-lateral-rdp
+title: RDP connection
+status: stable
+level: medium
+tags:
+  - attack.T1021.001
+logsource:
+  category: network
+detection:
+  selection:
+    DstPort|contains: "3389"
+  condition: selection

@@ -1,0 +1,12 @@
+id: era-curated-058
+title: Curated detection 058 (TA0003)
+status: stable
+level: medium
+tags:
+  - attack.T1057
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-curated-058"
+  condition: selection

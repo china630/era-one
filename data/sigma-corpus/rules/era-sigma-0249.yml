@@ -1,0 +1,10 @@
+id: era-sigma-0249
+title: ERA detection rule 0249 (process)
+status: experimental
+level: medium
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-pattern-0249"
+  condition: selection

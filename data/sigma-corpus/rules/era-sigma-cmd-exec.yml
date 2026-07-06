@@ -1,0 +1,10 @@
+id: era-sigma-cmd-exec
+title: Suspicious cmd execution
+status: experimental
+level: medium
+logsource:
+  category: process
+detection:
+  selection:
+    ImagePath|contains: "cmd.exe"
+  condition: selection

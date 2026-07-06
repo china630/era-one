@@ -1,0 +1,10 @@
+id: era-sigma-0097
+title: ERA detection rule 0097 (process)
+status: experimental
+level: medium
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-pattern-0097"
+  condition: selection

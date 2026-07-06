@@ -1,0 +1,10 @@
+id: era-sigma-0448
+title: ERA detection rule 0448 (file)
+status: experimental
+level: medium
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-pattern-0448"
+  condition: selection

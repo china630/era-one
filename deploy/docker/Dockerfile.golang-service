@@ -1,0 +1,26 @@
+# Generic Go service image for ERA XDR prod stack (Wave GA-1).
+# Build: docker build -f deploy/docker/Dockerfile.golang-service \
+#   --build-arg SERVICE_DIR=control-plane \
+#   --build-arg MAIN_PKG=./cmd/control-plane \
+#   -t era-control-plane .
+
+FROM golang:1.22-alpine AS build
+RUN apk add --no-cache git ca-certificates
+ARG SERVICE_DIR
+ARG MAIN_PKG=./cmd/${SERVICE_DIR}
+WORKDIR /src
+COPY gen/go /src/gen/go
+COPY data /src/data
+COPY services/platform /src/services/platform
+COPY services/license /src/services/license
+RUN cd /src/services/platform && go mod download
+COPY services/${SERVICE_DIR} /src/services/${SERVICE_DIR}
+WORKDIR /src/services/${SERVICE_DIR}
+RUN go mod download
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /out/era-service ${MAIN_PKG}
+
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates tzdata
+COPY --from=build /out/era-service /usr/local/bin/era-service
+USER nobody
+ENTRYPOINT ["/usr/local/bin/era-service"]

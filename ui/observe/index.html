@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <title>ERA Observe — Network</title>
+
+  <style>
+
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --accent: #58a6ff; }
+
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 1.5rem; }
+
+    .card { background: var(--card); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+
+    button { background: #238636; border: none; color: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem; }
+
+    label { margin-left: 0.5rem; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+
+    th, td { text-align: left; padding: 0.4rem; border-bottom: 1px solid #30363d; }
+
+    code { color: var(--accent); }
+
+    .unmanaged { color: #f0883e; }
+
+  </style>
+
+</head>
+
+<body>
+
+  <h1>ERA Observe — сетевые устройства</h1>
+
+  <p>Path A: webhook PRTG/Zabbix/syslog → <code>xdr.network</code>. Path B: SNMP poll + discovery.</p>
+
+  <div class="card">
+
+    <button id="refresh">Обновить CMDB</button>
+
+    <button id="discover">Discovery sweep</button>
+
+    <button id="snmp">SNMP poll 10.0.0.1</button>
+    <a href="topology.html" style="margin-left:0.5rem;color:#58a6ff">Topology</a>
+
+    <label><input type="checkbox" id="unmanagedOnly" /> Только unmanaged</label>
+
+    <table>
+
+      <thead><tr><th>Node</th><th>Hostname</th><th>Kind</th><th>Managed</th><th>IP</th><th>MAC</th></tr></thead>
+
+      <tbody id="rows"></tbody>
+
+    </table>
+
+  </div>
+
+  <script>
+
+    const API = 'http://127.0.0.1:8132';
+
+    async function load() {
+
+      const r = await fetch(API + '/api/v1/devices');
+
+      const j = await r.json();
+
+      const onlyUnmanaged = document.getElementById('unmanagedOnly').checked;
+
+      const tb = document.getElementById('rows');
+
+      tb.innerHTML = '';
+
+      (j.devices || []).filter(d => !onlyUnmanaged || d.managed === false).forEach(d => {
+
+        const tr = document.createElement('tr');
+
+        const managed = d.managed === false ? '<span class="unmanaged">no</span>' : 'yes';
+
+        tr.innerHTML = `<td>${d.node_id||''}</td><td>${d.hostname||''}</td><td>${d.asset_kind||d.kind||''}</td><td>${managed}</td><td>${(d.ip_addrs||[]).join(', ')}</td><td>${(d.mac_addrs||[]).join(', ')}</td>`;
+
+        tb.appendChild(tr);
+
+      });
+
+    }
+
+    document.getElementById('refresh').onclick = load;
+
+    document.getElementById('unmanagedOnly').onchange = load;
+
+    document.getElementById('discover').onclick = async () => { await fetch(API + '/api/v1/discovery/sweep?cidr=10.0.0.0/24', {method:'POST'}); load(); };
+
+    document.getElementById('snmp').onclick = async () => { await fetch(API + '/api/v1/snmp/poll?target=10.0.0.1', {method:'POST'}); load(); };
+
+    load();
+
+  </script>
+
+</body>
+
+</html>
+

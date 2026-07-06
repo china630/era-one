@@ -1,0 +1,10 @@
+id: era-sigma-0363
+title: ERA detection rule 0363 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0363"
+  condition: selection

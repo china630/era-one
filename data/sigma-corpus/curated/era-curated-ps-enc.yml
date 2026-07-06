@@ -1,0 +1,12 @@
+id: era-curated-ps-enc
+title: PowerShell encoded command
+status: stable
+level: high
+tags:
+  - attack.T1059.001
+logsource:
+  category: process
+detection:
+  selection:
+    CommandLine|contains: "-enc"
+  condition: selection

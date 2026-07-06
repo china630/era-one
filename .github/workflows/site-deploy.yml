@@ -1,0 +1,126 @@
+# Деплой публичного сайта (site/) — отдельно от продукта ERA XDR.
+# Триггер: push в dev (staging) или main (production), только при изменении site/ или SSOT цен.
+#
+# Секреты (Settings → Secrets):
+#   DO_APP_ID_STAGING  — App Platform app id для dev/staging
+#   DO_APP_ID_PROD     — App Platform app id для main/production
+#   DIGITALOCEAN_ACCESS_TOKEN
+
+name: Site deploy
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - "site/**"
+      - "docs/distributor/pricing-data.yaml"
+      - "docs/distributor/pricing-comms-data.yaml"
+      - "docs/distributor/pricing-office-data.yaml"
+      - "docs/distributor/assets/**"
+      - "scripts/build_portal.py"
+      - "scripts/build-site.sh"
+      - ".github/workflows/site-deploy.yml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "staging | production"
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - production
+
+concurrency:
+  group: site-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build site artifact
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Build
+        run: bash scripts/build-site.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: dist/site/
+          retention-days: 30
+
+  deploy-staging:
+    name: deploy staging (dev)
+    needs: build
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev') ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+    runs-on: ubuntu-latest
+    environment: site-staging
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: dist/site
+
+      - name: Trigger DigitalOcean redeploy (staging)
+        env:
+          DO_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          DO_APP_ID: ${{ secrets.DO_APP_ID_STAGING }}
+        run: |
+          if [ -z "$DO_TOKEN" ] || [ -z "$DO_APP_ID" ]; then
+            echo "SKIP: configure DO_APP_ID_STAGING + DIGITALOCEAN_ACCESS_TOKEN"
+            echo "Or connect DO App Platform to GitHub (deploy/site/do-app-platform.yaml, branch dev)"
+            find dist/site -type f | wc -l
+            exit 0
+          fi
+          curl -sf -X POST \
+            -H "Authorization: Bearer $DO_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.digitalocean.com/v2/apps/$DO_APP_ID/deployments" \
+            -d '{"force_build":true}'
+          echo "Staging deployment triggered"
+
+  deploy-production:
+    name: deploy production (main)
+    needs: build
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
+    runs-on: ubuntu-latest
+    environment: site-production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: dist/site
+
+      - name: Trigger DigitalOcean redeploy (production)
+        env:
+          DO_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          DO_APP_ID: ${{ secrets.DO_APP_ID_PROD }}
+        run: |
+          if [ -z "$DO_TOKEN" ] || [ -z "$DO_APP_ID" ]; then
+            echo "SKIP: configure DO_APP_ID_PROD + DIGITALOCEAN_ACCESS_TOKEN"
+            find dist/site -type f | wc -l
+            exit 0
+          fi
+          curl -sf -X POST \
+            -H "Authorization: Bearer $DO_TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://api.digitalocean.com/v2/apps/$DO_APP_ID/deployments" \
+            -d '{"force_build":true}'
+          echo "Production deployment triggered"

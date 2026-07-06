@@ -1,0 +1,50 @@
+{{- if .Values.clickhouse.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "era-one.fullname" . }}-clickhouse
+  labels:
+    app.kubernetes.io/component: clickhouse
+spec:
+  ports:
+    - port: {{ .Values.clickhouse.httpPort }}
+      targetPort: 8123
+      name: http
+    - port: {{ .Values.clickhouse.nativePort }}
+      targetPort: 9000
+      name: native
+  selector:
+    app.kubernetes.io/name: {{ include "era-one.name" . }}
+    app.kubernetes.io/component: clickhouse
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "era-one.fullname" . }}-clickhouse
+spec:
+  replicas: {{ .Values.clickhouse.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "era-one.name" . }}
+      app.kubernetes.io/component: clickhouse
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "era-one.name" . }}
+        app.kubernetes.io/component: clickhouse
+    spec:
+      containers:
+        - name: clickhouse
+          image: {{ .Values.clickhouse.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: 8123
+            - containerPort: 9000
+          env:
+            - name: CLICKHOUSE_DB
+              value: era_xdr
+            - name: CLICKHOUSE_USER
+              value: {{ .Values.clickhouse.user | quote }}
+            - name: CLICKHOUSE_PASSWORD
+              value: {{ .Values.clickhouse.password | quote }}
+{{- end }}

@@ -1,0 +1,22 @@
+[
+  {
+    "case": "agent_id_match",
+    "node_id": "node-a",
+    "rule": "agent_id"
+  },
+  {
+    "case": "serial_after_reinstall",
+    "node_id": "node-a",
+    "rule": "serial"
+  },
+  {
+    "case": "mac_overlap",
+    "node_id": "node-a",
+    "rule": "mac"
+  },
+  {
+    "case": "hostname_hint",
+    "node_id": "node-a",
+    "rule": "hostname"
+  }
+]

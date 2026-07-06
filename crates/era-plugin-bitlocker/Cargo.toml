@@ -1,0 +1,16 @@
+[package]
+name = "era-plugin-bitlocker"
+version = "0.1.0"
+edition = "2021"
+description = "ERA Manage — BitLocker on-demand (status + escrow request stub)"
+license = "Proprietary"
+
+[dependencies]
+era-plugin-sdk = { path = "../era-plugin-sdk" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+
+[[bin]]
+name = "era-plugin-bitlocker"
+path = "src/main.rs"

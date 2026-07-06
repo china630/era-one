@@ -1,0 +1,12 @@
+id: era-curated-027
+title: Curated detection 027 (TA0005)
+status: stable
+level: medium
+tags:
+  - attack.T1026
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-curated-027"
+  condition: selection

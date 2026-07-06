@@ -1,0 +1,10 @@
+id: era-sigma-0414
+title: ERA detection rule 0414 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0414"
+  condition: selection

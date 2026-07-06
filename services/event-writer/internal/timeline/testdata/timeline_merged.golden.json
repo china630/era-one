@@ -1,0 +1,38 @@
+[
+  {
+    "kind": "event",
+    "at": "2026-07-01T10:00:00Z",
+    "node_id": "n1",
+    "severity": "medium",
+    "category": "process",
+    "source": "agent",
+    "summary": "cmd.exe"
+  },
+  {
+    "kind": "detection",
+    "at": "2026-07-01T10:00:03Z",
+    "node_id": "n1",
+    "severity": "high",
+    "source": "sigma",
+    "summary": "Suspicious PowerShell",
+    "detection_id": "det-1"
+  },
+  {
+    "kind": "event",
+    "at": "2026-07-01T10:00:05Z",
+    "node_id": "n1",
+    "severity": "low",
+    "category": "network",
+    "source": "agent",
+    "summary": "outbound 443"
+  },
+  {
+    "kind": "event",
+    "at": "2026-07-01T10:00:08Z",
+    "node_id": "n1",
+    "severity": "medium",
+    "category": "auth",
+    "source": "byo-edr",
+    "summary": "failed logon"
+  }
+]

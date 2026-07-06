@@ -1,0 +1,108 @@
+# ERA One — Prometheus scrape config (S-03)
+
+global:
+
+  scrape_interval: 15s
+
+  evaluation_interval: 15s
+
+
+
+scrape_configs:
+
+  - job_name: era-ingest-gateway
+
+    metrics_path: /metrics
+
+    static_configs:
+
+      - targets: ["ingest-gateway:8082"]
+
+        labels:
+
+          service: ingest-gateway
+
+
+
+  - job_name: era-event-writer
+
+    metrics_path: /metrics
+
+    static_configs:
+
+      - targets: ["event-writer:8089"]
+
+        labels:
+
+          service: event-writer
+
+
+
+  - job_name: era-control-plane
+
+    metrics_path: /metrics
+
+    static_configs:
+
+      - targets: ["control-plane:8090"]
+
+        labels:
+
+          service: control-plane
+
+
+
+  - job_name: era-detection-engine
+
+    metrics_path: /metrics
+
+    static_configs:
+
+      - targets: ["detection-engine:8097"]
+
+        labels:
+
+          service: detection-engine
+
+
+
+  - job_name: era-ai-core
+
+    metrics_path: /metrics
+
+    static_configs:
+
+      - targets: ["ai-core:8091"]
+
+        labels:
+
+          service: ai-core
+
+
+
+  - job_name: era-soar
+
+    metrics_path: /metrics
+
+    static_configs:
+
+      - targets: ["soar:8092"]
+
+        labels:
+
+          service: soar
+
+
+
+  - job_name: era-observe
+
+    metrics_path: /metrics
+
+    static_configs:
+
+      - targets: ["observe:8132"]
+
+        labels:
+
+          service: observe
+

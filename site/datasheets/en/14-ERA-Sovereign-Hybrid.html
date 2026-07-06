@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ERA One — Sovereign Hybrid</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr">
+    <img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA Sovereign Hybrid<span class="sub">Data at home — support like the cloud</span></h1>
+    <p class="lead">A modern operating model without losing sovereignty: the platform, data lake,
+      AI, and investigation materials <b>remain in your perimeter</b>, while protection updates, licenses, and
+      support telemetry are delivered from the ERA cloud over an <b>outbound</b> channel.
+      The answer to "we need on-prem, but without the cloud we fall behind in operations."</p>
+
+    <h2>How it works</h2>
+    <div class="flow">
+      <span class="node">Agents</span><span class="arr">&rsaquo;</span>
+      <span class="node k">Data lake · AI · Cases — in customer perimeter</span><span class="arr">&rsaquo;</span>
+      <span class="node">Relay (outbound only)</span><span class="arr">&rsaquo;</span>
+      <span class="node k">ERA cloud: licenses · updates · support</span>
+    </div>
+    <p class="note-int">Hybrid mode is enabled deliberately and configured by policy. Fully
+      isolated mode (air-gap) remains available with no outbound connections whatsoever.</p>
+
+    <h2>What stays in the perimeter, what goes outbound</h2>
+    <table class="cmp">
+      <tr><th>Always in your perimeter</th><th>Outbound (only per your policy)</th></tr>
+      <tr><td>Raw events and telemetry</td><td>Licenses and subscription renewal</td></tr>
+      <tr><td>Data lake (ClickHouse / MinIO)</td><td>Rule, CVE, AI pack updates</td></tr>
+      <tr><td>AI inference (LLM in perimeter)</td><td>Certificate revocation list (CRL)</td></tr>
+      <tr><td>Cases, investigations, personal data</td><td>Support telemetry (by tier)</td></tr>
+      <tr><td class="win">Never leave the perimeter</td><td>De-identified indicators — only if you allow</td></tr>
+    </table>
+
+    <h2>Solution components</h2>
+    <table class="cmp">
+      <tr><th>Component</th><th>Location</th><th>Purpose</th></tr>
+      <tr><td><b>ERA Cloud Portal</b></td><td>ERA cloud</td><td>Licenses and contracts, subscription renewal, revocation list, health status ingestion</td></tr>
+      <tr><td><b>ERA Update Service</b></td><td>ERA cloud</td><td>Delivery of signed content: rules, CVE, connectors, AI packs (also works via offline package)</td></tr>
+      <tr><td><b>ERA Hybrid Relay</b></td><td>Your perimeter</td><td>Single outbound channel with logging and allowlist</td></tr>
+      <tr><td><b>ERA Managed View</b></td><td>ERA cloud</td><td>Your integrator / MSSP dashboard: health, licenses, versions — <b>without access to your data</b></td></tr>
+    </table>
+
+    <h2>Two deployment profiles</h2>
+    <table class="cmp">
+      <tr><th>Criteria</th><th>ERA Sovereign (air-gap)</th><th>ERA Sovereign Hybrid</th></tr>
+      <tr><td>Data / data lake / AI / cases</td><td class="win">In perimeter</td><td class="win">In perimeter</td></tr>
+      <tr><td>Protection updates</td><td>Offline package</td><td class="win">Automatic from ERA cloud</td></tr>
+      <tr><td>Outbound connectivity</td><td>None</td><td>Outbound only, per policy</td></tr>
+      <tr><td>Best for</td><td>Public sector, critical infrastructure, strict air-gap</td><td>Banking, large enterprise: sovereignty + convenient operations</td></tr>
+    </table>
+
+    <h2>For security and procurement</h2>
+    <div class="benefits">
+      <div>Transparent flow diagram: clear what goes where.</div>
+      <div>Personal data and investigation materials are never sent outbound.</div>
+      <div>Outbound channel — one, with log and allowlist.</div>
+      <div>Regional or customer-hosted Portal available.</div>
+      <div>Data processing agreement (DPA) and flow diagram included.</div>
+      <div>Always possible to switch to fully isolated mode.</div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Head Office</b>Geneva, Switzerland</div>
+      <div class="col"><b>Engineering Center</b>Warsaw, Poland</div>
+      <div class="col"><b>Contact</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

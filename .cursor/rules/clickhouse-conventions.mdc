@@ -1,0 +1,39 @@
+---
+description: Конвенции ClickHouse DDL для ERA XDR (движки, ORDER BY, TTL-tiering, дедуп)
+globs: deploy/clickhouse/**
+alwaysApply: false
+---
+
+# ClickHouse DDL — конвенции (ADR-0004, ADR-0007)
+
+Схема обслуживает конверт событий (ADR-0001) и нагрузку ~300 ТБ/год.
+
+## Движки
+
+- Сырьё событий — `ReplacingMergeTree(ingested_at)` для дедупа (at-least-once).
+- Алерты/детекции — `ReplacingMergeTree()`, малый объём, долгий retention.
+- Агрегаты/rollup — `SummingMergeTree` + Materialized View.
+
+## Ключи и партиционирование
+
+- `ORDER BY (tenant_id, node_id, observed_at, event_id)` — совпадает с Kafka
+  partition key (`tenant_id|node_id`); `event_id` в конце обеспечивает дедуп.
+- `PARTITION BY toYYYYMMDD(observed_at)` для сырья (посуточно), `toYYYYMM` для алертов.
+
+## TTL-tiering (обязательно)
+
+```sql
+TTL toDateTime(observed_at) + INTERVAL 7 DAY  TO VOLUME 'cold',
+    toDateTime(observed_at) + INTERVAL 365 DAY DELETE
+SETTINGS storage_policy = 'tiered'
+```
+
+- hot (NVMe) → cold (MinIO/S3) → удаление. Шумные классы — короткий TTL + rollup.
+
+## Прочее
+
+- `LowCardinality(String)` для повторяющихся строк (tenant, severity, platform).
+- Skip-индексы (`bloom_filter`) по `mitre_techniques`, `detection_rule_id` для hunting.
+- Миграции — нумерованные файлы (`NNN_*.sql`); storage policy (`*.xml`) монтируется
+  в `config.d` ДО создания таблиц с `TO VOLUME`.
+- PII в открытом виде в таблицы не пишется (приходит уже sanitized, ADR-0009).

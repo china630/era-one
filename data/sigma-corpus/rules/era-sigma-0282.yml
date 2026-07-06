@@ -1,0 +1,10 @@
+id: era-sigma-0282
+title: ERA detection rule 0282 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0282"
+  condition: selection

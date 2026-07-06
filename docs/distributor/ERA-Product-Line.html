@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ERA One — Product Line (internal)</title>
+<link rel="stylesheet" href="assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr">
+    <img class="logo-full" src="assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA One — продуктовая линейка<span class="sub">Внутренний справочник presales · v1.5 · 1 июля 2026</span></h1>
+    <p class="meta">Аудитория: отдел продаж, пресейл, дистрибьюторы. Клиентские датащиты — без статусов GA/Roadmap.</p>
+    <p class="lead">Единая суверенная платформа: один лёгкий агент и серверные издания по лицензии.
+      <b>On-prem / air-gap</b>, без зарубежного облака. Ниже — честная карта готовности изданий.</p>
+
+    <div class="legend">
+      <span class="badge ga">GA</span> в продукте сегодня &nbsp;
+      <span class="badge opt">GA-опция</span> опция лицензии &nbsp;
+      <span class="badge road">Roadmap</span> в дорожной карте (см. §4)
+    </div>
+
+    <h2>1. Карта изданий</h2>
+    <table class="cmp"><tr><th>№</th><th>Издание</th><th>Что даёт</th><th>Тип</th></tr><tr><td class="num">01</td><td><b>ERA Core (XDR)</b><span class="badge ga">GA</span></td><td>Телеметрия, озеро данных, Sigma + MITRE, активы, кейсы, SOC-портал.</td><td>Фундамент</td></tr><tr><td class="num">02</td><td><b>ERA Control AI</b><span class="badge ga">GA</span></td><td>ИИ-расследование: storyline, вердикт. LLM внутри контура.</td><td>Апсейл</td></tr><tr><td class="num">03</td><td><b>ERA Response</b><span class="badge ga">GA</span></td><td>SOAR: изоляция хоста, блок IP, тикет ITSM.</td><td>Апсейл</td></tr><tr><td class="num">04</td><td><b>ERA Vuln</b><span class="badge opt">GA-опция</span></td><td>CVE-скан, расписания, credentialed-скан.</td><td>Опция</td></tr><tr><td class="num">05</td><td><b>ERA Federated / National</b><span class="badge opt">GA-опция</span></td><td>STIX/TAXII, обмен IoC между контурами.</td><td>Опция гос/холдинг</td></tr><tr><td class="num">06</td><td><b>ERA Workbench</b><span class="badge road">Roadmap</span></td><td>Единый timeline: endpoint + identity + network + email.</td><td>Усиление Core</td></tr><tr><td class="num">07</td><td><b>ERA Exposure</b><span class="badge road">Roadmap</span></td><td>Локальный CREM: risk score актива в контуре.</td><td>Усиление Vuln/Core</td></tr><tr><td class="num">08</td><td><b>ERA BYO-EDR Hub</b><span class="badge road">Roadmap</span></td><td>Телеметрия сторонних EDR в единое озеро.</td><td>Миграция / гибрид</td></tr><tr><td class="num">09</td><td><b>ERA Manage</b><span class="badge road">Roadmap</span></td><td>UEM: ITAM, патчи, App/USB Control, BitLocker, Virtual Patching.</td><td>IT-Ops</td></tr><tr><td class="num">10</td><td><b>ERA Service</b><span class="badge road">Roadmap</span></td><td>ITSM-lite: сервис-деск, SLA, CMDB.</td><td>IT-Ops</td></tr><tr><td class="num">11</td><td><b>ERA Provision</b><span class="badge road">Roadmap</span></td><td>PXE/imaging bare-metal, авто-регистрация агента.</td><td>IT-Ops</td></tr><tr><td class="num">12</td><td><b>ERA PAM</b><span class="badge road">Roadmap</span></td><td>Vault, SSH/RDP-прокси, запись сессий.</td><td>PAM</td></tr><tr><td class="num">13</td><td><b>ERA Observe</b><span class="badge road">Roadmap</span></td><td>SNMP, NetFlow, discovery (agentless).</td><td>Сеть</td></tr></table>
+    <p class="note-int"><b>Терминология:</b> ERA Core = база XDR; ERA Manage = IT-Ops. Разные издания, включаются по лицензии.</p>
+
+    <h2>2. Готовые bundle</h2>
+    <table class="cmp"><tr><th>Bundle</th><th>Состав</th><th>Кому</th></tr><tr><td><b>Старт SecOps</b></td><td>ERA Core + ERA Control AI + ERA Response</td><td>Greenfield SOC, банк, гос</td></tr><tr><td><b>+ Уязвимости</b></td><td>+ ERA Vuln</td><td>Требование VM/CTEM</td></tr><tr><td><b>ERA IT-Ops</b></td><td>ERA Core + Manage + Service + Provision</td><td>Замена legacy-UEM в контуре</td></tr><tr><td><b>ERA Unified / Sovereign Stack</b></td><td>XDR (Core+AI+Response) + Manage + Service + Observe</td><td>Единый локальный вендор IT + Security</td></tr><tr><td><b>+ PAM</b></td><td>+ ERA PAM</td><td>Корпоративный сейф паролей админов</td></tr></table>
+
+    <h2>3. Ориентир по срокам (внутренний)</h2>
+    <table class="cmp"><tr><th>Возможность</th><th>Издание</th><th>Код (AI-assisted)</th><th>Гейты</th></tr><tr><td>Workbench</td><td>ERA Core</td><td>3–5 нед</td><td>—</td></tr><tr><td>Exposure</td><td>ERA Exposure</td><td>4–6 нед</td><td>—</td></tr><tr><td>BYO-EDR adapters</td><td>era-collectors</td><td>2–4 нед / адаптер</td><td>—</td></tr><tr><td>CMDB + финансовый ITAM</td><td>ERA Manage</td><td>2–4 нед</td><td>—</td></tr><tr><td>Application Control</td><td>ERA Manage</td><td>2–4 нед</td><td>подпись драйвера + security-review</td></tr><tr><td>Device Control (USB)</td><td>ERA Manage</td><td>2–4 нед</td><td>подпись драйвера + security-review</td></tr><tr><td>Virtual Patching</td><td>ERA Manage</td><td>3–5 нед</td><td>подпись драйвера + security-review</td></tr><tr><td>BitLocker mgmt</td><td>ERA Manage</td><td>1–2 нед</td><td>хранение ключей</td></tr><tr><td>Развёртывание ПО / патчи</td><td>ERA Manage</td><td>3–6 нед</td><td>пилот rollout</td></tr><tr><td>ITSM-lite</td><td>ERA Service</td><td>3–6 нед</td><td>—</td></tr><tr><td>OS Provisioning</td><td>ERA Provision</td><td>3–6 нед</td><td>пилот rollout</td></tr><tr><td>PAM</td><td>ERA PAM</td><td>4–8 нед</td><td>крипто-аудит (vault/HSM)</td></tr><tr><td>Network monitoring</td><td>ERA Observe</td><td>4–8 нед (или PRTG 1–2 нед)</td><td>—</td></tr><tr><td>Sovereign Hybrid MVP (Hybrid-0)</td><td>ERA Core + Portal</td><td>4–8 нед</td><td>ops (Portal) + DPA/схема потоков AZ</td></tr></table>
+    <p class="note-int">Вне продукта (ADR-0016): MDM/Mobile UEM и VPN/ZTNA — зона интеграции, не наше издание.</p>
+
+    <h2>4. Запрос «в стиле ManageEngine»</h2>
+    <table class="cmp"><tr><th>Позиция запроса</th><th>Наш ответ</th><th>Статус</th></tr><tr><td>Vulnerability Management</td><td><b>ERA Vuln</b></td><td>GA-опция</td></tr><tr><td>Базовый UEM</td><td><b>ERA Manage</b></td><td>Roadmap</td></tr><tr><td>Application Control</td><td><b>ERA Manage</b></td><td>Roadmap</td></tr><tr><td>BitLocker</td><td><b>ERA Manage</b></td><td>Roadmap</td></tr><tr><td>Доп. SOC-аналитика</td><td><b>ERA Control AI + Response</b></td><td>GA</td></tr><tr><td>Password Manager Pro (PAM)</td><td><b>ERA PAM</b></td><td>Roadmap</td></tr></table>
+    <p class="lead" style="margin-top:8px">Питч: единый агент и модули по лицензии — SecOps + IT-Ops из одной консоли в контуре заказчика.</p>
+
+    <h2>5. Модель развёртывания и ответ на «а где ваш cloud?»</h2>
+    <p class="lead" style="margin-bottom:6px">Возражение рынка: «без облака/гибрида не возьмут». Ответ — <b>Sovereign Hybrid</b>
+      (ADR-0018): отделяем <b>данные</b> (всегда в контуре) от <b>эксплуатации</b> (обновления/лицензии/сопровождение — из облака ERA).
+      Мы <b>не</b> строим SaaS-клон Cortex Cloud как ближайший шаг.</p>
+    <table class="cmp"><tr><th>Критерий</th><th>Sovereign (air-gap)</th><th>Sovereign Hybrid</th><th>Cloud (SaaS)</th></tr><tr><td>Данные / озеро / ИИ / кейсы</td><td>В контуре заказчика</td><td>В контуре заказчика</td><td>У заказчика или private cloud</td></tr><tr><td>Связь с вендором</td><td>Нет (air-gap)</td><td>Outbound-only через Relay</td><td>Полная (SaaS)</td></tr><tr><td>Лицензия</td><td>Offline Ed25519</td><td>Offline + lease</td><td>Subscription + metering</td></tr><tr><td>Обновления (Sigma/CVE/AI)</td><td>Offline-пакет (носитель)</td><td>Pull из ERA Update Service</td><td>Управляется вендором</td></tr><tr><td>Health / сопровождение</td><td>Нет</td><td>По policy (уровни A/B/C)</td><td>Полное у вендора</td></tr><tr><td>Целевой клиент</td><td>Госсектор, КИИ, air-gap</td><td>Банк: данные дома, ops у вендора</td><td>Mid-market, филиалы</td></tr><tr><td>Статус ERA</td><td>GA (текущий фокус)</td><td>Roadmap (Hybrid-0)</td><td>Вне scope — по спросу</td></tr></table>
+    <p class="note-int"><b>Инвариант:</b> сырьё, PII и кейсы не покидают контур ни в одном режиме. Наружу — только
+      метаданные, обновления, лицензии и (opt-in) обезличенные индикаторы.</p>
+
+    <h3>Именованные компоненты (ADR-0018 §1.1)</h3>
+    <table class="cmp"><tr><th>Компонент</th><th>Где / деплой</th><th>Роль</th></tr><tr><td><b>ERA Cloud Portal</b></td><td>Вендор — ядро-сервис</td><td>Лицензии/контракты, выпуск lease, CRL, приём health; зонтик control plane</td></tr><tr><td><b>ERA Update Service</b></td><td>Вендор — отдельный сервис</td><td>Конвейер подписи + доставка контента (Sigma/CVE/коннекторы/AI-паки); работает и в air-gap (носитель)</td></tr><tr><td><b>ERA Hybrid Relay</b></td><td>Контур клиента — модуль control-plane</td><td>Единственный outbound-only канал: lease/CRL/updates + health/opt-in TI; egress allowlist + audit</td></tr><tr><td><b>ERA Managed View</b></td><td>Вендор — модуль Portal (RBAC)</td><td>Мульти-клиентский пульт для MSSP/партнёра: health, лицензии, версии — без доступа к сырью и кейсам</td></tr></table>
+    <p class="note-int"><b>Гранулярность:</b> Update Service — отдельный сервис (свой конвейер подписи, dual-use pull+offline);
+      Managed View — модуль Portal с RBAC (выносится при white-label / мультитенантности партнёров).
+      <b>BYO-EDR ≠ hybrid:</b> BYO-EDR — чужой EDR в наш lake (ADR-0017); hybrid — канал к вендору ERA.</p>
+    <p class="note-int"><b>AZ:</b> режим «hybrid minimal» (lease + updates + CRL, health A, TI off) + DPA + схема потоков;
+      Portal region AZ/EU или self-hosted для госа.</p>
+
+    <p class="note-int">Связанные материалы: ERA-One-DataSheet.pdf · datasheets/01–13 · head-to-head/ · ADR-0011, 0012, 0013, 0016, 0017, 0018</p>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Head Office</b>Geneva, Switzerland</div>
+      <div class="col"><b>Engineering Center</b>Warsaw, Poland</div>
+      <div class="col"><b>Contact</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

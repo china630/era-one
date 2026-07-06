@@ -1,0 +1,12 @@
+id: era-curated-100
+title: Curated detection 100 (TA0001)
+status: stable
+level: medium
+tags:
+  - attack.T1099
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-curated-100"
+  condition: selection

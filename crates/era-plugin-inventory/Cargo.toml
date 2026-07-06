@@ -1,0 +1,16 @@
+[package]
+name = "era-plugin-inventory"
+version = "0.1.0"
+edition = "2021"
+description = "ERA One — inventory plugin (cron, sysinfo → NDJSON)"
+license = "Proprietary"
+
+[dependencies]
+era-plugin-sdk = { path = "../era-plugin-sdk" }
+sysinfo = "0.32"
+serde_json = "1"
+anyhow = "1"
+
+[[bin]]
+name = "era-plugin-inventory"
+path = "src/main.rs"

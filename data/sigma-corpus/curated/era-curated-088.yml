@@ -1,0 +1,12 @@
+id: era-curated-088
+title: Curated detection 088 (TA0011)
+status: stable
+level: medium
+tags:
+  - attack.T1087
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-curated-088"
+  condition: selection

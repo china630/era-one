@@ -1,0 +1,12 @@
+id: era-curated-auth-fail
+title: Failed logon
+status: stable
+level: medium
+tags:
+  - attack.T1110
+logsource:
+  category: auth
+detection:
+  selection:
+    Success|contains: "false"
+  condition: selection

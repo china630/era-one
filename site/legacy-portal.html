@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERA One</title>
+  <meta name="description" content="" />
+  <link rel="stylesheet" href="assets/portal.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <img class="logo" src="assets/era-one-logo.png" alt="ERA One" />
+      <nav>
+        <a href="#products" data-i18n="navProducts">Продукты</a>
+        <a href="#why" data-i18n="navWhy">Почему ERA</a>
+        <a href="#calc" data-i18n="navCalc">Калькулятор</a>
+        <a href="#contacts" data-i18n="navContacts">Контакты</a>
+      </nav>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="ru" class="active">RU</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+      <a class="cta" href="#calc" data-i18n="navCta">Рассчитать цену</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="tag" data-i18n="heroTag">Sovereign Security &amp; IT-Ops · Air-gap ready</div>
+      <h1 data-i18n="heroH1">ERA One — защита и управление, которые не покидают ваш периметр</h1>
+      <p class="lead" data-i18n="heroLead">
+        Единый лёгкий агент, модульные лицензии и ИИ-аналитик внутри изолированного контура.
+        XDR, уязвимости, UEM, ITSM, PAM и мониторинг — на одной платформе, без облака и phone-home.
+      </p>
+      <div class="pills">
+        <span class="pill" data-i18n="pill1">Один агент — все модули</span>
+        <span class="pill" data-i18n="pill2">Работает офлайн (air-gap)</span>
+        <span class="pill" data-i18n="pill3">ИИ-аналитик в контуре</span>
+        <span class="pill" data-i18n="pill4">Sigma + MITRE ATT&amp;CK</span>
+        <span class="pill" data-i18n="pill5">Лицензирование по модулям</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="products">
+    <div class="wrap">
+      <h2 data-i18n="productsH2">Продуктовая линейка</h2>
+      <p class="sub" data-i18n="productsSub">Один агент — модули активируются лицензией и тарифицируются отдельно.</p>
+      <div id="product-groups"></div>
+    </div>
+  </section>
+
+  <section id="why" class="section-alt">
+    <div class="wrap">
+      <h2 data-i18n="whyH2">Почему ERA One</h2>
+      <div class="cards">
+        <div class="card"><div class="nm" data-i18n="why1t">Суверенность</div><div class="ds" data-i18n="why1d">Данные и ИИ не покидают контур заказчика.</div></div>
+        <div class="card"><div class="nm" data-i18n="why2t">Air-gap by design</div><div class="ds" data-i18n="why2d">Полноценная работа в изолированной сети.</div></div>
+        <div class="card"><div class="nm" data-i18n="why3t">Один агент</div><div class="ds" data-i18n="why3d">Лёгкий бюджет ресурсов.</div></div>
+        <div class="card"><div class="nm" data-i18n="why4t">Гибкая лицензия</div><div class="ds" data-i18n="why4d">Платите только за нужные модули.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="calc">
+    <div class="wrap">
+      <h2 data-i18n="calcH2">Калькулятор стоимости</h2>
+      <p class="sub" data-i18n="calcSub">Индикативный расчёт по региональному прайсу.</p>
+      <div class="calc">
+        <div class="panel calc-form">
+          <h3 data-i18n="calcParams">Параметры</h3>
+
+          <div class="calc-grid">
+            <div class="field field-full" id="region">
+              <label data-i18n="calcRegion">Регион</label>
+              <div class="seg">
+                <button type="button" data-region="cis" data-i18n="regionCis">СНГ (−50%)</button>
+                <button type="button" data-region="eu" data-i18n="regionEu">EU / Global</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="ws" data-i18n="calcWs">Рабочих станций</label>
+              <input type="number" id="ws" min="0" />
+            </div>
+            <div class="field">
+              <label for="servers" data-i18n="calcServers">Серверов (×3)</label>
+              <input type="number" id="servers" min="0" />
+            </div>
+
+            <div class="field field-full">
+              <label for="bundle" data-i18n="calcBundle">Готовый пакет</label>
+              <select id="bundle"></select>
+            </div>
+
+            <div class="field field-full">
+              <label for="term" data-i18n="calcTerm">Срок лицензии</label>
+              <select id="term"></select>
+            </div>
+          </div>
+
+          <h3 class="modules-title" data-i18n="calcModules">Модули</h3>
+          <div class="modules" id="modules"></div>
+        </div>
+
+        <div class="panel summary">
+          <h3 data-i18n="calcSummary">Ориентировочная стоимость</h3>
+          <div id="result"></div>
+          <div class="note region-note" id="region-note" style="display:none;" data-i18n="calcRegionNote">
+            Для стран СНГ действует региональная скидка −50% от базовой (EU) цены.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="ftr" id="contacts">
+    <div class="wrap">
+      <div class="cols">
+        <div class="col">
+          <b>ERA One</b>
+          <span data-i18n="footerTag">Суверенная платформа Security &amp; IT-Ops<br />для изолированного контура.</span>
+        </div>
+        <div class="col">
+          <b data-i18n="footerSales">Продажи</b>
+          <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br />
+          <a href="https://www.era-one.solutions">www.era-one.solutions</a>
+        </div>
+        <div class="col">
+          <b data-i18n="footerDocs">Документы</b>
+          <span data-i18n="footerDocsList">Прайс-лист · Datasheet · Whitepaper</span><br />
+          <span class="hint" data-i18n="footerDocsHint">(запросить у отдела продаж)</span>
+        </div>
+      </div>
+      <div class="fine" data-i18n="footerFine">
+        Цены на портале — индикативные и не являются публичной офертой.
+      </div>
+    </div>
+  </footer>
+
+  <script src="pricing-data.js"></script>
+  <script src="assets/i18n.js"></script>
+  <script src="assets/lang.js"></script>
+  <script src="assets/products.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
