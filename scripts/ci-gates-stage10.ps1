@@ -8,6 +8,20 @@ $Root = Split-Path -Parent $PSScriptRoot
 
 Set-Location $Root
 
+function Invoke-CargoTest {
+    param([string]$Filter = "")
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    if ($Filter) {
+        cargo test $Filter
+    } else {
+        cargo test
+    }
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = $prev
+    return $code
+}
+
 $tests = @(
     "./services/platform/licensegate/...",
     "./services/platform/httpserver/...",
@@ -52,8 +66,12 @@ if (Test-Path "services/control-plane/internal/store/parity_test.go") {
     $pgPort = 55432 + (Get-Random -Maximum 1000)
     $pgStarted = $false
     try {
+        $prevEA = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
         docker run -d --name $pgName -e POSTGRES_USER=era -e POSTGRES_PASSWORD=era_ci_pw -e POSTGRES_DB=era_cp -p "${pgPort}:5432" postgres:16-alpine 2>$null | Out-Null
-        if ($LASTEXITCODE -eq 0) {
+        $dockerExit = $LASTEXITCODE
+        $ErrorActionPreference = $prevEA
+        if ($dockerExit -eq 0) {
             $pgStarted = $true
             $deadline = (Get-Date).AddSeconds(45)
             while ((Get-Date) -lt $deadline) {
@@ -85,35 +103,22 @@ if (Test-Path "services/event-writer/internal/timeline/testdata/timeline_merged.
 
 Write-Host "==> PII golden (agent)" -ForegroundColor Cyan
 Push-Location crates/era-agent
-$prev = $ErrorActionPreference
-$ErrorActionPreference = "Continue"
-cmd /c "cargo test golden_pii 2>nul"
-$code = $LASTEXITCODE
-$ErrorActionPreference = $prev
+$code = Invoke-CargoTest -Filter "golden_pii"
 if ($code -ne 0) { Pop-Location; exit 1 }
 Pop-Location
 
 Write-Host "==> Agent budget + tamper prod guard" -ForegroundColor Cyan
 Push-Location crates/era-agent-core
-$prev = $ErrorActionPreference
-$ErrorActionPreference = "Continue"
-cmd /c "cargo test budget_guard:: 2>nul"
-$code = $LASTEXITCODE
+$code = Invoke-CargoTest -Filter "budget_guard::"
 if ($code -eq 0) {
-    cmd /c "cargo test tamper:: 2>nul"
-    $code = $LASTEXITCODE
+    $code = Invoke-CargoTest -Filter "tamper::"
 }
-$ErrorActionPreference = $prev
 if ($code -ne 0) { Pop-Location; exit 1 }
 Pop-Location
 
 Write-Host "==> era-plugin-vuln (L-05)" -ForegroundColor Cyan
 Push-Location crates/era-plugin-vuln
-$prev = $ErrorActionPreference
-$ErrorActionPreference = "Continue"
-cmd /c "cargo test 2>nul"
-$code = $LASTEXITCODE
-$ErrorActionPreference = $prev
+$code = Invoke-CargoTest
 Pop-Location
 if ($code -ne 0) { exit 1 }
 
