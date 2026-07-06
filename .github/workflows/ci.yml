@@ -105,5 +105,4 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Stage 10 CI gates
-        shell: pwsh
-        run: ./scripts/ci-gates-stage10.ps1
+        run: bash scripts/ci-gates-stage10.sh
