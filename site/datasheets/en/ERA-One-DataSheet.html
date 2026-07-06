@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ERA One — Data Sheet</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA One — unified security and IT-Ops platform</h1>
+    <p class="lead">A sovereign platform that combines XDR and IT infrastructure management in a single
+      lightweight agent and a single console. Runs entirely within the customer perimeter —
+      <b>on-prem / air-gap</b>, with no foreign cloud. One agent, one platform,
+      one control center instead of a "zoo" of 5–6 systems and subscriptions.</p>
+
+    <h2>Platform editions</h2>
+    <div class="grid">
+      <div class="card"><div class="nm">ERA Core (XDR)</div><div class="ds">Telemetry, data lake, Sigma + MITRE, assets, cases, SOC portal.</div></div>
+      <div class="card"><div class="nm">ERA Control AI</div><div class="ds">AI investigation: storyline, verdict. LLM inside the perimeter.</div></div>
+      <div class="card"><div class="nm">ERA Response</div><div class="ds">SOAR: host isolation, IP block, ITSM ticket.</div></div>
+      <div class="card"><div class="nm">ERA Vuln</div><div class="ds">CVE scan, schedules, credentialed scan.</div></div>
+      <div class="card"><div class="nm">ERA Federated / National</div><div class="ds">STIX/TAXII, IoC exchange between perimeters.</div></div>
+      <div class="card"><div class="nm">ERA Workbench</div><div class="ds">Unified timeline: endpoint + identity + network + email.</div></div>
+      <div class="card"><div class="nm">ERA Exposure</div><div class="ds">Local CREM: asset risk score within the perimeter.</div></div>
+      <div class="card"><div class="nm">ERA BYO-EDR Hub</div><div class="ds">Third-party EDR telemetry into a unified data lake.</div></div>
+      <div class="card"><div class="nm">ERA Manage</div><div class="ds">UEM: ITAM, patches, App/USB Control, BitLocker, Virtual Patching.</div></div>
+      <div class="card"><div class="nm">ERA Service</div><div class="ds">ITSM-lite: service desk, SLA, CMDB.</div></div>
+      <div class="card"><div class="nm">ERA Provision</div><div class="ds">PXE/imaging bare-metal, automatic agent registration.</div></div>
+      <div class="card"><div class="nm">ERA PAM</div><div class="ds">Vault, SSH/RDP proxy, session recording.</div></div>
+      <div class="card"><div class="nm">ERA Observe</div><div class="ds">SNMP, NetFlow, discovery (agentless).</div></div>
+    </div>
+  </div>
+</div>
+<div class="page page-stretch">
+  <div class="body">
+    <h2>Engineering heritage</h2>
+    <div class="heritage">
+      <div class="origin"><div class="o-nm">Promisec</div><div class="o-tag">Infrastructure Intelligence</div><div class="o-ds">Continuous configuration audit and compliance control — the foundation of endpoint management.</div></div>
+      <div class="origin"><div class="o-nm">Sirin Labs</div><div class="o-tag">Secure-by-Design</div><div class="o-ds">Threat isolation, channel protection, and security at the core architecture level.</div></div>
+      <div class="origin"><div class="o-nm">Syrinx Systems</div><div class="o-tag">High-Performance Telemetry</div><div class="o-ds">Ultra-lightweight telemetry collection and network monitoring without network overhead.</div></div>
+    </div>
+
+    <h2>Platform architecture</h2>
+    <div class="flow">
+      <span class="node k">ERA One</span><span class="arr">&rsaquo;</span>
+      <span class="node">Editions (XDR / Manage / Service / PAM …)</span><span class="arr">&rsaquo;</span>
+      <span class="node">Management server + Data Lake</span><span class="arr">&rsaquo;</span>
+      <span class="node">Local repository (MinIO)</span><span class="arr">&rsaquo;</span>
+      <span class="node k">One Agent</span><span class="arr">&rsaquo;</span>
+      <span class="node">Windows / Linux / macOS / servers</span><span class="arr">&rsaquo;</span>
+      <span class="node">Web console</span>
+    </div>
+
+    <h2>Deployment model</h2>
+    <p class="lead" style="margin-bottom:6px">One platform — two deployment profiles. Data, data lake,
+      AI, and investigations <b>always remain in your perimeter</b>; outbound traffic is limited to licenses,
+      protection updates, and support telemetry (only if you allow it).</p>
+    <table class="cmp">
+      <tr><th>Criteria</th><th>ERA Sovereign (air-gap)</th><th>ERA Sovereign Hybrid</th></tr>
+      <tr><td>Data, data lake, AI, cases</td><td class="win">In customer perimeter</td><td class="win">In customer perimeter</td></tr>
+      <tr><td>Rule / CVE / AI pack updates</td><td>Offline package (removable media)</td><td class="win">Automatic from ERA cloud</td></tr>
+      <tr><td>Licensing and support</td><td>Offline key</td><td>Online subscription + offline fallback</td></tr>
+      <tr><td>Outbound connectivity</td><td>None (full isolation)</td><td>Outbound only, per policy</td></tr>
+      <tr><td>Best for</td><td>Public sector, critical infrastructure, strict air-gap</td><td>Banking: "data at home, support like the cloud"</td></tr>
+    </table>
+    <p class="note-int">Hybrid mode is enabled deliberately and is configurable: raw data, personal
+      information, and investigation materials never leave the perimeter in either mode.</p>
+
+    <h2>Enterprise benefits</h2>
+    <div class="benefits">
+      <div>One lightweight agent (CPU &lt; 2%, RAM &lt; 150 MB) and a unified console.</div>
+      <div>UEM and XDR — one organism without integration gaps.</div>
+      <div>On-prem and air-gap: data never leaves the perimeter.</div>
+      <div>Continuous protection updates — offline package or from ERA cloud (hybrid).</div>
+      <div>Offline Ed25519 licensing; PII redaction on the agent.</div>
+      <div>Scale to tens of thousands of nodes in a cluster.</div>
+      <div>Modular licenses — pay for what you use.</div>
+      <div>AD/LDAP, REST API, SIEM, STIX/TAXII, NGFW integration.</div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Head Office</b>Geneva, Switzerland</div>
+      <div class="col"><b>Engineering Center</b>Warsaw, Poland</div>
+      <div class="col"><b>Contact</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

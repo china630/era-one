@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ERA One — прайс-лист (регион СНГ)</title>
+<link rel="stylesheet" href="assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr">
+    <img class="logo-full" src="assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+<style>
+.body p { font-size: 9.8pt; }
+.body ul, .body ol { margin: 4px 0 8px 18px; font-size: 9.6pt; }
+.body li { margin: 3px 0; }
+.body a { color: var(--teal-d); text-decoration: none; }
+.body code {
+  background: #eef2f5; padding: 1px 4px; border-radius: 3px;
+  font-family: Consolas, "Cascadia Code", monospace; font-size: 8.6pt; color: #0b2a3a;
+}
+.body table.cmp td:first-child { white-space: normal; }
+.body hr { border: none; border-top: 1px solid var(--line); margin: 12px 0; }
+</style>
+<h1>ERA One — прайс-лист (регион СНГ)</h1>
+<div class="note-int">
+<p><strong>ONE AGENT. ONE PLATFORM. ONE CONTROL.</strong></p>
+</div>
+<p><strong>Редакция:</strong> 2026-07 · регион <strong>СНГ</strong> · валюта — EUR (без НДС)
+<strong>Модель:</strong> годовая подписка (доступна бессрочная лицензия — см. §5).</p>
+<div class="note-int">
+<p><strong>Для стран СНГ действует региональная скидка −50% от базовой (EU) цены.</strong> В таблицах ниже
+указаны обе цены: базовая и цена для СНГ.</p>
+</div>
+<p>Единая суверенная платформа безопасности и IT-Ops: <strong>один лёгкий агент</strong> и серверные издания,
+которые включаются по лицензии. Всё работает <strong>в вашем контуре</strong> (on-prem / air-gap) — данные
+не покидают периметр. Платите только за те модули, которые используете.</p>
+<hr />
+<h2>Как формируется цена</h2>
+<ul>
+<li><strong>Один агент — модули по лицензии.</strong> На одном хосте включается только то, что вы купили;
+  цена — <strong>за endpoint (устройство) в год</strong>, модули <strong>суммируются</strong> на одном агенте.</li>
+<li><strong>Серверная платформа</strong> (приём событий, озеро данных, консоль/SOC-портал) ставится <strong>один раз</strong>
+  в вашем контуре и <strong>входит в поставку</strong> — отдельной платы «за каждый агент» за неё нет.</li>
+<li><strong>Сервер = ×3</strong> к цене рабочей станции (если не указано иное).</li>
+<li>Наращивание функций — <strong>выпуском новой лицензии</strong>, без переустановки агента.</li>
+</ul>
+<hr />
+<h2>1. Прайс по модулям</h2>
+<table class="cmp">
+<thead>
+<tr>
+<th>Издание</th>
+<th>Единица</th>
+<th>Базовая (EU), €/год</th>
+<th>Цена СНГ (−50%), €/год</th>
+<th>Поставка</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ERA Core</strong> — XDR-база: телеметрия агента, детекция (Sigma+MITRE), кейсы, SOC-портал, Workbench</td>
+<td>endpoint</td>
+<td>12</td>
+<td><strong>6</strong></td>
+<td>серийно</td>
+</tr>
+<tr>
+<td><strong>ERA Control AI</strong> — ИИ-аналитик, расследование, LLM в контуре</td>
+<td>endpoint</td>
+<td>8</td>
+<td><strong>4</strong></td>
+<td>серийно</td>
+</tr>
+<tr>
+<td><strong>ERA Response</strong> — SOAR: изоляция хоста, блок IP, тикет</td>
+<td>endpoint</td>
+<td>4</td>
+<td><strong>2</strong></td>
+<td>серийно</td>
+</tr>
+<tr>
+<td><strong>ERA Vuln</strong> — сканер уязвимостей (CVE), credentialed-скан</td>
+<td>endpoint</td>
+<td>4</td>
+<td><strong>2</strong></td>
+<td>серийно</td>
+</tr>
+<tr>
+<td><strong>ERA Exposure</strong> — risk score актива (требует Core+Vuln)</td>
+<td>endpoint</td>
+<td>4</td>
+<td><strong>2</strong></td>
+<td>проектно</td>
+</tr>
+<tr>
+<td><strong>ERA Manage</strong> — UEM: CMDB/ITAM, deploy/patch, <strong>BitLocker + App/USB Control + консольные пользователи — включены</strong></td>
+<td>endpoint</td>
+<td>12</td>
+<td><strong>6</strong></td>
+<td>проектно</td>
+</tr>
+<tr>
+<td><strong>ERA Observe</strong> — мониторинг сети (SNMP/NetFlow/discovery)</td>
+<td>устройство</td>
+<td>6</td>
+<td><strong>3</strong></td>
+<td>проектно</td>
+</tr>
+<tr>
+<td><strong>ERA BYO-EDR Hub</strong> — приём телеметрии стороннего EDR</td>
+<td>источник</td>
+<td>4</td>
+<td><strong>2</strong></td>
+<td>проектно</td>
+</tr>
+<tr>
+<td><strong>ERA Service</strong> — ITSM: сервис-деск, SLA, портал</td>
+<td>техник (пользователи портала — 0)</td>
+<td>900</td>
+<td><strong>450</strong></td>
+<td>проектно</td>
+</tr>
+<tr>
+<td><strong>ERA Provision</strong> — развёртывание ОС (PXE/imaging)</td>
+<td>узел</td>
+<td>8</td>
+<td><strong>4</strong></td>
+<td>проектно</td>
+</tr>
+<tr>
+<td><strong>ERA PAM</strong> — сейф паролей, checkout, SSH-запись сессий</td>
+<td>администратор</td>
+<td>50</td>
+<td><strong>25</strong></td>
+<td>проектно</td>
+</tr>
+<tr>
+<td><strong>ERA PAM</strong> — управляемая цель</td>
+<td>цель</td>
+<td>30</td>
+<td><strong>15</strong></td>
+<td>проектно</td>
+</tr>
+<tr>
+<td><strong>ERA Federated</strong> — обмен IoC внутри организации</td>
+<td>контур</td>
+<td>24 000</td>
+<td><strong>12 000</strong></td>
+<td>серийно</td>
+</tr>
+<tr>
+<td><strong>ERA National</strong> — межорг. хаб STIX/TAXII</td>
+<td>хаб</td>
+<td>36 000</td>
+<td><strong>18 000</strong></td>
+<td>серийно</td>
+</tr>
+<tr>
+<td>Консольные пользователи, ERA Workbench</td>
+<td>—</td>
+<td>0</td>
+<td><strong>0</strong></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<div class="note-int">
+<p><strong>Поставка:</strong> «серийно» — доступно к отгрузке; «проектно» — поставляется в рамках проектного
+внедрения (пилот с поэтапным вводом). Точный состав и сроки — в коммерческом предложении.</p>
+</div>
+<h3>ERA Control AI — фиксированная цена для крупных парков</h3>
+<p>Для парков от нескольких тысяч узлов ИИ выгоднее по фиксированной цене (берётся меньшее из двух):</p>
+<table class="cmp">
+<thead>
+<tr>
+<th>Парк endpoints</th>
+<th>Базовая (EU), €/год</th>
+<th>Цена СНГ (−50%), €/год</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>до 1 000</td>
+<td>18 000</td>
+<td><strong>9 000</strong></td>
+</tr>
+<tr>
+<td>1 001 – 5 000</td>
+<td>45 000</td>
+<td><strong>22 500</strong></td>
+</tr>
+<tr>
+<td>5 001 – 15 000</td>
+<td>90 000</td>
+<td><strong>45 000</strong></td>
+</tr>
+<tr>
+<td>15 000+</td>
+<td>по запросу</td>
+<td>по запросу</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. Скидки за объём</h2>
+<p>Применяются к позициям, тарифицируемым за endpoint (на весь объём):</p>
+<table class="cmp">
+<thead>
+<tr>
+<th>Кол-во endpoints</th>
+<th>Скидка</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 – 250</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>251 – 1 000</td>
+<td>10%</td>
+</tr>
+<tr>
+<td>1 001 – 5 000</td>
+<td>20%</td>
+</tr>
+<tr>
+<td>5 001 – 10 000</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>10 001 – 25 000</td>
+<td>40%</td>
+</tr>
+<tr>
+<td>25 000+</td>
+<td>по запросу</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. Скидки за срок лицензии</h2>
+<table class="cmp">
+<thead>
+<tr>
+<th>Условие</th>
+<th>Скидка</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 год</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3 года, оплата ежегодно</td>
+<td>10%</td>
+</tr>
+<tr>
+<td>3 года, предоплата</td>
+<td>20%</td>
+</tr>
+<tr>
+<td>5 лет, предоплата</td>
+<td>25%</td>
+</tr>
+</tbody>
+</table>
+<p>Скидки за объём и за срок <strong>суммируются мультипликативно</strong>.</p>
+<hr />
+<h2>4. Готовые пакеты (bundle)</h2>
+<table class="cmp">
+<thead>
+<tr>
+<th>Пакет</th>
+<th>Состав</th>
+<th>Скидка</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Старт SecOps</strong></td>
+<td>Core + AI + Response</td>
+<td>20%</td>
+</tr>
+<tr>
+<td><strong>SecOps + уязвимости</strong></td>
+<td>+ Vuln</td>
+<td>22%</td>
+</tr>
+<tr>
+<td><strong>ERA IT-Ops</strong></td>
+<td>Core/Manage + Service + Provision</td>
+<td>25%</td>
+</tr>
+<tr>
+<td><strong>ERA Unified</strong></td>
+<td>XDR + Manage + Service + Observe</td>
+<td>30%</td>
+</tr>
+<tr>
+<td><strong>Full</strong></td>
+<td>вся линейка</td>
+<td>35%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>5. Бессрочная лицензия (perpetual)</h2>
+<p>Для организаций, которым удобнее капитальные затраты:</p>
+<ul>
+<li><strong>Бессрочная лицензия</strong> = 3× годовой подписки (единоразово).</li>
+<li><strong>Техподдержка и обновления</strong> — 20%/год (обязательно): обновления правил детекции, баз CVE и
+  ИИ-паков + поддержка. В изолированном контуре обновления доставляются офлайн-пакетом.</li>
+</ul>
+<hr />
+<h2>6. Как получить коммерческое предложение</h2>
+<p>Итоговая цена зависит от парка, набора модулей, срока и модели поставки. Точный расчёт под ваш
+периметр — в коммерческом предложении.</p>
+<p><strong>Онлайн-калькулятор и запрос КП:</strong> <a href="https://www.era-one.solutions">www.era-one.solutions</a>
+· <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a></p>
+<hr />
+<p><em>Ориентировочные цены для региона СНГ; не являются публичной офертой. Актуальную стоимость и условия
+уточняйте у отдела продаж ERA One.</em></p>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Head Office</b>Geneva, Switzerland</div>
+      <div class="col"><b>Engineering Center</b>Warsaw, Poland</div>
+      <div class="col"><b>Contact</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

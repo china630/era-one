@@ -1,0 +1,10 @@
+id: era-sigma-0158
+title: ERA detection rule 0158 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0158"
+  condition: selection

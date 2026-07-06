@@ -1,0 +1,10 @@
+id: era-sigma-powershell-enc
+title: PowerShell encoded command
+status: experimental
+level: high
+logsource:
+  category: process
+detection:
+  selection:
+    CommandLine|contains: "powershell -enc"
+  condition: selection

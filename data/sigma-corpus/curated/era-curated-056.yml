@@ -1,0 +1,12 @@
+id: era-curated-056
+title: Curated detection 056 (TA0001)
+status: stable
+level: medium
+tags:
+  - attack.T1055
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-curated-056"
+  condition: selection

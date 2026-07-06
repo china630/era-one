@@ -1,0 +1,10 @@
+id: era-sigma-0223
+title: ERA detection rule 0223 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0223"
+  condition: selection

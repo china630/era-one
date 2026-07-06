@@ -1,0 +1,10 @@
+id: era-sigma-0294
+title: ERA detection rule 0294 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0294"
+  condition: selection

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERA XDR — последние события</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --muted: #8b949e; --accent: #3fb950; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.5rem; }
+    h1 { font-size: 1.25rem; font-weight: 600; margin: 0 0 1rem; }
+    .toolbar { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    input, button { background: var(--card); border: 1px solid #30363d; color: var(--text); padding: 0.5rem 0.75rem; border-radius: 6px; }
+    button { cursor: pointer; background: #238636; border-color: #238636; }
+    button:hover { filter: brightness(1.1); }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; font-size: 0.875rem; }
+    th, td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid #21262d; }
+    th { color: var(--muted); font-weight: 500; }
+    .badge { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 4px; background: #21262d; font-size: 0.75rem; }
+    .pii-ok { color: var(--accent); }
+    #status { color: var(--muted); font-size: 0.875rem; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>ERA XDR — последние события</h1>
+  <div id="status">Загрузка…</div>
+  <div class="toolbar">
+    <input id="nodeId" placeholder="node_id (опционально)" />
+    <input id="limit" type="number" value="50" min="1" max="500" style="width:5rem" />
+    <button type="button" id="refresh">Обновить</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>observed_at</th>
+        <th>event_id</th>
+        <th>node</th>
+        <th>category</th>
+        <th>severity</th>
+        <th>PII</th>
+        <th>payload</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <script>
+    const API = '/api/events';
+    async function load() {
+      const node = document.getElementById('nodeId').value.trim();
+      const limit = document.getElementById('limit').value || '50';
+      const q = new URLSearchParams({ limit });
+      if (node) q.set('node_id', node);
+      document.getElementById('status').textContent = 'Загрузка…';
+      try {
+        const res = await fetch(`${API}?${q}`);
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const tbody = document.getElementById('rows');
+        tbody.innerHTML = '';
+        for (const e of data.events || []) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${e.observed_at || ''}</td>
+            <td><code>${e.event_id || ''}</code></td>
+            <td>${e.node_id || ''}</td>
+            <td><span class="badge">${e.category || ''}</span></td>
+            <td>${e.severity || ''}</td>
+            <td class="${e.pii_sanitized ? 'pii-ok' : ''}">${e.pii_sanitized ? 'sanitized' : '—'}</td>
+            <td><code style="word-break:break-all">${(e.payload || '').slice(0, 120)}</code></td>`;
+          tbody.appendChild(tr);
+        }
+        document.getElementById('status').textContent = `Событий: ${(data.events || []).length} · ${new Date().toLocaleTimeString()}`;
+      } catch (err) {
+        document.getElementById('status').textContent = 'Ошибка: ' + err.message;
+      }
+    }
+    document.getElementById('refresh').addEventListener('click', load);
+    load();
+    setInterval(load, 10000);
+  </script>
+</body>
+</html>

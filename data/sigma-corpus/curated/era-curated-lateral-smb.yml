@@ -1,0 +1,12 @@
+id: era-curated-lateral-smb
+title: SMB lateral movement
+status: stable
+level: high
+tags:
+  - attack.T1021.002
+logsource:
+  category: network
+detection:
+  selection:
+    DstPort|contains: "445"
+  condition: selection

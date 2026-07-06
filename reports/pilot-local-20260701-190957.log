@@ -1,0 +1,7 @@
+[19:09:57] ==> ERA XDR pilot-local runner
+[19:09:57] Report: D:\My Projects\era-xdr\reports\pilot-local-20260701-190957.log
+[19:11:10] PASS health control-plane
+[19:11:10] PASS health event-writer
+[19:11:12] PASS health ingest
+[19:11:12] PASS health ai-core
+[19:11:12] PASS health soar

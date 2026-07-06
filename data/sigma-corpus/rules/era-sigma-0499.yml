@@ -1,0 +1,10 @@
+id: era-sigma-0499
+title: ERA detection rule 0499 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0499"
+  condition: selection

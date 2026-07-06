@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ERA One — Sovereign Hybrid</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr">
+    <img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA Sovereign Hybrid<span class="sub">Данные дома — сопровождение как в облаке</span></h1>
+    <p class="lead">Современная операционная модель без потери суверенности: платформа, озеро данных,
+      ИИ и материалы расследований <b>остаются в вашем контуре</b>, а обновления защиты, лицензии и
+      служебная телеметрия сопровождения доставляются из облака ERA по <b>исходящему</b> каналу.
+      Ответ на вопрос «нам нужен on-prem, но без облака мы отстаём в эксплуатации».</p>
+
+    <h2>Как это работает</h2>
+    <div class="flow">
+      <span class="node">Агенты</span><span class="arr">&rsaquo;</span>
+      <span class="node k">Озеро · ИИ · Кейсы — в контуре заказчика</span><span class="arr">&rsaquo;</span>
+      <span class="node">Relay (только исходящий)</span><span class="arr">&rsaquo;</span>
+      <span class="node k">Облако ERA: лицензии · обновления · сопровождение</span>
+    </div>
+    <p class="note-int">Гибридный режим включается осознанно и настраивается политикой. Полностью
+      изолированный режим (air-gap) остаётся доступным без каких-либо исходящих соединений.</p>
+
+    <h2>Что остаётся в контуре, что уходит наружу</h2>
+    <table class="cmp">
+      <tr><th>Всегда в вашем контуре</th><th>Наружу (только по вашей политике)</th></tr>
+      <tr><td>Сырые события и телеметрия</td><td>Лицензии и продление подписки</td></tr>
+      <tr><td>Озеро данных (ClickHouse / MinIO)</td><td>Обновления правил, CVE, ИИ-паков</td></tr>
+      <tr><td>ИИ-инференс (LLM в контуре)</td><td>Список отзыва (CRL)</td></tr>
+      <tr><td>Кейсы, расследования, персональные данные</td><td>Служебная телеметрия сопровождения (по уровням)</td></tr>
+      <tr><td class="win">Никогда не покидают периметр</td><td>Обезличенные индикаторы — только если вы разрешили</td></tr>
+    </table>
+
+    <h2>Компоненты решения</h2>
+    <table class="cmp">
+      <tr><th>Компонент</th><th>Где</th><th>Зачем</th></tr>
+      <tr><td><b>ERA Cloud Portal</b></td><td>Облако ERA</td><td>Лицензии и контракты, продление подписки, список отзыва, приём статуса здоровья</td></tr>
+      <tr><td><b>ERA Update Service</b></td><td>Облако ERA</td><td>Доставка подписанного контента: правила, CVE, коннекторы, ИИ-паки (работает и офлайн-пакетом)</td></tr>
+      <tr><td><b>ERA Hybrid Relay</b></td><td>Ваш контур</td><td>Единственный исходящий канал наружу с журналированием и списком разрешённых адресов</td></tr>
+      <tr><td><b>ERA Managed View</b></td><td>Облако ERA</td><td>Пульт вашего интегратора / MSSP: здоровье, лицензии, версии — <b>без доступа к вашим данным</b></td></tr>
+    </table>
+
+    <h2>Два профиля развёртывания</h2>
+    <table class="cmp">
+      <tr><th>Критерий</th><th>ERA Sovereign (air-gap)</th><th>ERA Sovereign Hybrid</th></tr>
+      <tr><td>Данные / озеро / ИИ / кейсы</td><td class="win">В контуре</td><td class="win">В контуре</td></tr>
+      <tr><td>Обновления защиты</td><td>Офлайн-пакетом</td><td class="win">Автоматически из облака ERA</td></tr>
+      <tr><td>Связь наружу</td><td>Нет</td><td>Только исходящая, по политике</td></tr>
+      <tr><td>Кому</td><td>Госсектор, КИИ, строгий air-gap</td><td>Банк, крупный бизнес: суверенность + удобная эксплуатация</td></tr>
+    </table>
+
+    <h2>Для службы безопасности и закупок</h2>
+    <div class="benefits">
+      <div>Прозрачная схема потоков: понятно, что и куда уходит.</div>
+      <div>Персональные данные и материалы расследований наружу не передаются.</div>
+      <div>Исходящий канал — один, с журналом и списком разрешённых адресов.</div>
+      <div>Возможен региональный или размещённый в вашем контуре Portal.</div>
+      <div>Соглашение об обработке данных (DPA) и схема потоков — в комплекте.</div>
+      <div>Всегда можно перейти в полностью изолированный режим.</div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Head Office</b>Geneva, Switzerland</div>
+      <div class="col"><b>Engineering Center</b>Warsaw, Poland</div>
+      <div class="col"><b>Contact</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

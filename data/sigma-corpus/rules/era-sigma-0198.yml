@@ -1,0 +1,10 @@
+id: era-sigma-0198
+title: ERA detection rule 0198 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0198"
+  condition: selection

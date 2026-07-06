@@ -1,0 +1,12 @@
+id: era-curated-file-temp
+title: Write to temp
+status: stable
+level: low
+tags:
+  - attack.T1105
+logsource:
+  category: file
+detection:
+  selection:
+    Path|contains: "Temp"
+  condition: selection

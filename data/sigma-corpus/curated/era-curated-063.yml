@@ -1,0 +1,12 @@
+id: era-curated-063
+title: Curated detection 063 (TA0008)
+status: stable
+level: medium
+tags:
+  - attack.T1062
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-curated-063"
+  condition: selection

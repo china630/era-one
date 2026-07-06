@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0-enforce-dev",
+  "mode": "monitor",
+  "fail_mode": "open",
+  "app_rules": [
+    {
+      "id": "app-deny-malware",
+      "action": "deny",
+      "path": "*\\malware.exe"
+    }
+  ],
+  "device_rules": [
+    {
+      "id": "usb-deny-storage",
+      "action": "deny",
+      "device_class": "usb_storage"
+    }
+  ],
+  "virtual_patches": [
+    {
+      "id": "vp-cve-2024-0001",
+      "cve_id": "CVE-2024-0001",
+      "action": "deny",
+      "path": "*\\vulnerable.dll",
+      "vector": "dll_load"
+    }
+  ]
+}

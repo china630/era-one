@@ -1,0 +1,12 @@
+id: era-curated-089
+title: Curated detection 089 (TA0001)
+status: stable
+level: medium
+tags:
+  - attack.T1088
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-089"
+  condition: selection

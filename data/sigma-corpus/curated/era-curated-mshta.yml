@@ -1,0 +1,12 @@
+id: era-curated-mshta
+title: Mshta proxy execution
+status: stable
+level: high
+tags:
+  - attack.T1218.005
+logsource:
+  category: process
+detection:
+  selection:
+    ImagePath|contains: "mshta"
+  condition: selection

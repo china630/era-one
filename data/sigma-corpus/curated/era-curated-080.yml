@@ -1,0 +1,12 @@
+id: era-curated-080
+title: Curated detection 080 (TA0003)
+status: stable
+level: medium
+tags:
+  - attack.T1079
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-curated-080"
+  condition: selection

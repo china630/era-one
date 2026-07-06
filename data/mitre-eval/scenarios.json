@@ -1,0 +1,70 @@
+{
+  "version": "1.0",
+  "framework": "MITRE ATT&CK",
+  "eval_set": "era-ga2-baseline",
+  "scenarios": [
+    {
+      "id": "eval-t1021-lateral",
+      "technique": "T1021",
+      "name": "Remote services lateral movement",
+      "category": "network",
+      "expected_rule": "era-ndr-t1021-lateral-movement",
+      "engine": "ndr",
+      "events": [
+        {"src_ip": "10.0.0.99", "dst_ip": "10.0.0.10", "dst_port": 445},
+        {"src_ip": "10.0.0.99", "dst_ip": "10.0.0.11", "dst_port": 3389}
+      ]
+    },
+    {
+      "id": "eval-t1558-kerberoast",
+      "technique": "T1558.003",
+      "name": "Kerberoasting",
+      "category": "auth",
+      "expected_rule": "era-itdr-kerberoasting",
+      "engine": "itdr",
+      "events": [
+        {"auth_type": "kerberos", "event": "TGS-REQ", "etype": 23, "spn": "MSSQLSvc/db.corp"}
+      ]
+    },
+    {
+      "id": "eval-t1003-dcsync",
+      "technique": "T1003.006",
+      "name": "DCSync",
+      "category": "auth",
+      "expected_rule": "era-itdr-dcsync",
+      "engine": "itdr",
+      "events": [
+        {"event": "GetChangesAll", "api": "drsuapi"}
+      ]
+    },
+    {
+      "id": "eval-t1071-beacon",
+      "technique": "T1071",
+      "name": "C2 beaconing",
+      "category": "network",
+      "expected_rule": "era-ndr-t1071-beaconing",
+      "engine": "ndr",
+      "beacon_interval_sec": 60,
+      "beacon_count": 6
+    },
+    {
+      "id": "eval-t1071-dns-tunnel",
+      "technique": "T1071.004",
+      "name": "DNS tunneling",
+      "category": "dns",
+      "expected_rule": "era-ndr-t1071-004-dns-tunnel",
+      "engine": "ndr",
+      "dns_queries": 10
+    },
+    {
+      "id": "eval-t1048-exfil",
+      "technique": "T1048",
+      "name": "Data exfiltration volume",
+      "category": "network",
+      "expected_rule": "era-ndr-t1048-data-exfil",
+      "engine": "ndr",
+      "exfil_chunks": 5,
+      "exfil_chunk_bytes": 12582912
+    }
+  ]
+}

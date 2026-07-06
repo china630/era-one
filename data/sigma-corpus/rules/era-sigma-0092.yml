@@ -1,0 +1,10 @@
+id: era-sigma-0092
+title: ERA detection rule 0092 (file)
+status: experimental
+level: medium
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-pattern-0092"
+  condition: selection

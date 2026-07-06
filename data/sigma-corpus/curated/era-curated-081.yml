@@ -1,0 +1,12 @@
+id: era-curated-081
+title: Curated detection 081 (TA0004)
+status: stable
+level: medium
+tags:
+  - attack.T1080
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-081"
+  condition: selection

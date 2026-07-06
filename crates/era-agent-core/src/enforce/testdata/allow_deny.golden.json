@@ -1,0 +1,16 @@
+[
+  {
+    "image_path": "C:\\Windows\\System32\\notepad.exe",
+    "decision": "allow"
+  },
+  {
+    "image_path": "C:\\Temp\\malware.exe",
+    "decision": "deny",
+    "rule_id": "app-deny-malware"
+  },
+  {
+    "image_path": "C:\\App\\vulnerable.dll",
+    "decision": "deny",
+    "rule_id": "vp-cve-2024-0001"
+  }
+]

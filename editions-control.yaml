@@ -1,0 +1,225 @@
+# ERA Control — манифест изданий (single source of truth)
+#
+# Файл: editions-control.yaml (ERA Control). Comms/Office/Shared — отдельные манифесты.
+# Назначение: связать «издание → лицензия → сервисы → плагины → deploy → доки».
+#
+# Связано: ADR-0005 (издания), ADR-0010 (claims.modules), ADR-0014 (репо-стратегия),
+#          ERA-Platform-Vision.md §12.
+#
+# Статусы (сверено с docs/ADR-Implementation-Matrix.md):
+#   ga        — боевой, в продукте сегодня.
+#   ga-option — GA, включается отдельной лицензией.
+#   mvp       — код готов, есть автотесты/golden в CI (monitor-ready); до GA остаются
+#               стенд/полевые прогоны и внешние гейты (WHQL-подпись драйвера, HSM-аудит,
+#               RDP security-review, pen-test, подпись заказчика). НЕ выдавать клиенту как GA.
+#   roadmap   — в дорожной карте, кода нет.
+# license_module: значение поля `modules` в лицензии (ADR-0010). exists=false —
+#                 флаг ещё не заведён в claims, появится при реализации издания.
+
+schema_version: "1.0"
+
+# Бренд (single source of truth для зонтика и слогана).
+# Продуктовые семейства — products.yaml (ADR-0024).
+brand:
+  name: ERA One
+  tagline: "ONE ECOSYSTEM. ONE PERIMETER. ONE VENDOR."
+  domain: era-one.solutions
+  logo: brand/era-one-logo-brand-outlined.svg  # канонический Brand SVG (text outlined)
+  products_manifest: products.yaml
+
+# Режимы развёртывания — профили одной платформы (feature-flags + build tags), НЕ разные
+# продукты. Детально: ADR-0018 (Sovereign Hybrid), ERA-Platform-Vision.md §11.
+# Инвариант: data plane (сырьё, lake, LLM, кейсы, PII) НИКОГДА не покидает контур.
+deployment_modes:
+  air-gap:                         # default
+    connected: false
+    license: offline-ed25519       # ADR-0010
+    updates: offline-bundle        # носитель
+    health_egress: none
+  connected:                       # hybrid; включается ЯВНО админом
+    connected: true
+    relay: era-hybrid-relay        # ADR-0018 §3: Relay = модуль control-plane, outbound-only
+    license: offline-ed25519 + lease   # lease поверх ADR-0010; grace при обрыве, без kill-switch
+    updates: era-update-service    # ADR-0018 §1.1: доставка Sigma/CVE/коннекторов/AI-паков (pull через Relay)
+    crl: pull-from-portal
+    opt_in:                        # что разрешено наружу (ADR-0018 §2.2, §4, §5)
+      health_level: A              # A Minimal (default) | B Operational | C Support(break-glass)
+      ti_share: false              # IoC/metadata/FP только opt-in, после PII-редакции (ADR-0009)
+    lease_defaults:                # НЕ хардкод: старт-значения, задаются в лицензии/policy
+      lease_period_days: 30
+      lease_renewal_interval_h: 24
+      grace_days: 30
+      offline_max_days: 90
+      degradation_mode: [no_new_nodes, no_updates]   # детекция продолжает работать
+  # cloud (multi-tenant SaaS) — вне scope ADR-0018; ступень 4, только по спросу.
+# Именованные компоненты Sovereign Hybrid (ADR-0018 §1.1, гранулярность деплоя — §1.1.1).
+hybrid_components:
+  era-cloud-portal:                # вендор (control plane) — зонтик
+    deploy: core-service           # источник истины control plane
+    role: control-plane-only       # лицензии/lease, CRL, health, точка входа Update Service + Managed View
+    never_sees: [raw_events, cases, lake, pii]   # без break-glass уровня C с TTL+аудитом
+  era-update-service:              # вендор — ОТДЕЛЬНЫЙ сервис (конвейер подписи контента)
+    deploy: standalone-service     # §1.1.1: свой lifecycle + граница подписи (HSM/KMS, ADR-0010)
+    delivers: [sigma, cve-feed, connectors, ai-packs, secret-scanners]
+    transport: [pull-via-relay, offline-bundle]  # dual-use: connected И air-gap
+    signing: hsm-kms               # ключ вендора, не в одном юните с партнёрским web-UI
+  era-hybrid-relay:                # контур заказчика — модуль control-plane
+    deploy: control-plane-module
+    role: outbound-only
+    egress: allowlist
+    audit: egress-log
+  era-managed-view:                # вендор — МОДУЛЬ Portal (RBAC), не отдельный сервис
+    deploy: portal-module-rbac     # §1.1.1: read-модель поверх Portal; граница = RBAC/скоупы
+    for: [vendor, mssp, partner]
+    sees: [installations, health, licenses, versions]
+    never_sees: [raw_events, cases, lake, pii]
+    split_when: [white-label, partner-multitenancy]   # триггеры выноса в отдельный сервис
+  refs: [ADR-0018]
+
+editions:
+  era-core:
+    title: ERA Core
+    status: ga
+    license_module: core           # база; присутствует всегда
+    description: База XDR — телеметрия, приём, хранилище, детекция, активы, кейсы.
+    agent:
+      crates: [era-agent, era-agent-core, era-proto, era-license, era-plugin-sdk]
+      plugins: []                  # realtime capture в core
+    services: [ingest-gateway, control-plane, detection-engine, event-writer, platform, compliance]
+    deploy_profile: deploy/docker-compose.prod.yml
+    docs: docs/distributor/ERA-Product-Line.md
+
+  era-control-ai:
+    title: ERA Control AI
+    status: ga
+    license_module: control-ai
+    description: ИИ-аналитик SOC (расследование, storyline, on-prem LLM).
+    services: [ai-core]
+    docs: docs/distributor/ERA-Product-Line.md
+
+  era-response:
+    title: ERA Response
+    status: ga
+    license_module: response
+    description: SOAR — playbooks реагирования.
+    services: [soar]
+    docs: docs/distributor/ERA-Product-Line.md
+
+  era-vuln:
+    title: ERA Vuln
+    status: ga-option
+    license_module: vm
+    description: Сканер уязвимостей (CVE), расписания, credentialed-скан.
+    services: [vm]
+    docs: docs/distributor/ERA-Product-Line.md
+
+  era-federated:
+    title: ERA Federated
+    status: ga-option
+    license_module: federated
+    description: Federated learning / обмен IoC внутри организации.
+    services: [federated]
+
+  era-national:
+    title: ERA National
+    status: ga-option
+    license_module: national
+    description: Межорг/нацхаб (STIX/TAXII).
+    services: [national-hub]
+
+  era-perimeter:
+    title: ERA Perimeter
+    status: roadmap                 # WAF/NGFW не реализованы; флага `perimeter` нет в licensegate
+    license_module: { name: perimeter, exists: false }
+    description: WAF + NGFW-логика (контент-DLP — позже).
+    services: [waf, ngfw]
+
+  # ---- Platform-издания (код готов, MVP; GA после стенд/полевых гейтов) ----
+
+  era-manage:
+    title: ERA Manage
+    status: mvp                     # CMDB/ITAM ✅ (ADR-0011); enforcement monitor 🟡 (ADR-0012). GA-гейт: WHQL-подпись драйвера
+    license_module: manage
+    description: >
+      IT-Ops — инвентаризация/CMDB (+ финансовый ITAM: контракты, лицензии,
+      стоимость владения), деплой ПО, патчи, App Control, Device Control (USB),
+      BitLocker, EPM-lite, Virtual Patching (mitigation до патча ОС).
+    agent:
+      plugins: [inventory, appcontrol, devicecontrol, bitlocker, deploy]
+    services: [control-plane]      # + новые серверные части по мере фаз
+    refs: [ADR-0011, ADR-0012, ADR-0016, ERA-Platform-Vision.md#P2]
+
+  era-service:
+    title: ERA Service
+    status: mvp                     # ITSM-lite server MVP ✅ (ADR-0016 §4). GA-гейт: field rollout
+    license_module: { name: service, exists: true }
+    description: >
+      ITSM-lite — сервис-деск (заявки/инциденты), портал, SLA, привязка к CMDB.
+      Полная ITIL-модель данных с первого дня, узкий UI; рост = включение workflow.
+    services: [service-desk]       # отдельный сервис, не врастает в control-plane
+    refs: [ADR-0016, ERA-Platform-Vision.md#P6s]
+
+  era-provision:
+    title: ERA Provision
+    status: mvp                     # PXE/enroll server MVP ✅ (ADR-0016 §3). GA-гейт: field rollout
+    license_module: { name: provision, exists: true }
+    description: >
+      OS Provisioning — развёртывание ОС на bare-metal (PXE/TFTP + образы +
+      unattended/kickstart/preseed), post-install регистрация агента. Всё в контуре.
+    services: [provision]
+    refs: [ADR-0016, ERA-Platform-Vision.md#P6p]
+
+  era-pam:
+    title: ERA PAM
+    status: mvp                     # vault/Shamir/checkout/SSH-запись ✅ (ADR-0013). GA-гейт: RDP security-review, HSM-аудит
+    license_module: { name: pam, exists: true }
+    description: Сейф паролей (vault), checkout, SSH/RDP-прокси, запись сессий.
+    services: [pam, dlp]           # dlp = фундамент записи привилегированных сессий
+    refs: [ADR-0013, ERA-Platform-Vision.md#P4p]
+
+  era-observe:
+    title: ERA Observe
+    status: mvp
+    license_module: { name: observe, exists: true }
+    description: Agentless-мониторинг сети (SNMP/NetFlow/discovery) или интеграция PRTG/Zabbix.
+    services: [observe]
+    refs: [ERA-Platform-Vision.md#P5]
+
+  # ---- Усиления по on-prem паттернам Vision One (ADR-0017) ----
+
+  era-workbench:
+    title: ERA Workbench
+    status: mvp                     # incident timeline ✅ (ADR-0017 §1)
+    license_module: core
+    description: >
+      Единый incident timeline: endpoint + identity + network + email-логи в одном UI
+      расследования (паттерн Vision One Workbench, on-prem).
+    services: [control-plane]
+    refs: [ADR-0017]
+
+  era-exposure:
+    title: ERA Exposure
+    status: mvp                     # per-asset exposure score ✅ (ADR-0017 §2)
+    license_module: [core, vm]
+    description: >
+      Локальный CREM-аналог: risk score актива (CVE, критичность, детекты, misconfig, identity).
+    services: [vm, detection-engine]
+    refs: [ADR-0017, ADR-0006]
+
+  era-byo-edr:
+    title: ERA BYO-EDR Hub
+    status: mvp                     # generic JSON/CEF → Envelope ✅ (ADR-0017 §3)
+    license_module: core
+    description: >
+      Приём телеметрии сторонних EDR/SIEM в единое озеро; нормализация в Envelope.
+    services: [ingest-gateway]
+    agent:
+      crates: [era-collectors]
+    refs: [ADR-0017]
+
+# Рекомендуемые bundle (для тендера/продаж)
+bundles:
+  start-ga: [era-core, era-control-ai, era-response]
+  it-ops:   [era-core, era-manage, era-service, era-provision]
+  unified:  [era-core, era-control-ai, era-response, era-manage, era-service, era-observe]
+  full:     [era-core, era-control-ai, era-response, era-vuln, era-manage, era-service, era-provision, era-pam, era-observe]

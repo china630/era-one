@@ -1,0 +1,45 @@
+---
+description: Формат коммитов и PR для ERA XDR (Conventional Commits + ссылки на ADR/S1-N)
+alwaysApply: true
+---
+
+# Коммиты и Pull Requests
+
+## Conventional Commits
+
+Формат: `type(scope): краткое описание`.
+
+- **type**: `feat` · `fix` · `refactor` · `docs` · `test` · `chore` · `perf` · `build`
+- **scope** = модуль по глоссарию: `agent`, `ingest`, `vm`, `license`, `detection`,
+  `ai-core`, `proto`, `deploy`, `ui` и т.д.
+
+Примеры:
+
+```
+feat(ingest): gRPC PushEvents с записью в Kafka
+fix(vm): убран мусор из yaml_parser_test, пакет компилируется
+docs(adr): ADR-0007 переведён в статус Implemented
+```
+
+## Ссылки на контекст (обязательно)
+
+Каждый коммит/PR ссылается на источник задачи:
+- задача спринта — `Refs: S1-4` (из `docs/MVP-Sprint-1-Spec.md`);
+- решение — `Refs: ADR-0008`.
+
+## Тело PR
+
+```
+## Что сделано
+- ...
+## Приёмка (см. task-acceptance)
+- [x] AC4: дедуп — 0 дублей (доказательство: лог/тест)
+- Обновлён статус: Sprint-1 S1-4 → [x], ADR-0008 → Implemented
+## Тесты
+- go test ./... — PASS; cargo test — PASS
+```
+
+## Запреты
+
+- Не коммитить секреты/ключи (`vendor.key`, `.env`), артефакты сборки, `target/`.
+- Не мёржить без зелёных тестов и без обновлённого статуса в документации.

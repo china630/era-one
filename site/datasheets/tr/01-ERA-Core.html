@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ERA One — ERA Core (XDR)</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr">
+    <img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA Core (XDR)<span class="sub">Güvenlik platformu temeli</span></h1>
+    <p class="lead">Temel XDR sürümü: ana bilgisayarlarda tek hafif ajan, telemetri alımı, veri merkezinizde veri gölü, MITRE ATT&CK ile eşleştirilmiş Sigma kural tabanlı tespit, varlık envanteri ve SOC portalında vaka yönetimi. Tüm veriler çevre içinde kalır — bulut yok, phone-home yok. Her ERA One dağıtımının başlangıç noktasıdır.</p>
+    <h2>Amaç</h2>
+<p>İzole bir çevrede eksiksiz "olay → tespit → vaka → soruşturma" döngüsü sunmak. Bankalar, kamu sektörü ve on-prem / air-gap gereksinimleri olan endüstri için uygundur.</p>
+            <ul class="feats">
+<li>Uçtan uca boru hattı: ajan → alım → kuyruk → depolama → tespit → vakalar.</li>
+<li>Birleşik olay formatı; kişisel veriler iletimden önce ajanda maskelenir.</li>
+<li>Çevrimdışı lisanslama, dışa telemetri gönderilmez.</li>
+</ul>
+    <h2>Temel yetenekler</h2>
+<ul class="feats">
+<li>Windows / Linux / macOS ajanı — süreçler, ağ, oturum açmalar.</li>
+<li>MITRE ATT&CK ile eşleştirilmiş tespit kural kütüphanesi; genişletilebilir kural külliyatı.</li>
+<li>SOC Portal: vakalar, varlıklar, olaylar, tespitler; analist / yönetici / görüntüleyici rolleri.</li>
+<li>Yerleşik IoC (tehdit göstergesi) işleme ve olay zenginleştirme.</li>
+<li>Soruşturmalar ve düzenleyici raporlama için değiştirilemez depolama.</li>
+</ul>
+    <h2>Hedef kitle</h2>
+<p>Sıfırdan SOC kurmak veya kapalı çevrede yabancı bir XDR'ı değiştirmek için minimum dağıtım. Genellikle ERA Control AI ve ERA Response sürümleriyle tamamlanır.</p>
+    <h2>Dağıtım modları</h2>
+<p>Platform iki profili destekler — aynı ürün, farklı yapılandırma:</p>
+<ul class="feats">
+<li><b>Sovereign (air-gap):</b> tam izolasyon; kural, CVE ve AI paket güncellemeleri çıkarılabilir medya üzerinden çevrimdışı paketle teslim edilir.</li>
+<li><b>Sovereign Hybrid:</b> veri, veri gölü ve soruşturmalar çevre içinde kalır; lisanslar ve koruma güncellemeleri <b>giden</b> kanal üzerinden ERA bulutundan otomatik çekilir.</li>
+</ul>
+<p>Hybrid mod kasıtlı olarak etkinleştirilir ve politika ile yönetilir: ham veri, kişisel bilgiler ve vakalar asla dışa gönderilmez. "Veri evde — destek bulut gibi" modeliyle bankacılık için idealdir.</p>
+    <h2>Lisanslama</h2>
+<p>Temel <b>ERA Core</b> lisansı her paket için gereklidir. Telemetri platformu, tespit motoru ve SOC portalını içerir.</p>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Genel Merkez</b>Cenevre, İsviçre</div>
+      <div class="col"><b>Mühendislik Merkezi</b>Varşova, Polonya</div>
+      <div class="col"><b>İletişim</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Pre-field proof log — 2026-07-01 (updated)
+
+## Documentation
+
+- Field sizing: `docs/Field-Server-Sizing.md` (канон AC2 10k)
+- Backlog statuses: `docs/Pre-Field-Code-Backlog.md` (детальная таблица C/L)
+
+## CI gates
+
+Command: `scripts/ci-gates-stage10.ps1`
+
+Includes: postgres parity (docker), ADR-0006 golden, pipeline e2e golden, tamper prod-guard,
+sealed clock e2e, observe prod tests, hybrid TI-outbound, era-plugin-vuln.
+
+## Stack smoke (dev laptop)
+
+```
+docker compose -f deploy/docker-compose.prod.yml --profile scale --profile pg up -d --build
+```
+
+loadgen mTLS smoke: ~233 ev/s fail=0 (reduced threshold). AC2 10k — sizing-server per Field-Server-Sizing.md.
+
+## Pilot / chaos
+
+- `run-pilot-local.ps1` — scale+pg+mTLS API
+- `run-chaos-smoke.ps1` — PASS
+
+Refs: MVP-Sprint-1 AC2 smoke PASS; 10k [gate: sizing-server]

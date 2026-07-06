@@ -1,0 +1,10 @@
+id: era-sigma-0411
+title: ERA detection rule 0411 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0411"
+  condition: selection

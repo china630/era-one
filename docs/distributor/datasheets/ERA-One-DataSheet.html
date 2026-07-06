@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ERA One — Data Sheet</title>
+<link rel="stylesheet" href="assets/datasheet-common.css">
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <img class="logo-full" src="assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA One — единая платформа безопасности и IT-Ops</h1>
+    <p class="lead">Суверенная платформа, объединяющая XDR и управление ИТ-инфраструктурой в одном
+      лёгком агенте и одной консоли. Работает полностью в контуре заказчика —
+      <b>on-premise / air-gap</b>, без зарубежного облака. Один агент, одна платформа,
+      один центр управления вместо «зоопарка» из 5–6 систем и подписок.</p>
+
+    <h2>Издания платформы</h2>
+    <div class="grid">
+      <div class="card"><div class="nm">ERA Core (XDR)</div><div class="ds">Телеметрия, озеро данных, Sigma + MITRE, активы, кейсы, SOC-портал.</div></div>
+      <div class="card"><div class="nm">ERA Control AI</div><div class="ds">ИИ-расследование: storyline, вердикт. LLM внутри контура.</div></div>
+      <div class="card"><div class="nm">ERA Response</div><div class="ds">SOAR: изоляция хоста, блок IP, тикет ITSM.</div></div>
+      <div class="card"><div class="nm">ERA Vuln</div><div class="ds">CVE-скан, расписания, credentialed-скан.</div></div>
+      <div class="card"><div class="nm">ERA Federated / National</div><div class="ds">STIX/TAXII, обмен IoC между контурами.</div></div>
+      <div class="card"><div class="nm">ERA Workbench</div><div class="ds">Единый timeline: endpoint + identity + network + email.</div></div>
+      <div class="card"><div class="nm">ERA Exposure</div><div class="ds">Локальный CREM: risk score актива в контуре.</div></div>
+      <div class="card"><div class="nm">ERA BYO-EDR Hub</div><div class="ds">Телеметрия сторонних EDR в единое озеро.</div></div>
+      <div class="card"><div class="nm">ERA Manage</div><div class="ds">UEM: ITAM, патчи, App/USB Control, BitLocker, Virtual Patching.</div></div>
+      <div class="card"><div class="nm">ERA Service</div><div class="ds">ITSM-lite: сервис-деск, SLA, CMDB.</div></div>
+      <div class="card"><div class="nm">ERA Provision</div><div class="ds">PXE/imaging bare-metal, авто-регистрация агента.</div></div>
+      <div class="card"><div class="nm">ERA PAM</div><div class="ds">Vault, SSH/RDP-прокси, запись сессий.</div></div>
+      <div class="card"><div class="nm">ERA Observe</div><div class="ds">SNMP, NetFlow, discovery (agentless).</div></div>
+    </div>
+  </div>
+</div>
+<div class="page page-stretch">
+  <div class="body">
+    <h2>Инженерное наследие</h2>
+    <div class="heritage">
+      <div class="origin"><div class="o-nm">Promisec</div><div class="o-tag">Infrastructure Intelligence</div><div class="o-ds">Непрерывный аудит конфигураций и контроль комплаенса — основа управления конечными точками.</div></div>
+      <div class="origin"><div class="o-nm">Sirin Labs</div><div class="o-tag">Secure-by-Design</div><div class="o-ds">Принцип изоляции угроз, защиты каналов и безопасности на уровне ядра архитектуры.</div></div>
+      <div class="origin"><div class="o-nm">Syrinx Systems</div><div class="o-tag">High-Performance Telemetry</div><div class="o-ds">Сверхлёгкий сбор телеметрии и сетевой мониторинг без нагрузки на сеть.</div></div>
+    </div>
+
+    <h2>Архитектура платформы</h2>
+    <div class="flow">
+      <span class="node k">ERA One</span><span class="arr">&rsaquo;</span>
+      <span class="node">Издания (XDR / Manage / Service / PAM …)</span><span class="arr">&rsaquo;</span>
+      <span class="node">Сервер управления + Data Lake</span><span class="arr">&rsaquo;</span>
+      <span class="node">Локальный репозиторий (MinIO)</span><span class="arr">&rsaquo;</span>
+      <span class="node k">One Agent</span><span class="arr">&rsaquo;</span>
+      <span class="node">Windows / Linux / macOS / серверы</span><span class="arr">&rsaquo;</span>
+      <span class="node">Веб-консоль</span>
+    </div>
+
+    <h2>Модель развёртывания</h2>
+    <p class="lead" style="margin-bottom:6px">Одна платформа — два профиля развёртывания. Данные, озеро,
+      ИИ и расследования <b>всегда остаются в вашем контуре</b>; наружу — только лицензии,
+      обновления защиты и служебная телеметрия сопровождения (и только если вы это разрешили).</p>
+    <table class="cmp">
+      <tr><th>Критерий</th><th>ERA Sovereign (air-gap)</th><th>ERA Sovereign Hybrid</th></tr>
+      <tr><td>Данные, озеро, ИИ, кейсы</td><td class="win">В контуре заказчика</td><td class="win">В контуре заказчика</td></tr>
+      <tr><td>Обновления правил / CVE / ИИ-паков</td><td>Офлайн-пакетом (носитель)</td><td class="win">Автоматически из облака ERA</td></tr>
+      <tr><td>Лицензии и сопровождение</td><td>Офлайн-ключ</td><td>Онлайн-подписка + офлайн-резерв</td></tr>
+      <tr><td>Связь наружу</td><td>Нет (полная изоляция)</td><td>Только исходящая, по политике</td></tr>
+      <tr><td>Кому</td><td>Госсектор, КИИ, строгий air-gap</td><td>Банк: «данные дома, сопровождение — как в облаке»</td></tr>
+    </table>
+    <p class="note-int">Гибридный режим включается осознанно и настраивается: сырьё, персональные
+      данные и материалы расследований не покидают периметр ни в одном режиме.</p>
+
+    <h2>Преимущества для enterprise</h2>
+    <div class="benefits">
+      <div>Один лёгкий агент (CPU &lt; 2%, RAM &lt; 150 МБ) и единая консоль.</div>
+      <div>UEM и XDR — один организм без интеграционных разрывов.</div>
+      <div>On-premise и air-gap: данные не покидают контур.</div>
+      <div>Непрерывные обновления защиты — офлайн-пакетом или из облака ERA (гибрид).</div>
+      <div>Офлайн-лицензия Ed25519; PII-редакция на агенте.</div>
+      <div>Масштаб до десятков тысяч узлов в кластере.</div>
+      <div>Модульные лицензии — платите за используемое.</div>
+      <div>AD/LDAP, REST API, SIEM, STIX/TAXII, интеграция NGFW.</div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Head Office</b>Geneva, Switzerland</div>
+      <div class="col"><b>Engineering Center</b>Warsaw, Poland</div>
+      <div class="col"><b>Contact</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

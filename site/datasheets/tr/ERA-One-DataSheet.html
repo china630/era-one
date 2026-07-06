@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ERA One — Veri Sayfası</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA One — birleşik güvenlik ve IT-Ops platformu</h1>
+    <p class="lead">XDR ve BT altyapı yönetimini tek hafif ajan ve tek konsolda birleştiren egemen platform. Tamamen müşteri çevresinde çalışır —
+      <b>on-prem / air-gap</b>, yabancı bulut yok. Tek ajan, tek platform,
+      5–6 sistem ve abonelik "hayvanat bahçesi" yerine tek kontrol merkezi.</p>
+
+    <h2>Platform sürümleri</h2>
+    <div class="grid">
+      <div class="card"><div class="nm">ERA Core (XDR)</div><div class="ds">Telemetri, veri gölü, Sigma + MITRE, varlıklar, vakalar, SOC portalı.</div></div>
+      <div class="card"><div class="nm">ERA Control AI</div><div class="ds">AI soruşturması: storyline, karar. Çevre içi LLM.</div></div>
+      <div class="card"><div class="nm">ERA Response</div><div class="ds">SOAR: ana bilgisayar izolasyonu, IP engelleme, ITSM bileti.</div></div>
+      <div class="card"><div class="nm">ERA Vuln</div><div class="ds">CVE taraması, zamanlamalar, kimlik bilgili tarama.</div></div>
+      <div class="card"><div class="nm">ERA Federated / National</div><div class="ds">STIX/TAXII, çevreler arası IoC paylaşımı.</div></div>
+      <div class="card"><div class="nm">ERA Workbench</div><div class="ds">Birleşik zaman çizelgesi: uç nokta + kimlik + ağ + e-posta.</div></div>
+      <div class="card"><div class="nm">ERA Exposure</div><div class="ds">Yerel CREM: çevre içi varlık risk puanı.</div></div>
+      <div class="card"><div class="nm">ERA BYO-EDR Hub</div><div class="ds">Üçüncü taraf EDR telemetrisi birleşik veri gölüne.</div></div>
+      <div class="card"><div class="nm">ERA Manage</div><div class="ds">UEM: ITAM, yamalar, Uygulama/USB Kontrolü, BitLocker, Virtual Patching.</div></div>
+      <div class="card"><div class="nm">ERA Service</div><div class="ds">ITSM-lite: servis masası, SLA, CMDB.</div></div>
+      <div class="card"><div class="nm">ERA Provision</div><div class="ds">PXE/görüntüleme bare-metal, otomatik ajan kaydı.</div></div>
+      <div class="card"><div class="nm">ERA PAM</div><div class="ds">Kasa, SSH/RDP proxy, oturum kaydı.</div></div>
+      <div class="card"><div class="nm">ERA Observe</div><div class="ds">SNMP, NetFlow, keşif (ajansız).</div></div>
+    </div>
+  </div>
+</div>
+<div class="page page-stretch">
+  <div class="body">
+    <h2>Mühendislik mirası</h2>
+    <div class="heritage">
+      <div class="origin"><div class="o-nm">Promisec</div><div class="o-tag">Infrastructure Intelligence</div><div class="o-ds">Sürekli yapılandırma denetimi ve uyumluluk kontrolü — uç nokta yönetiminin temeli.</div></div>
+      <div class="origin"><div class="o-nm">Sirin Labs</div><div class="o-tag">Secure-by-Design</div><div class="o-ds">Tehdit izolasyonu, kanal koruması ve mimari düzeyde güvenlik.</div></div>
+      <div class="origin"><div class="o-nm">Syrinx Systems</div><div class="o-tag">High-Performance Telemetry</div><div class="o-ds">Ağ yükü olmadan ultra hafif telemetri toplama ve ağ izleme.</div></div>
+    </div>
+
+    <h2>Platform mimarisi</h2>
+    <div class="flow">
+      <span class="node k">ERA One</span><span class="arr">&rsaquo;</span>
+      <span class="node">Sürümler (XDR / Manage / Service / PAM …)</span><span class="arr">&rsaquo;</span>
+      <span class="node">Yönetim sunucusu + Veri Gölü</span><span class="arr">&rsaquo;</span>
+      <span class="node">Yerel depo (MinIO)</span><span class="arr">&rsaquo;</span>
+      <span class="node k">Tek Ajan</span><span class="arr">&rsaquo;</span>
+      <span class="node">Windows / Linux / macOS / sunucular</span><span class="arr">&rsaquo;</span>
+      <span class="node">Web konsolu</span>
+    </div>
+
+    <h2>Dağıtım modeli</h2>
+    <p class="lead" style="margin-bottom:6px">Tek platform — iki dağıtım profili. Veri, veri gölü,
+      AI ve soruşturmalar <b>her zaman çevrenizde kalır</b>; giden trafik lisanslar,
+      koruma güncellemeleri ve destek telemetrisiyle sınırlıdır (izin verirseniz).</p>
+    <table class="cmp">
+      <tr><th>Kriter</th><th>ERA Sovereign (air-gap)</th><th>ERA Sovereign Hybrid</th></tr>
+      <tr><td>Veri, veri gölü, AI, vakalar</td><td class="win">Müşteri çevresinde</td><td class="win">Müşteri çevresinde</td></tr>
+      <tr><td>Kural / CVE / AI paket güncellemeleri</td><td>Çevrimdışı paket (çıkarılabilir medya)</td><td class="win">ERA bulutundan otomatik</td></tr>
+      <tr><td>Lisanslama ve destek</td><td>Çevrimdışı anahtar</td><td>Çevrimiçi abonelik + çevrimdışı yedek</td></tr>
+      <tr><td>Giden bağlantı</td><td>Yok (tam izolasyon)</td><td>Yalnızca giden, politika dahilinde</td></tr>
+      <tr><td>En uygun</td><td>Kamu sektörü, kritik altyapı, katı air-gap</td><td>Bankacılık: "veri evde, destek bulut gibi"</td></tr>
+    </table>
+    <p class="note-int">Hybrid mod kasıtlı olarak etkinleştirilir ve yapılandırılabilir: ham veri, kişisel
+      bilgiler ve soruşturma materyalleri her iki modda da asla çevreyi terk etmez.</p>
+
+    <h2>Kurumsal faydalar</h2>
+    <div class="benefits">
+      <div>Tek hafif ajan (CPU &lt; 2%, RAM &lt; 150 MB) ve birleşik konsol.</div>
+      <div>UEM ve XDR — entegrasyon boşlukları olmadan tek organizma.</div>
+      <div>On-prem ve air-gap: veriler asla çevreyi terk etmez.</div>
+      <div>Sürekli koruma güncellemeleri — çevrimdışı paket veya ERA bulutundan (hybrid).</div>
+      <div>Çevrimdışı Ed25519 lisanslama; ajanda PII düzenleme.</div>
+      <div>Kümede on binlerce düğüme ölçekleme.</div>
+      <div>Modüler lisanslar — kullandığınız kadar ödeyin.</div>
+      <div>AD/LDAP, REST API, SIEM, STIX/TAXII, NGFW entegrasyonu.</div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Genel Merkez</b>Cenevre, İsviçre</div>
+      <div class="col"><b>Mühendislik Merkezi</b>Varşova, Polonya</div>
+      <div class="col"><b>İletişim</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

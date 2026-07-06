@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>ERA PAM — Vault</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --warn: #ffa657; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 1.5rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+    button { background: #238636; border: none; color: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; margin-right: 0.5rem; }
+    textarea, input { width: 100%; background: #0d1117; border: 1px solid #30363d; color: var(--text); border-radius: 6px; padding: 0.5rem; margin: 0.25rem 0; }
+    .gate { color: var(--warn); font-size: 0.875rem; }
+  </style>
+</head>
+<body>
+  <h1>ERA PAM — Vault & Checkout</h1>
+  <p class="gate">Крипто-аудит HSM и security-review RDP — <strong>[gate: external]</strong>. UI zero-knowledge: пароли только при явном reveal.</p>
+  <div class="card">
+    <div>Vault: <span id="sealed">—</span></div>
+    <textarea id="shares" placeholder="Shamir shares (hex), по одной на строку"></textarea>
+    <button id="unseal">Unseal</button>
+    <button id="seal">Seal</button>
+  </div>
+  <div class="card">
+    <h2>Новый секрет</h2>
+    <input id="name" placeholder="name" />
+    <input id="user" placeholder="username" />
+    <input id="pass" type="password" placeholder="password" />
+    <button id="put">Сохранить</button>
+  </div>
+  <div class="card">
+    <h2>Checkout → Reveal (one-shot)</h2>
+    <input id="secretId" placeholder="secret id" />
+    <button id="checkout">Checkout</button>
+    <button id="reveal">Reveal</button>
+    <pre id="revealOut"></pre>
+  </div>
+  <script>
+    const API = 'http://127.0.0.1:8130';
+    let checkoutId = '';
+    async function status() {
+      const r = await fetch(API + '/api/v1/vault/status');
+      const d = await r.json();
+      document.getElementById('sealed').textContent = d.sealed ? 'SEALED' : 'UNSEALED';
+    }
+    document.getElementById('unseal').onclick = async () => {
+      const shares = document.getElementById('shares').value.trim().split(/\s+/).filter(Boolean);
+      await fetch(API + '/api/v1/vault/unseal', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({shares})});
+      status();
+    };
+    document.getElementById('seal').onclick = async () => {
+      await fetch(API + '/api/v1/vault/seal', { method:'POST', headers:{'X-ERA-Role':'admin'} });
+      status();
+    };
+    document.getElementById('put').onclick = async () => {
+      await fetch(API + '/api/v1/secrets', { method:'POST', headers:{'Content-Type':'application/json','X-ERA-Role':'admin'},
+        body: JSON.stringify({ name: document.getElementById('name').value, username: document.getElementById('user').value, password: document.getElementById('pass').value })});
+      document.getElementById('pass').value = '';
+    };
+    document.getElementById('checkout').onclick = async () => {
+      const r = await fetch(API + '/api/v1/checkout', { method:'POST', headers:{'Content-Type':'application/json','X-ERA-Role':'admin','X-ERA-Actor':'ops'},
+        body: JSON.stringify({ secret_id: document.getElementById('secretId').value })});
+      const d = await r.json(); checkoutId = d.id;
+    };
+    document.getElementById('reveal').onclick = async () => {
+      const r = await fetch(API + '/api/v1/checkout/' + checkoutId + '/reveal', { method:'POST', headers:{'X-ERA-Actor':'ops'} });
+      document.getElementById('revealOut').textContent = await r.text();
+    };
+    status();
+  </script>
+</body>
+</html>

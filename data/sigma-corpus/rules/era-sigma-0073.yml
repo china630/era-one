@@ -1,0 +1,10 @@
+id: era-sigma-0073
+title: ERA detection rule 0073 (process)
+status: experimental
+level: medium
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-pattern-0073"
+  condition: selection

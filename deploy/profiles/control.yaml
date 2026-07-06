@@ -1,0 +1,61 @@
+# ERA Control — deploy profile
+# Product: era-control | Status: ga
+# Compose: deploy/docker-compose.prod.yml
+
+schema_version: "1.0"
+id: era-control
+product: era-control
+title: ERA Control
+status: ga
+
+compose:
+  file: deploy/docker-compose.prod.yml
+  project_name: era-one-prod
+
+# Shared SaaS — обязателен для единого admin/identity (profile pg для Postgres).
+shared_platform:
+  packages:
+    - platform/identity
+    - platform/tenant
+    - platform/adminportal
+    - platform/licensegate
+  services:
+    - admin-portal
+  compose_profiles:
+    pg: [postgres]
+
+# Базовый data plane + SOC (always-on в prod compose).
+core_services:
+  - kafka
+  - kafka-init
+  - clickhouse
+  - minio
+  - ingest-gateway
+  - event-writer
+  - control-plane
+  - detection-engine
+  - ai-core
+  - soar
+  - vm
+  - compliance
+
+# Опциональные compose profiles (включаются по лицензии/изданию).
+optional_profiles:
+  scale: [event-writer-b2, detection-engine-b2]
+  itops: [service-desk, provision]
+  pam: [pam]
+  observe: [observe]
+  connected: [cloud-portal, update-service]
+  perimeter: [waf, ngfw, dlp]
+  ctem: [ctem]
+
+editions_ref: editions-control.yaml
+agent:
+  crates: [era-agent, era-agent-core]
+  install:
+    windows: deploy/agent/install-windows.ps1
+    linux: deploy/agent/install-linux.sh
+
+docs:
+  - docs/distributor/ERA-Product-Line.md
+  - docs/ERA-Platform-Vision.md

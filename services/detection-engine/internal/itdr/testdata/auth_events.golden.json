@@ -1,0 +1,7 @@
+[
+  {"id": "kerberoast", "payload": {"auth_type": "kerberos", "event": "TGS-REQ", "etype": 23, "spn": "MSSQLSvc/db.corp"}, "expect_rule": "era-itdr-kerberoasting"},
+  {"id": "dcsync", "payload": {"event": "GetChangesAll", "api": "drsuapi"}, "expect_rule": "era-itdr-dcsync"},
+  {"id": "golden", "payload": {"principal": "krbtgt", "ticket_lifetime_hours": 99999, "event": "TGT issue"}, "expect_rule": "era-itdr-golden-ticket"},
+  {"id": "asrep", "payload": {"event": "AS-REP", "kerberos": true, "preauth": "disabled", "etype": 23}, "expect_rule": "era-itdr-asrep-roasting"},
+  {"id": "silver", "payload": {"event": "kerberos TGS", "service": "HTTP/web", "spn": "HTTP/web.corp", "silver-ticket": true, "rc4": true}, "expect_rule": "era-itdr-silver-ticket"}
+]

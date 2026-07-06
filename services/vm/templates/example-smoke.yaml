@@ -1,0 +1,14 @@
+# Минимальный валидный шаблон для проверки загрузки движком (MVP).
+id: example-smoke
+info:
+  name: Example smoke template
+  author: vm
+  severity: info
+  description: Служебный шаблон; не используйте в проде как реальную проверку.
+requests:
+  - method: GET
+    path:
+      - /
+    matchers:
+      - type: status
+        status: [200, 301, 302, 403, 404]

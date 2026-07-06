@@ -1,0 +1,15 @@
+[package]
+name = "era-plugin-appcontrol"
+version = "0.1.0"
+edition = "2021"
+description = "ERA Manage — Application Control plugin (monitor/simulated)"
+license = "Proprietary"
+
+[dependencies]
+era-plugin-sdk = { path = "../era-plugin-sdk" }
+serde_json = "1"
+anyhow = "1"
+
+[[bin]]
+name = "era-plugin-appcontrol"
+path = "src/main.rs"

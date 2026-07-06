@@ -1,0 +1,1 @@
+{"domain":"inventory","kind":"host_snapshot","hostname":"win-host-01","platform":"windows","os_version":"10.0","cpu_count":8,"total_memory_mb":16384,"detail_json":"{\"disk_count\":2}"}

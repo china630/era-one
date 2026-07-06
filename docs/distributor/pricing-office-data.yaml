@@ -1,0 +1,86 @@
+# ERA Office + ERA Drive — SSOT цен (per-user)
+#
+# Методология — как ERA Control (pricing-data.yaml):
+#   - EU list EUR / user / year
+#   - Регион CIS: multiplier 0.50 (из parent)
+#   - Volume / term — те же tier, что для Control (по числу users)
+#
+# Бенчмарк (2025–2026, per-user / year, order-of-magnitude):
+#   - Microsoft 365 E3 (cloud):     ~€340–420  (не on-prem)
+#   - Google Workspace Business:    ~€140–180
+#   - OnlyOffice / Collabora enterprise on-prem: ~€30–90 ( + лицензия вендору)
+#   - ERA Office Suite CIS:         ~€8.6/user  (суверенный свой engine, без GPL/OnlyOffice)
+#
+# ERA Drive — отдельная строка RFQ; всегда включён в office-suite bundle.
+
+schema_version: "1.0"
+product: era-office
+parent_pricing: docs/distributor/pricing-data.yaml
+currency: EUR
+unit: user
+vat_included: false
+
+modules:
+  platform-drive:
+    title: "ERA Drive"
+    desc: "Файлы, sync, ACL, версии; API для Mail и Office"
+    eu_year: 4
+    availability: roadmap
+    shared_edition: era-drive
+    note: "Отдельная лицензия; upsell к ERA Mail"
+
+  office-documents:
+    title: "ERA Documents"
+    desc: "Текстовые документы, co-editing on-prem (.era-doc, docx I/O)"
+    eu_year: 8
+    availability: roadmap
+    requires: [platform-drive]
+
+  office-tables:
+    title: "ERA Tables"
+    desc: "Таблицы, формулы, co-editing (.era-sheet, xlsx I/O)"
+    eu_year: 6
+    availability: roadmap
+    requires: [platform-drive]
+
+  office-presentations:
+    title: "ERA Presentations"
+    desc: "Презентации on-prem (.era-deck)"
+    eu_year: 5
+    availability: roadmap
+    requires: [platform-drive]
+
+  office-projects:
+    title: "ERA Projects"
+    desc: "Управление проектами (post-MVP)"
+    eu_year: 4
+    availability: roadmap
+    requires: [platform-drive]
+
+  office-ai:
+    title: "ERA Office AI"
+    desc: "Air-Gap LLM: саммари, assist по документам"
+    eu_year: 6
+    availability: roadmap
+
+# CIS indic. (×0.5): Drive €2, Documents €4, Suite ~€8.6
+bundles:
+  - key: office-mvp
+    title: "ERA Office MVP"
+    modules: [platform-drive, office-documents]
+    discount: 0.10
+    note: "P0–P1 pilot: Drive + Documents; à la carte 12 → 10.8 EU"
+
+  - key: office-suite
+    title: "ERA Office Suite"
+    modules: [platform-drive, office-documents, office-tables, office-presentations]
+    discount: 0.25
+    note: "Drive включён; à la carte 23 → 17.25 EU; CIS ~8.6"
+
+  - key: office-suite-ai
+    title: "ERA Office Suite + AI"
+    modules: [platform-drive, office-documents, office-tables, office-presentations, office-ai]
+    discount: 0.28
+    note: "à la carte 29 → ~20.9 EU"
+
+disclaimer: "Roadmap; индикатив. Не публичная оферта."

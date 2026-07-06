@@ -1,0 +1,154 @@
+# ERA One — машиночитаемые данные для калькулятора цен (SSOT)
+#
+# Единый источник правды по ценам для:
+#   - онлайн-калькулятора на портале www.era-one.solutions (ADR-0021);
+#   - справочников docs/distributor/ERA-Pricing.md (внутр.) и ERA-Pricing-Client.md (клиент.).
+# Числа в этом файле — АВТОРИТЕТНЫЕ; markdown-справочники должны им соответствовать.
+#
+# ВАЖНО (граница публичности): здесь ТОЛЬКО клиентские правила (list + региональный множитель,
+# объём, срок, bundle). Внутренние floor / партнёрская маржа / competitive-displacement сюда
+# НЕ попадают — они живут только в ERA-Pricing.md и решаются deal-desk. Калькулятор портала
+# показывает ИНДИКАТИВНУЮ цену и предлагает «запросить КП».
+
+schema_version: "1.0"
+edition: "2026-07"
+currency: EUR
+vat_included: false
+
+# Региональные множители к EU list. По умолчанию для портала — cis.
+regions:
+  eu:  { label: "EU / Global", multiplier: 1.00 }
+  cis: { label: "СНГ",         multiplier: 0.50 }   # региональный прайс (−50%)
+
+# Множитель для серверов применяется к модулям с unit=endpoint.
+server_multiplier: 3
+
+# Цены — EU list за год за единицу (unit). Региональная = eu_year * regions[*].multiplier.
+# availability: ga (серийно) | project (проектное внедрение / пилот).
+modules:
+  core:
+    title: "ERA Core"
+    desc: "XDR-база: телеметрия, детекция (Sigma+MITRE), кейсы, SOC-портал, Workbench"
+    unit: endpoint
+    eu_year: 12
+    availability: ga
+    required: true            # база; присутствует в любой поставке с агентом
+  control-ai:
+    title: "ERA Control AI"
+    desc: "ИИ-аналитик SOC, расследование, LLM в контуре"
+    unit: endpoint
+    eu_year: 8
+    availability: ga
+    flat_alt:                 # берётся min(per-endpoint, flat) по числу endpoints
+      - { up_to: 1000,  eu_year: 18000 }
+      - { up_to: 5000,  eu_year: 45000 }
+      - { up_to: 15000, eu_year: 90000 }
+      - { up_to: null,  eu_year: null }   # 15000+ — по запросу
+  response:
+    title: "ERA Response"
+    desc: "SOAR: изоляция хоста, блок IP, тикет"
+    unit: endpoint
+    eu_year: 4
+    availability: ga
+  vuln:
+    title: "ERA Vuln"
+    desc: "Сканер уязвимостей (CVE), credentialed-скан"
+    unit: endpoint
+    eu_year: 4
+    availability: ga
+  exposure:
+    title: "ERA Exposure"
+    desc: "Risk score актива (требует Core+Vuln)"
+    unit: endpoint
+    eu_year: 4
+    availability: project
+    requires: [core, vuln]
+  manage:
+    title: "ERA Manage"
+    desc: "UEM: CMDB/ITAM, deploy/patch, BitLocker + App/USB Control + консольные пользователи (включены)"
+    unit: endpoint
+    eu_year: 12
+    availability: project
+  observe:
+    title: "ERA Observe"
+    desc: "Мониторинг сети (SNMP/NetFlow/discovery)"
+    unit: device
+    eu_year: 6
+    availability: project
+  byo_edr:
+    title: "ERA BYO-EDR Hub"
+    desc: "Приём телеметрии стороннего EDR"
+    unit: source
+    eu_year: 4
+    availability: project
+  service:
+    title: "ERA Service"
+    desc: "ITSM: сервис-деск, SLA, портал (пользователи портала — бесплатно)"
+    unit: technician
+    eu_year: 900
+    availability: project
+  provision:
+    title: "ERA Provision"
+    desc: "Развёртывание ОС (PXE/imaging)"
+    unit: node
+    eu_year: 8
+    availability: project
+  pam:
+    title: "ERA PAM"
+    desc: "Сейф паролей, checkout, SSH-запись сессий"
+    unit: admin
+    eu_year: 50
+    availability: project
+    addon:
+      - { key: pam_target, title: "ERA PAM — управляемая цель", unit: target, eu_year: 30 }
+  federated:
+    title: "ERA Federated"
+    desc: "Обмен IoC внутри организации"
+    unit: site
+    eu_year: 24000
+    availability: ga
+  national:
+    title: "ERA National"
+    desc: "Межорг. хаб STIX/TAXII"
+    unit: hub
+    eu_year: 36000
+    availability: ga
+
+# Скидка за объём — по числу endpoints, на весь объём per-endpoint позиций.
+volume_discounts:
+  - { min: 1,     max: 250,   discount: 0.00 }
+  - { min: 251,   max: 1000,  discount: 0.10 }
+  - { min: 1001,  max: 5000,  discount: 0.20 }
+  - { min: 5001,  max: 10000, discount: 0.30 }
+  - { min: 10001, max: 25000, discount: 0.40 }
+  - { min: 25001, max: null,  discount: null }   # по запросу (deal-desk)
+
+# Скидка за срок лицензии.
+term_discounts:
+  - { key: "1y",        label: "1 год",                 discount: 0.00 }
+  - { key: "3y_annual", label: "3 года, ежегодно",      discount: 0.10 }
+  - { key: "3y_prepaid",label: "3 года, предоплата",    discount: 0.20 }
+  - { key: "5y_prepaid",label: "5 лет, предоплата",     discount: 0.25 }
+
+# Готовые пакеты — скидка к сумме входящих модулей.
+bundles:
+  - { key: secops,   title: "Старт SecOps",  modules: [core, control-ai, response],                    discount: 0.20 }
+  - { key: secops_v, title: "SecOps + уязвимости", modules: [core, control-ai, response, vuln],         discount: 0.22 }
+  - { key: itops,    title: "ERA IT-Ops",    modules: [core, manage, service, provision],       discount: 0.25 }
+  - { key: unified,  title: "ERA Unified",   modules: [core, control-ai, response, manage, service, observe], discount: 0.30 }
+  - { key: full,     title: "Full",          modules: [core, control-ai, response, vuln, manage, service, provision, pam, observe], discount: 0.35 }
+
+# Бессрочная лицензия (perpetual).
+perpetual:
+  multiplier_of_annual: 3         # разовая цена = 3× годовой (после скидок)
+  maintenance_rate: 0.20          # обязательная поддержка/обновления в год
+
+# Правило комбинирования для калькулятора:
+#   line_eu   = module.eu_year * qty * (server? server_multiplier : 1)
+#   line_reg  = line_eu * region.multiplier
+#   subtotal  = сумма line_reg, при этом на bundle-модули вместо индивидуальных цен — bundle-скидка
+#   total     = subtotal * (1 - volume) * (1 - term)
+# control-ai: line = min(per_endpoint_total, flat_by_tier(endpoints))
+calc_formula: "total = sum(module_reg) * (1 - volume) * (1 - term); для Control AI берётся min(per-endpoint, flat)"
+
+disclaimer: "Индикативный расчёт для региона СНГ; не публичная оферта. Итоговая цена — в КП."

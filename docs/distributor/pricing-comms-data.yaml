@@ -1,0 +1,69 @@
+# ERA Communications — SSOT цен (per-user)
+#
+# Методология — как ERA Control (pricing-data.yaml):
+#   - EU list в EUR / user / year
+#   - Регион CIS: multiplier 0.50 (наследуется из parent при merge)
+#   - Volume discounts — по числу users (те же tier, что endpoints)
+#   - Bundle — скидка к сумме à la carte
+#
+# Бенчмарк (2025–2026, on-prem / gov per-user / year, order-of-magnitude):
+#   - Microsoft Exchange Online Plan 1: ~€40–55 (cloud, не on-prem)
+#   - IceWarp / CommuniGate / Zoho Workplace (on-prem mail): ~€15–35
+#   - Инвест-тизер ERA (AZ, CIS): Mail 10 AZN ≈ €5 CIS → EU list €10 ✓
+#
+# Позиционирование ERA: ниже IceWarp при масштабе 10k+, суверенность on-prem.
+
+schema_version: "1.0"
+product: era-communications
+parent_pricing: docs/distributor/pricing-data.yaml
+currency: EUR
+unit: user
+vat_included: false
+
+modules:
+  comms-mail-server:
+    title: "ERA Mail Server"
+    desc: "Почта + календарь (SMTP/IMAP, CalDAV, EWS subset), Autodiscover"
+    eu_year: 10
+    availability: roadmap
+    included: [comms-mail-client]
+
+  comms-mail-connect:
+    title: "ERA Mail Connect"
+    desc: "Migration: webmail + BFF к внешнему IMAP/JMAP/EWS (без native backend)"
+    eu_year: 4
+    availability: roadmap
+    tier: migration
+
+  comms-conference:
+    title: "ERA Conference"
+    desc: "Видеоконференции on-prem (LiveKit)"
+    eu_year: 6
+    availability: roadmap
+
+  comms-chat:
+    title: "ERA Chat"
+    desc: "Корпоративный мессенджер"
+    eu_year: 6
+    availability: roadmap
+
+  comms-ai:
+    title: "ERA Comms AI"
+    desc: "Air-Gap LLM: аудит почты, саммари"
+    eu_year: 8
+    availability: roadmap
+
+# CIS indicative (multiplier 0.5): Mail €5, Connect €2, Conf/Chat €3, AI €4, Full ~€9.5
+bundles:
+  - key: comms-full
+    title: "ERA Communications Full Suite"
+    modules: [comms-mail-server, comms-conference, comms-chat, comms-ai]
+    discount: 0.21
+    note: "EU à la carte 30 → ~23.7; CIS ~€9.5/user ≈ 19 AZN (тизер)"
+
+  - key: comms-mail-only
+    title: "ERA Mail (Server + Client)"
+    modules: [comms-mail-server]
+    discount: 0.00
+
+disclaimer: "Roadmap; индикатив. Не публичная оферта."

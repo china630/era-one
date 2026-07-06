@@ -1,0 +1,603 @@
+# ============================================================================
+# ERA XDR — production profile (Wave GA-1: Core + AI + Response)
+#
+# Поднимает data plane + минимальный SOC stack (Win+Linux agents → gateway → CH).
+# Без Perimeter/Federated/National (Wave GA-3).
+#
+# Запуск (из корня репо):
+#   docker compose -f deploy/docker-compose.prod.yml up -d --build
+#
+# Проверка:
+#   curl http://localhost:8090/healthz
+#   curl http://localhost:8089/healthz
+#   curl http://localhost:8082/healthz
+#
+# Агент (на хосте, prod capture):
+#   $env:ERA_PRODUCTION="1"
+#   $env:ERA_GATEWAY_ADDR="http://127.0.0.1:50051"
+#   cargo run -p era-agent
+#
+# Sizing: см. deploy/prod/README.md
+# ============================================================================
+
+name: era-one-prod
+
+x-go-service: &go-service
+  restart: unless-stopped
+  networks: [era-prod]
+
+x-go-tls: &go-tls
+  ERA_TLS_CERT: /tls/server.crt
+  ERA_TLS_KEY: /tls/server.key
+  ERA_TLS_CA: /tls/ca.crt
+
+x-go-service-tls: &go-service-tls
+  <<: *go-service
+  environment:
+    <<: *go-tls
+  volumes:
+    - ./tls:/tls:ro
+
+services:
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: era-prod-kafka
+    networks: [era-prod]
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+      KAFKA_LISTENERS: "INTERNAL://:29092,EXTERNAL://:9092,CONTROLLER://:9093"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:29092,EXTERNAL://localhost:9092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_LOG_RETENTION_HOURS: "168"
+    volumes:
+      - kafka-prod-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+
+  kafka-init:
+    image: apache/kafka:3.8.0
+    networks: [era-prod]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for t in process network file registry auth dns module raw detections inventory privileged; do
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists \
+            --topic xdr.$$t --partitions 6 --replication-factor 1 \
+            --config compression.type=zstd;
+        done;
+        echo "ERA prod topics ready";
+    restart: "no"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: era-prod-clickhouse
+    networks: [era-prod]
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    environment:
+      CLICKHOUSE_DB: era_xdr
+      CLICKHOUSE_USER: era
+      CLICKHOUSE_PASSWORD: ${ERA_CH_PASSWORD:-era_prod_pw}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    volumes:
+      - clickhouse-prod-data:/var/lib/clickhouse
+      - ./clickhouse/002_storage_policy.xml:/etc/clickhouse-server/config.d/storage_policy.xml:ro
+      - ./clickhouse/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+      - ./clickhouse/003_rollups.sql:/docker-entrypoint-initdb.d/003_rollups.sql:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  minio:
+    image: minio/minio:latest
+    container_name: era-prod-minio
+    networks: [era-prod]
+    ports:
+      - "9001:9001"
+      - "9002:9000"
+    environment:
+      MINIO_ROOT_USER: ${ERA_MINIO_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${ERA_MINIO_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-prod-data:/data
+
+  ingest-gateway:
+    <<: *go-service-tls
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: ingest-gateway
+        MAIN_PKG: ./cmd/ingest-gateway
+    container_name: era-prod-ingest
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    ports:
+      - "8082:8082"
+      - "50051:50051"
+    environment:
+      ERA_HTTP_ADDR: ":8082"
+      ERA_GRPC_ADDR: ":50051"
+      ERA_KAFKA_BROKERS: kafka:29092
+      ERA_TLS_CERT: /tls/server.crt
+      ERA_TLS_KEY: /tls/server.key
+      ERA_TLS_CA: /tls/ca.crt
+
+  event-writer:
+    <<: *go-service
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: event-writer
+        MAIN_PKG: ./cmd/event-writer
+    container_name: era-prod-event-writer
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "8089:8089"
+    environment:
+      ERA_HTTP_ADDR: ":8089"
+      ERA_KAFKA_BROKERS: kafka:29092
+      ERA_CH_ADDR: clickhouse:9000
+      ERA_CH_USER: era
+      ERA_CH_PASSWORD: ${ERA_CH_PASSWORD:-era_prod_pw}
+      ERA_CONSUMER_GROUP: era-event-writer
+
+  # Horizontal scale — profile `scale` (Stage 10a, same consumer group)
+  event-writer-b2:
+    <<: *go-service
+    profiles: [scale]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: event-writer
+        MAIN_PKG: ./cmd/event-writer
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      clickhouse:
+        condition: service_healthy
+    environment:
+      ERA_HTTP_ADDR: ":8089"
+      ERA_KAFKA_BROKERS: kafka:29092
+      ERA_CH_ADDR: clickhouse:9000
+      ERA_CH_USER: era
+      ERA_CH_PASSWORD: ${ERA_CH_PASSWORD:-era_prod_pw}
+      ERA_CONSUMER_GROUP: era-event-writer
+
+  control-plane:
+    <<: *go-service-tls
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: control-plane
+        MAIN_PKG: ./cmd/control-plane
+    container_name: era-prod-control-plane
+    user: "0:0"
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+    ports:
+      - "8090:8090"
+    environment:
+      ERA_HTTP_ADDR: ":8090"
+      ERA_STORE_PATH: ${ERA_STORE_PATH:-/data/control-plane.db}
+      ERA_STORE_DRIVER: ${ERA_STORE_DRIVER:-}
+      ERA_STORE_DSN: ${ERA_STORE_DSN:-}
+      ERA_UI_DIR: /ui
+      ERA_EVENT_WRITER_URL: http://event-writer:8089
+      ERA_SOAR_URL: http://soar:8092
+      ERA_AI_CORE_URL: http://ai-core:8091
+      ERA_INGEST_URL: http://ingest-gateway:8082
+      ERA_TLS_CERT: /tls/server.crt
+      ERA_TLS_KEY: /tls/server.key
+      ERA_TLS_CA: /tls/ca.crt
+      # Hybrid Relay (модуль CP) — активируется только с profile `connected`
+      ERA_HYBRID_CONNECTED: ${ERA_HYBRID_CONNECTED:-0}
+      ERA_PORTAL_URL: ${ERA_PORTAL_URL:-http://cloud-portal:8120}
+      ERA_UPDATE_URL: ${ERA_UPDATE_URL:-http://update-service:8110}
+      ERA_VENDOR_PUB: ${ERA_VENDOR_PUB:-}
+    volumes:
+      - control-plane-data:/data
+      - ../ui:/ui:ro
+      - ./tls:/tls:ro
+
+  detection-engine:
+    <<: *go-service-tls
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: detection-engine
+        MAIN_PKG: ./cmd/detection-engine
+    container_name: era-prod-detection
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      clickhouse:
+        condition: service_healthy
+    environment:
+      ERA_KAFKA_BROKERS: kafka:29092
+      ERA_CH_ADDR: clickhouse:9000
+      ERA_CH_USER: era
+      ERA_CH_PASSWORD: ${ERA_CH_PASSWORD:-era_prod_pw}
+      ERA_SIGMA_CORPUS: /data/sigma-corpus/rules
+      ERA_CONTROL_PLANE_URL: http://control-plane:8090
+      ERA_DETECTION_AUTO_CASE: "1"
+      ERA_CONSUMER_GROUP: era-detection-engine
+      ERA_TLS_CA: /tls/ca.crt
+      ERA_TLS_CLIENT_CERT: /tls/agent.crt
+      ERA_TLS_CLIENT_KEY: /tls/agent.key
+    volumes:
+      - ../data/sigma-corpus:/data/sigma-corpus:ro
+      - ./tls:/tls:ro
+
+  detection-engine-b2:
+    <<: *go-service
+    profiles: [scale]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: detection-engine
+        MAIN_PKG: ./cmd/detection-engine
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      clickhouse:
+        condition: service_healthy
+    environment:
+      ERA_KAFKA_BROKERS: kafka:29092
+      ERA_CH_ADDR: clickhouse:9000
+      ERA_CH_USER: era
+      ERA_CH_PASSWORD: ${ERA_CH_PASSWORD:-era_prod_pw}
+      ERA_SIGMA_CORPUS: /data/sigma-corpus/rules
+      ERA_CONTROL_PLANE_URL: http://control-plane:8090
+      ERA_DETECTION_AUTO_CASE: "1"
+      ERA_CONSUMER_GROUP: era-detection-engine
+    volumes:
+      - ../data/sigma-corpus:/data/sigma-corpus:ro
+
+  ai-core:
+    <<: *go-service
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: ai-core
+        MAIN_PKG: ./cmd/ai-core
+    container_name: era-prod-ai-core
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "8091:8091"
+    environment:
+      ERA_HTTP_ADDR: ":8091"
+      ERA_CH_ADDR: clickhouse:9000
+      ERA_CH_USER: era
+      ERA_CH_PASSWORD: ${ERA_CH_PASSWORD:-era_prod_pw}
+      ERA_CONTROL_PLANE_URL: http://control-plane:8090
+
+  soar:
+    <<: *go-service
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: soar
+        MAIN_PKG: ./cmd/soar
+    container_name: era-prod-soar
+    user: "0:0"
+    ports:
+      - "8092:8092"
+    environment:
+      ERA_HTTP_ADDR: ":8092"
+      ERA_CONTROL_PLANE_URL: http://control-plane:8090
+      ERA_SOAR_ISOLATE_SCRIPT: /connectors/isolate-host.sh
+      ERA_SOAR_ISOLATE_LOG: /var/log/era-isolate.log
+      ERA_SOAR_TICKET_WEBHOOK: http://ticket-stub:8096/ticket
+    volumes:
+      - ./soar/connectors:/connectors:ro
+      - soar-isolate-logs:/var/log
+    depends_on:
+      - ticket-stub
+
+  # Pilot ITSM webhook stub (replace with ServiceNow/Jira URL at customer)
+  ticket-stub:
+    image: python:3.12-alpine
+    container_name: era-prod-ticket-stub
+    networks: [era-prod]
+    expose:
+      - "8096"
+    command:
+      - python
+      - -c
+      - |
+        from http.server import HTTPServer, BaseHTTPRequestHandler
+        import json, uuid
+        class H(BaseHTTPRequestHandler):
+          def do_POST(self):
+            n = int(self.headers.get('content-length', 0) or 0)
+            if n: self.rfile.read(n)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({'id': str(uuid.uuid4())}).encode())
+          def log_message(self, *a): pass
+        HTTPServer(('0.0.0.0', 8096), H).serve_forever()
+
+  # SSO reverse proxy — profile `sso` (see docs/SSO-Setup-GA.md)
+  soc-nginx:
+    image: nginx:1.27-alpine
+    profiles: [sso]
+    container_name: era-prod-soc-nginx
+    networks: [era-prod]
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./nginx/soc-portal.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - control-plane
+
+  # Wave GA-3 perimeter — profile `perimeter` (S7-5/6)
+  waf:
+    <<: *go-service
+    profiles: [perimeter]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: waf
+        MAIN_PKG: ./cmd/waf
+    container_name: era-prod-waf
+    ports:
+      - "8093:8093"
+    environment:
+      ERA_HTTP_ADDR: ":8093"
+      ERA_WAF_UPSTREAM: http://event-writer:8089
+
+  ngfw:
+    <<: *go-service
+    profiles: [perimeter]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: ngfw
+        MAIN_PKG: ./cmd/ngfw
+    container_name: era-prod-ngfw
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    ports:
+      - "8094:8094"
+    environment:
+      ERA_HTTP_ADDR: ":8094"
+      ERA_KAFKA_BROKERS: kafka:29092
+
+  dlp:
+    <<: *go-service
+    profiles: [perimeter]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: dlp
+        MAIN_PKG: ./cmd/dlp
+    container_name: era-prod-dlp
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    ports:
+      - "8095:8095"
+    environment:
+      ERA_HTTP_ADDR: ":8095"
+      ERA_KAFKA_BROKERS: kafka:29092
+
+  # CTEM/BAS — profile `ctem` (S7-7/8)
+  ctem:
+    <<: *go-service
+    profiles: [ctem]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: ctem
+        MAIN_PKG: ./cmd/ctem
+    container_name: era-prod-ctem
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    ports:
+      - "8098:8098"
+    environment:
+      ERA_HTTP_ADDR: ":8098"
+      ERA_KAFKA_BROKERS: kafka:29092
+
+  # Sovereign Hybrid — profile `connected` (ADR-0018; air-gap остаётся дефолтом)
+  cloud-portal:
+    <<: *go-service
+    profiles: [connected]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: cloud-portal
+        MAIN_PKG: ./cmd/cloud-portal
+    container_name: era-prod-cloud-portal
+    ports:
+      - "8120:8120"
+    environment:
+      ERA_HTTP_ADDR: ":8120"
+      ERA_DEPLOYMENT_ID: ${ERA_DEPLOYMENT_ID:-deploy-dev}
+      ERA_LICENSE_ID: ${ERA_LICENSE_ID:-lic-dev}
+      ERA_TENANT_ID: ${ERA_TENANT_ID:-tenant-dev}
+
+  update-service:
+    <<: *go-service
+    profiles: [connected]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: update-service
+        MAIN_PKG: ./cmd/update-service
+    container_name: era-prod-update-service
+    ports:
+      - "8110:8110"
+    volumes:
+      - ../data/sigma-corpus:/data/sigma-corpus:ro
+    environment:
+      ERA_HTTP_ADDR: ":8110"
+      ERA_SIGMA_CORPUS: /data/sigma-corpus/curated
+
+  # IT-Ops — profile `itops` (Stage 7: Service + Provision)
+  service-desk:
+    <<: *go-service
+    profiles: [itops]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: service-desk
+        MAIN_PKG: ./cmd/service-desk
+    container_name: era-prod-service-desk
+    depends_on:
+      control-plane:
+        condition: service_started
+    ports:
+      - "8122:8122"
+    environment:
+      ERA_HTTP_ADDR: ":8122"
+      ERA_CONTROL_PLANE_URL: http://control-plane:8090
+
+  provision:
+    <<: *go-service
+    profiles: [itops]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: provision
+        MAIN_PKG: ./cmd/provision
+    container_name: era-prod-provision
+    depends_on:
+      control-plane:
+        condition: service_started
+      minio:
+        condition: service_started
+    ports:
+      - "8124:8124"
+    environment:
+      ERA_HTTP_ADDR: ":8124"
+      ERA_CONTROL_PLANE_URL: http://control-plane:8090
+      ERA_MINIO_ENDPOINT: http://minio:9000
+
+  # ERA PAM — profile `pam` (ADR-0013)
+  pam:
+    <<: *go-service
+    profiles: [pam]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: pam
+        MAIN_PKG: ./cmd/pam
+    container_name: era-prod-pam
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    ports:
+      - "8130:8130"
+    environment:
+      ERA_HTTP_ADDR: ":8130"
+      ERA_KMS_PROVIDER: software-sealed-dev
+      ERA_KAFKA_BROKERS: kafka:29092
+
+  # ERA Observe — profile `observe` (ADR-0020)
+  observe:
+    <<: *go-service
+    profiles: [observe]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: observe
+        MAIN_PKG: ./cmd/observe
+    container_name: era-prod-observe
+    depends_on:
+      ingest-gateway:
+        condition: service_started
+      control-plane:
+        condition: service_started
+    ports:
+      - "8132:8132"
+    environment:
+      ERA_HTTP_ADDR: ":8132"
+      ERA_INGEST_URL: http://ingest-gateway:8082
+      ERA_CONTROL_PLANE_URL: http://control-plane:8090
+      ERA_TENANT_ID: default
+      ERA_OBSERVE_SNMP_SIM: "0"
+      ERA_PRODUCTION: "1"
+
+  # Postgres для control-plane — profile `pg` (P0-4)
+  postgres:
+    image: postgres:16-alpine
+    profiles: [pg]
+    container_name: era-prod-postgres
+    networks: [era-prod]
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${ERA_PG_USER:-era}
+      POSTGRES_PASSWORD: ${ERA_PG_PASSWORD:-era_cp_pw}
+      POSTGRES_DB: ${ERA_PG_DATABASE:-era_cp}
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ERA_PG_USER:-era} -d ${ERA_PG_DATABASE:-era_cp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+networks:
+  era-prod:
+    driver: bridge
+
+volumes:
+  kafka-prod-data:
+  clickhouse-prod-data:
+  minio-prod-data:
+  control-plane-data:
+  postgres-prod-data:
+  soar-isolate-logs:

@@ -1,0 +1,10 @@
+id: era-sigma-0056
+title: ERA detection rule 0056 (file)
+status: experimental
+level: medium
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-pattern-0056"
+  condition: selection

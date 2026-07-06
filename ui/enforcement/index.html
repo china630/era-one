@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERA Manage — Enforcement</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --muted: #8b949e; --accent: #3fb950; --warn: #ffa657; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.5rem; }
+    h1 { font-size: 1.25rem; }
+    nav a { color: #58a6ff; margin-right: 1rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+    label { display: block; margin: 0.5rem 0 0.25rem; color: var(--muted); font-size: 0.875rem; }
+    select, textarea, input { width: 100%; background: #0d1117; border: 1px solid #30363d; color: var(--text); border-radius: 6px; padding: 0.5rem; }
+    textarea { min-height: 200px; font-family: ui-monospace, monospace; font-size: 0.8rem; }
+    button { background: #238636; border: none; color: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; margin: 0.5rem 0.5rem 0 0; }
+    button.secondary { background: #21262d; border: 1px solid #30363d; }
+    .gate { color: var(--warn); font-size: 0.875rem; margin-top: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 0.5rem; }
+    th, td { padding: 0.5rem; border-bottom: 1px solid #21262d; text-align: left; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/ui/cases/">Cases</a>
+    <a href="/ui/workbench/">Workbench</a>
+    <a href="/ui/assets/">Assets</a>
+    <a href="/ui/enforcement/">Enforcement</a>
+  </nav>
+  <h1>ERA Manage — Enforcement Policy</h1>
+  <p class="gate">Боевой kernel enforce и подпись драйвера — <strong>[gate: external]</strong>. UI управляет monitor/simulated enforce.</p>
+  <div class="card">
+    <label>Режим</label>
+    <select id="mode">
+      <option value="monitor">monitor (audit only)</option>
+      <option value="enforce">enforce (simulated)</option>
+    </select>
+    <label>Policy JSON</label>
+    <textarea id="policy"></textarea>
+    <button id="save">Сохранить policy</button>
+    <button class="secondary" id="rollback">Откатить</button>
+    <button class="secondary" id="refresh">Обновить</button>
+  </div>
+  <div class="card">
+    <h2>История изменений</h2>
+    <table><thead><tr><th>Версия</th><th>Режим</th><th>Актор</th><th>Деталь</th><th>Время</th></tr></thead><tbody id="hist"></tbody></table>
+  </div>
+  <div class="card">
+    <h2>BitLocker escrow</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:0.5rem;align-items:end;">
+      <div><label>Node ID</label><input id="escNode" /></div>
+      <div><label>Volume</label><input id="escVol" value="C:" /></div>
+      <div><label>Recovery key (не логируется)</label><input id="escKey" type="password" /></div>
+      <button id="escSave">Сохранить</button>
+    </div>
+    <table><thead><tr><th>Node</th><th>Volume</th><th>Has key</th><th>Created</th></tr></thead><tbody id="escrows"></tbody></table>
+  </div>
+  <script>
+    async function load() {
+      const res = await fetch('/api/v1/enforcement/policy');
+      const data = await res.json();
+      document.getElementById('policy').value = JSON.stringify(data.policy, null, 2);
+      document.getElementById('mode').value = data.policy.mode || 'monitor';
+      const h = await fetch('/api/v1/enforcement/history');
+      const hist = await h.json();
+      const tbody = document.getElementById('hist');
+      tbody.innerHTML = '';
+      for (const row of hist.history || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.version}</td><td>${row.mode}</td><td>${row.actor||''}</td><td>${row.detail||''}</td><td>${row.created_at||''}</td>`;
+        tbody.appendChild(tr);
+      }
+      const e = await fetch('/api/v1/enforcement/escrow');
+      const esc = await e.json();
+      const et = document.getElementById('escrows');
+      et.innerHTML = '';
+      for (const row of esc.escrows || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.node_id}</td><td>${row.volume_id}</td><td>${row.has_key}</td><td>${row.created_at||''}</td>`;
+        et.appendChild(tr);
+      }
+    }
+    document.getElementById('refresh').onclick = load;
+    document.getElementById('save').onclick = async () => {
+      let p;
+      try { p = JSON.parse(document.getElementById('policy').value); } catch { alert('invalid json'); return; }
+      p.mode = document.getElementById('mode').value;
+      const res = await fetch('/api/v1/enforcement/policy', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+      if (!res.ok) { alert('save failed'); return; }
+      load();
+    };
+    document.getElementById('rollback').onclick = async () => {
+      const res = await fetch('/api/v1/enforcement/rollback', { method: 'POST' });
+      if (!res.ok) { alert('rollback failed'); return; }
+      load();
+    };
+    document.getElementById('escSave').onclick = async () => {
+      const body = {
+        node_id: document.getElementById('escNode').value,
+        volume_id: document.getElementById('escVol').value,
+        key_blob: document.getElementById('escKey').value,
+        tenant_id: 'tenant-dev'
+      };
+      const res = await fetch('/api/v1/enforcement/escrow', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) { alert('escrow failed'); return; }
+      document.getElementById('escKey').value = '';
+      load();
+    };
+    load();
+  </script>
+</body>
+</html>

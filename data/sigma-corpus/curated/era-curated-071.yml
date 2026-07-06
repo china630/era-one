@@ -1,0 +1,12 @@
+id: era-curated-071
+title: Curated detection 071 (TA0005)
+status: stable
+level: medium
+tags:
+  - attack.T1070
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-curated-071"
+  condition: selection

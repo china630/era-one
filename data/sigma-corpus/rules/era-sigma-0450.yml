@@ -1,0 +1,10 @@
+id: era-sigma-0450
+title: ERA detection rule 0450 (network)
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-pattern-0450"
+  condition: selection

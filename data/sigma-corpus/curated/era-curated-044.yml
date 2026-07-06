@@ -1,0 +1,12 @@
+id: era-curated-044
+title: Curated detection 044 (TA0011)
+status: stable
+level: medium
+tags:
+  - attack.T1043
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-curated-044"
+  condition: selection

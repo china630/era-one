@@ -1,0 +1,10 @@
+id: era-sigma-0387
+title: ERA detection rule 0387 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0387"
+  condition: selection

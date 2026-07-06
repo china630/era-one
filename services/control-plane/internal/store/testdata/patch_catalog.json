@@ -1,0 +1,12 @@
+[
+  {
+    "cve_id": "CVE-2024-1234",
+    "product": "openssl",
+    "package_ref": "s3://era-packages/patches/openssl-3.0.14.msi"
+  },
+  {
+    "cve_id": "CVE-2024-5678",
+    "product": "chrome",
+    "package_ref": "s3://era-packages/patches/chrome-enterprise.msi"
+  }
+]

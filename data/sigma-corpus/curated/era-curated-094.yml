@@ -1,0 +1,12 @@
+id: era-curated-094
+title: Curated detection 094 (TA0006)
+status: stable
+level: medium
+tags:
+  - attack.T1093
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-curated-094"
+  condition: selection

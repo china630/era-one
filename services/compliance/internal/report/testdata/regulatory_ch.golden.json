@@ -1,0 +1,8 @@
+{
+  "total_events": 42000,
+  "detections": 15,
+  "critical_alerts": 2,
+  "asset_coverage_pct": 98,
+  "pii_violations": 0,
+  "compliance_status": "COMPLIANT"
+}

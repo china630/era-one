@@ -1,0 +1,12 @@
+id: era-curated-cmd-exe
+title: Cmd suspicious execution
+status: stable
+level: medium
+tags:
+  - attack.T1059.003
+logsource:
+  category: process
+detection:
+  selection:
+    ImagePath|contains: "cmd.exe"
+  condition: selection

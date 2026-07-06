@@ -1,0 +1,93 @@
+# ERA XDR — production HA profile (S6-16): 3 Kafka brokers, RF=3.
+# Usage: docker compose -f deploy/docker-compose.prod-ha.yml up -d
+
+name: era-one-prod-ha
+
+x-kafka-broker: &kafka-broker
+  image: apache/kafka:3.8.0
+  networks: [era-prod-ha]
+  environment: &kafka-env
+    KAFKA_PROCESS_ROLES: "broker,controller"
+    KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093"
+    KAFKA_LISTENERS: "INTERNAL://:29092,EXTERNAL://:9092,CONTROLLER://:9093"
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
+    KAFKA_INTER_BROKER_LISTENER_NAME: "INTERNAL"
+    KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+    KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "3"
+    KAFKA_MIN_INSYNC_REPLICAS: "2"
+    KAFKA_LOG_RETENTION_HOURS: "168"
+  healthcheck:
+    test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+    interval: 15s
+    timeout: 10s
+    retries: 25
+
+services:
+  kafka-1:
+    <<: *kafka-broker
+    container_name: era-ha-kafka-1
+    ports: ["9092:9092"]
+    environment:
+      <<: *kafka-env
+      KAFKA_NODE_ID: "1"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka-1:29092,EXTERNAL://localhost:9092"
+    volumes: [kafka-1-data:/var/lib/kafka/data]
+
+  kafka-2:
+    <<: *kafka-broker
+    container_name: era-ha-kafka-2
+    environment:
+      <<: *kafka-env
+      KAFKA_NODE_ID: "2"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka-2:29092,EXTERNAL://kafka-2:9092"
+    volumes: [kafka-2-data:/var/lib/kafka/data]
+
+  kafka-3:
+    <<: *kafka-broker
+    container_name: era-ha-kafka-3
+    environment:
+      <<: *kafka-env
+      KAFKA_NODE_ID: "3"
+      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka-3:29092,EXTERNAL://kafka-3:9092"
+    volumes: [kafka-3-data:/var/lib/kafka/data]
+
+  kafka-init:
+    image: apache/kafka:3.8.0
+    networks: [era-prod-ha]
+    depends_on:
+      kafka-1: { condition: service_healthy }
+      kafka-2: { condition: service_healthy }
+      kafka-3: { condition: service_healthy }
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for t in process network file registry auth dns module raw detections; do
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka-1:29092 --create --if-not-exists \
+            --topic xdr.$$t --partitions 6 --replication-factor 3 \
+            --config compression.type=zstd;
+        done;
+        echo "ERA HA topics ready (RF=3)";
+    restart: "no"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: era-ha-clickhouse
+    networks: [era-prod-ha]
+    ports: ["8123:8123", "9000:9000"]
+    environment:
+      CLICKHOUSE_DB: era_xdr
+      CLICKHOUSE_USER: era
+      CLICKHOUSE_PASSWORD: ${ERA_CH_PASSWORD:-era_prod_pw}
+    volumes:
+      - clickhouse-ha-data:/var/lib/clickhouse
+      - ./clickhouse/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+
+networks:
+  era-prod-ha:
+    driver: bridge
+
+volumes:
+  kafka-1-data:
+  kafka-2-data:
+  kafka-3-data:
+  clickhouse-ha-data:

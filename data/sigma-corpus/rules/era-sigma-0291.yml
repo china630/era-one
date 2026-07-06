@@ -1,0 +1,10 @@
+id: era-sigma-0291
+title: ERA detection rule 0291 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0291"
+  condition: selection

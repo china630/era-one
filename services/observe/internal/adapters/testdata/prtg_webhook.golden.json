@@ -1,0 +1,8 @@
+{
+  "device": "switch-core-01",
+  "host": "10.0.0.1",
+  "status": "Down",
+  "message": "high egress on uplink",
+  "sensor": "Traffic Out",
+  "priority": 4
+}

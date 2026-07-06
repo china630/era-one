@@ -1,0 +1,48 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ERA One — ERA Communications</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
+  <div class="body">
+    <h1>ERA Communications<span class="sub">Суверенные корпоративные коммуникации</span></h1>
+    <p class="lead">Полная on-prem замена <b>Microsoft Exchange</b>, <b>CommuniGate Pro</b> и <b>IceWarp</b> — почта, календарь, чат и видеовстречи в контуре заказчика. Backend на Rust + Go; интеграция с единым слоем identity ERA One и SIEM ERA Control. Данные и Air-Gap AI не покидают периметр.</p>
+    <h2>Издания</h2>
+    <div class="grid">
+      <div class="card"><div class="nm">ERA Mail Server</div><div class="ds">Почтовый backend, календарь, Autodiscover для массового развёртывания.</div></div>
+      <div class="card"><div class="nm">ERA Mail Client</div><div class="ds">Webmail и desktop/mobile-клиенты; Zero-Touch migration.</div></div>
+      <div class="card"><div class="nm">ERA Conference</div><div class="ds">Видеовстречи on-prem (LiveKit), 1000+ участников.</div></div>
+      <div class="card"><div class="nm">ERA Chat</div><div class="ds">Корпоративный мессенджер; интеграция с почтой и Conference.</div></div>
+      <div class="card"><div class="nm">ERA Comms AI</div><div class="ds">Air-Gap LLM: аудит безопасности почты, саммари переписки.</div></div>
+      <div class="card"><div class="nm">ERA Mail Connect</div><div class="ds">Мост миграции: webmail + BFF к внешнему IMAP/JMAP/EWS.</div></div>
+    </div>
+    <h2>Killer features</h2>
+    <ul class="feats">
+      <li>Целевой масштаб <b>60 000+</b> одновременных пользователей без деградации.</li>
+      <li>Air-Gap AI — локальный LLM для почты; данные не покидают контур.</li>
+      <li>Zero-Touch migration — Autodiscover для Outlook и мобильных клиентов.</li>
+      <li>Zero hardware lock-in — сборки x86 и PowerPC.</li>
+      <li>DevSecOps — Distroless-контейнеры; аудит в ClickHouse; интеграция с ERA Control.</li>
+    </ul>
+    <h2>Технический контур</h2>
+    <ul class="feats">
+      <li>Ядро: Rust + Go; хранилище аудита ClickHouse.</li>
+      <li>ВКС: LiveKit on-prem.</li>
+      <li>Shared SaaS: identity, tenant, admin-portal (ADR-0024).</li>
+    </ul>
+    <p class="note-int">Документы, таблицы и презентации — в отдельном продукте <b>ERA Office</b>, не в Communications.</p>
+  </div>
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Contact</b><a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a></div>
+    </div>
+    <div class="ftr-brand"><img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
+  </div>
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

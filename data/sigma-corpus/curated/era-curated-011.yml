@@ -1,0 +1,12 @@
+id: era-curated-011
+title: Curated detection 011 (TA0011)
+status: stable
+level: medium
+tags:
+  - attack.T1010
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-curated-011"
+  condition: selection

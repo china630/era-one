@@ -1,0 +1,12 @@
+id: era-curated-074
+title: Curated detection 074 (TA0008)
+status: stable
+level: medium
+tags:
+  - attack.T1073
+logsource:
+  category: network
+detection:
+  selection:
+    Payload|contains: "era-curated-074"
+  condition: selection

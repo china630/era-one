@@ -1,0 +1,12 @@
+id: era-curated-025
+title: Curated detection 025 (TA0003)
+status: stable
+level: medium
+tags:
+  - attack.T1024
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-025"
+  condition: selection

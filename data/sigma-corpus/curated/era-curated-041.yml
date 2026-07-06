@@ -1,0 +1,12 @@
+id: era-curated-041
+title: Curated detection 041 (TA0008)
+status: stable
+level: medium
+tags:
+  - attack.T1040
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-041"
+  condition: selection

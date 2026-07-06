@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>ERA Provision</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 1.5rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th, td { padding: 0.5rem; border-bottom: 1px solid #21262d; }
+    button { background: #238636; border: none; color: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; }
+    input { background: #0d1117; border: 1px solid #30363d; color: var(--text); padding: 0.5rem; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>ERA Provision — OS Images (air-gap MinIO)</h1>
+  <div class="card">
+    <h2>Образы</h2>
+    <table><thead><tr><th>ID</th><th>Name</th><th>Platform</th><th>MinIO</th></tr></thead><tbody id="imgs"></tbody></table>
+  </div>
+  <div class="card">
+    <h2>PXE boot menu</h2>
+    <pre id="pxe"></pre>
+  </div>
+  <div class="card">
+    <h2>Post-install enroll</h2>
+    <input id="node" placeholder="node_id" /> <input id="host" placeholder="hostname" />
+    <button id="enroll">Enroll в CMDB</button>
+  </div>
+  <script>
+    const API = 'http://127.0.0.1:8124';
+    async function load() {
+      const imgs = await (await fetch(API + '/api/v1/images')).json();
+      const tb = document.getElementById('imgs'); tb.innerHTML = '';
+      for (const i of imgs.images || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i.id}</td><td>${i.name}</td><td>${i.platform}</td><td>${i.minio_ref}</td>`;
+        tb.appendChild(tr);
+      }
+      const pxe = await (await fetch(API + '/api/v1/pxe/config')).json();
+      document.getElementById('pxe').textContent = JSON.stringify(pxe, null, 2);
+    }
+    document.getElementById('enroll').onclick = async () => {
+      await fetch(API + '/api/v1/enroll', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ agent_id:'agent-'+Date.now(), node_id: document.getElementById('node').value, hostname: document.getElementById('host').value })});
+      alert('enrolled');
+    };
+    load();
+  </script>
+</body>
+</html>

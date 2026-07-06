@@ -1,0 +1,10 @@
+id: era-sigma-0132
+title: ERA detection rule 0132 (file)
+status: experimental
+level: medium
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-pattern-0132"
+  condition: selection

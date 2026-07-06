@@ -1,0 +1,10 @@
+id: era-sigma-0381
+title: ERA detection rule 0381 (process)
+status: experimental
+level: medium
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-pattern-0381"
+  condition: selection

@@ -1,0 +1,12 @@
+id: era-curated-kerb
+title: Kerberos ticket anomaly
+status: stable
+level: high
+tags:
+  - attack.T1558.003
+logsource:
+  category: auth
+detection:
+  selection:
+    User|contains: "krbtgt"
+  condition: selection

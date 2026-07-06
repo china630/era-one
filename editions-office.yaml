@@ -1,0 +1,71 @@
+# ERA Office — манифест изданий
+#
+# ADR-0024, ADR-0026. Drive — editions-shared.yaml (включён в office-suite).
+# Pricing: docs/distributor/pricing-office-data.yaml
+
+schema_version: "1.0"
+product: era-office
+
+editions:
+  era-documents:
+    title: ERA Documents
+    status: roadmap
+    license_module: { name: office-documents, exists: false }
+    description: Текстовые документы, co-editing (.era-doc + docx I/O).
+    services: [platform-docs-engine]
+    requires_shared: [era-drive]
+    pricing_ref: office-documents
+
+  era-tables:
+    title: ERA Tables
+    status: roadmap
+    license_module: { name: office-tables, exists: false }
+    description: Таблицы, формулы (.era-sheet + xlsx I/O).
+    services: [platform-docs-engine]
+    requires_shared: [era-drive]
+    pricing_ref: office-tables
+
+  era-presentations:
+    title: ERA Presentations
+    status: roadmap
+    license_module: { name: office-presentations, exists: false }
+    description: Презентации on-prem (.era-deck).
+    services: [platform-docs-engine]
+    requires_shared: [era-drive]
+    pricing_ref: office-presentations
+
+  era-projects:
+    title: ERA Projects
+    status: roadmap
+    license_module: { name: office-projects, exists: false }
+    description: Управление проектами (post-MVP).
+    services: [docs-projects]
+    requires_shared: [era-drive]
+    pricing_ref: office-projects
+
+  era-office-ai:
+    title: ERA Office AI
+    status: roadmap
+    license_module: { name: office-ai, exists: false }
+    description: Air-Gap LLM для документов. ≠ Control/Comms AI.
+    services: [platform-docs-ai]
+    requires_shared: [era-drive]
+    pricing_ref: office-ai
+
+bundles:
+  office-mvp:
+    title: ERA Office MVP
+    description: Drive + Documents (pilot).
+    shared_editions: [era-drive]
+    editions: [era-documents]
+    pricing_ref: office-mvp
+
+  office-suite:
+    title: ERA Office Suite
+    description: Drive всегда включён.
+    shared_editions: [era-drive]
+    editions: [era-documents, era-tables, era-presentations, era-projects]
+    pricing_ref: office-suite
+
+shared_editions_ref: editions-shared.yaml
+pricing_ref: docs/distributor/pricing-office-data.yaml

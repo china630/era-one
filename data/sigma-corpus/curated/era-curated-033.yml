@@ -1,0 +1,12 @@
+id: era-curated-033
+title: Curated detection 033 (TA0011)
+status: stable
+level: medium
+tags:
+  - attack.T1032
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-033"
+  condition: selection

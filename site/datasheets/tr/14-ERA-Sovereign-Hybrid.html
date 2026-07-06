@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>ERA One — Sovereign Hybrid</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr">
+    <img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA Sovereign Hybrid<span class="sub">Veri evde — destek bulut gibi</span></h1>
+    <p class="lead">Egemenliği kaybetmeden modern işletim modeli: platform, veri gölü,
+      AI ve soruşturma materyalleri <b>çevrenizde kalır</b>; koruma güncellemeleri, lisanslar ve
+      destek telemetrisi <b>giden</b> kanal üzerinden ERA bulutundan teslim edilir.
+      "On-prem gerekiyor, ama bulut olmadan operasyonlarda geride kalıyoruz" sorusuna yanıt.</p>
+
+    <h2>Nasıl çalışır</h2>
+    <div class="flow">
+      <span class="node">Ajanlar</span><span class="arr">&rsaquo;</span>
+      <span class="node k">Veri gölü · AI · Vakalar — müşteri çevresinde</span><span class="arr">&rsaquo;</span>
+      <span class="node">Relay (yalnızca giden)</span><span class="arr">&rsaquo;</span>
+      <span class="node k">ERA bulutu: lisanslar · güncellemeler · destek</span>
+    </div>
+    <p class="note-int">Hybrid mod kasıtlı olarak etkinleştirilir ve politika ile yapılandırılır. Tamamen
+      izole mod (air-gap) hiçbir giden bağlantı olmadan kullanılabilir.</p>
+
+    <h2>Çevrede kalanlar, dışa gidenler</h2>
+    <table class="cmp">
+      <tr><th>Her zaman çevrenizde</th><th>Giden (yalnızca politikanıza göre)</th></tr>
+      <tr><td>Ham olaylar ve telemetri</td><td>Lisanslar ve abonelik yenileme</td></tr>
+      <tr><td>Veri gölü (ClickHouse / MinIO)</td><td>Kural, CVE, AI paket güncellemeleri</td></tr>
+      <tr><td>AI çıkarımı (çevre içi LLM)</td><td>Sertifika iptal listesi (CRL)</td></tr>
+      <tr><td>Vakalar, soruşturmalar, kişisel veriler</td><td>Destek telemetrisi (katmana göre)</td></tr>
+      <tr><td class="win">Asla çevreyi terk etmez</td><td>Kimliksizleştirilmiş göstergeler — yalnızca izin verirseniz</td></tr>
+    </table>
+
+    <h2>Çözüm bileşenleri</h2>
+    <table class="cmp">
+      <tr><th>Bileşen</th><th>Konum</th><th>Amaç</th></tr>
+      <tr><td><b>ERA Cloud Portal</b></td><td>ERA bulutu</td><td>Lisanslar ve sözleşmeler, abonelik yenileme, iptal listesi, sağlık durumu alımı</td></tr>
+      <tr><td><b>ERA Update Service</b></td><td>ERA bulutu</td><td>İmzalı içerik teslimi: kurallar, CVE, bağlayıcılar, AI paketleri (çevrimdışı paketle de çalışır)</td></tr>
+      <tr><td><b>ERA Hybrid Relay</b></td><td>Çevreniz</td><td>Günlük ve izin listesiyle tek giden kanal</td></tr>
+      <tr><td><b>ERA Managed View</b></td><td>ERA bulutu</td><td>Entegratörünüz / MSSP panosu: sağlık, lisanslar, sürümler — <b>verilerinize erişim olmadan</b></td></tr>
+    </table>
+
+    <h2>İki dağıtım profili</h2>
+    <table class="cmp">
+      <tr><th>Kriter</th><th>ERA Sovereign (air-gap)</th><th>ERA Sovereign Hybrid</th></tr>
+      <tr><td>Veri / veri gölü / AI / vakalar</td><td class="win">Çevre içinde</td><td class="win">Çevre içinde</td></tr>
+      <tr><td>Koruma güncellemeleri</td><td>Çevrimdışı paket</td><td class="win">ERA bulutundan otomatik</td></tr>
+      <tr><td>Giden bağlantı</td><td>Yok</td><td>Yalnızca giden, politika dahilinde</td></tr>
+      <tr><td>En uygun</td><td>Kamu sektörü, kritik altyapı, katı air-gap</td><td>Bankacılık, büyük kuruluş: egemenlik + rahat operasyonlar</td></tr>
+    </table>
+
+    <h2>Güvenlik ve satın alma için</h2>
+    <div class="benefits">
+      <div>Şeffaf akış diyagramı: neyin nereye gittiği net.</div>
+      <div>Kişisel veriler ve soruşturma materyalleri asla dışa gönderilmez.</div>
+      <div>Giden kanal — tek, günlük ve izin listesiyle.</div>
+      <div>Bölgesel veya müşteri barındırmalı Portal mevcut.</div>
+      <div>Veri işleme sözleşmesi (DPA) ve akış diyagramı dahil.</div>
+      <div>Her zaman tamamen izole moda geçiş mümkün.</div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Genel Merkez</b>Cenevre, İsviçre</div>
+      <div class="col"><b>Mühendislik Merkezi</b>Varşova, Polonya</div>
+      <div class="col"><b>İletişim</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

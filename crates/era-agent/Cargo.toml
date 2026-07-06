@@ -1,0 +1,28 @@
+[package]
+name = "era-agent"
+version = "0.1.0"
+edition = "2021"
+description = "ERA XDR — лёгкий сенсор конечной точки (Data Plane)"
+license = "Proprietary"
+
+[dependencies]
+era-agent-core = { path = "../era-agent-core" }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "signal"] }
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[[bench]]
+name = "agent_budget"
+harness = false
+
+[lib]
+name = "era_agent"
+path = "src/lib.rs"
+
+[[bin]]
+name = "era-agent"
+path = "src/main.rs"

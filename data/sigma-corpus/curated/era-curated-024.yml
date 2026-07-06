@@ -1,0 +1,12 @@
+id: era-curated-024
+title: Curated detection 024 (TA0002)
+status: stable
+level: medium
+tags:
+  - attack.T1023
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-curated-024"
+  condition: selection

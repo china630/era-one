@@ -1,0 +1,10 @@
+id: era-sigma-0485
+title: ERA detection rule 0485 (process)
+status: experimental
+level: medium
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-pattern-0485"
+  condition: selection

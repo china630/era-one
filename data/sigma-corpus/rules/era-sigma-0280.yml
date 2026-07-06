@@ -1,0 +1,10 @@
+id: era-sigma-0280
+title: ERA detection rule 0280 (file)
+status: experimental
+level: medium
+logsource:
+  category: file
+detection:
+  selection:
+    Payload|contains: "era-pattern-0280"
+  condition: selection

@@ -1,0 +1,12 @@
+id: era-curated-073
+title: Curated detection 073 (TA0007)
+status: stable
+level: medium
+tags:
+  - attack.T1072
+logsource:
+  category: process
+detection:
+  selection:
+    Payload|contains: "era-curated-073"
+  condition: selection

@@ -1,0 +1,10 @@
+id: era-sigma-lateral-net
+title: Internal network connection
+status: experimental
+level: medium
+logsource:
+  category: network
+detection:
+  selection:
+    DstIp|contains: "192.168."
+  condition: selection

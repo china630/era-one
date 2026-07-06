@@ -1,0 +1,10 @@
+id: era-sigma-auth-fail
+title: Failed authentication
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Success|contains: "false"
+  condition: selection

@@ -1,0 +1,10 @@
+id: era-sigma-0371
+title: ERA detection rule 0371 (auth)
+status: experimental
+level: medium
+logsource:
+  category: auth
+detection:
+  selection:
+    Payload|contains: "era-pattern-0371"
+  condition: selection

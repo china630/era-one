@@ -1,0 +1,17 @@
+[package]
+name = "era-plugin-vuln"
+version = "0.1.0"
+edition = "2021"
+description = "ERA One — vuln snapshot plugin (cron, software versions → NDJSON)"
+license = "Proprietary"
+
+[dependencies]
+era-plugin-sdk = { path = "../era-plugin-sdk" }
+sysinfo = "0.32"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+
+[[bin]]
+name = "era-plugin-vuln"
+path = "src/main.rs"
