@@ -5,14 +5,31 @@
 <div class="page page-stretch">
   <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
   <div class="body">
-    <h1>ERA Mail Server<span class="sub">Sovereign mail backend</span></h1>
-    <p class="lead">Mail server and calendar in the customer perimeter. On-prem replacement for Exchange, CommuniGate, and IceWarp backends. Autodiscover, scale to 60,000+ mailboxes.</p>
+    <h1>ERA Mail Server<span class="sub">Sovereign integrated mail backend</span></h1>
+    <p class="lead">Native on-prem mail and collaboration backend — <b>not Postfix + Dovecot</b>. Integrated Rust + Go stack (Stalwart-class architecture, ERA implementation). Replaces Exchange, CommuniGate and IceWarp <b>without an Outlook desktop connector</b> — server-side Exchange compatibility via Autodiscover and EWS.</p>
+    <h2>Outlook &amp; mobile parity (server-side)</h2>
+    <ul class="feats">
+      <li><b>Autodiscover + EXCH</b> — Outlook sees an Exchange profile; no client plugin.</li>
+      <li><b>EWS subset</b> — mail, calendar, contacts, notes/tasks (documented subset; not full MAPI).</li>
+      <li><b>CalDAV</b> — full calendar read/write (Apple Calendar, Thunderbird).</li>
+      <li><b>CardDAV</b> — corporate contacts (gov pilot scope).</li>
+      <li><b>ActiveSync subset</b> — iOS/Android sync like Exchange (gov pilot scope).</li>
+      <li><b>SMTP/IMAP + TLS</b> — standard clients and mass deployment.</li>
+    </ul>
     <h2>Key capabilities</h2>
     <ul class="feats">
-      <li>SMTP/IMAP/CalDAV on-prem.</li>
-      <li>Integration with ERA Control SIEM and ClickHouse audit.</li>
-      <li>Air-gap and offline Ed25519 licensing.</li>
+      <li>Integrated mail core — single product, air-gap ready.</li>
+      <li>ClickHouse audit — mandatory SIEM trail (ERA Control integration).</li>
+      <li>Offline Ed25519 licensing; scale target 60,000+ mailboxes.</li>
+      <li>Zero-Touch Autodiscover for Outlook and mobile.</li>
     </ul>
+    <h2>Technical architecture</h2>
+    <ul class="feats">
+      <li><b>Rust</b> — <code>era-mail-core</code>: SMTP/IMAP delivery.</li>
+      <li><b>Go</b> — <code>mail-api</code>: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync adapters.</li>
+      <li>Patterns from Stalwart (integrated protocols) — <b>native ERA code</b>, no fork.</li>
+    </ul>
+    <p class="note-int">Co-editing attachments requires <b>ERA Office</b> (separate license). Hybrid transition: <b>ERA Mail Connect</b>.</p>
   </div>
   <div class="ftr"><div class="ftr-contact"><div class="col"><b>Contact</b><a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a></div></div><div class="ftr-brand"><img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One"></div></div>
 </div>

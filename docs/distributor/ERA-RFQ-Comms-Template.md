@@ -26,20 +26,30 @@
 
 | № | Издание | Описание | Ед. | Кол-во | Срок |
 |---|---------|----------|-----|--------|------|
-| 1 | **ERA Mail Server** | SMTP/IMAP, CalDAV, EWS (Outlook), Autodiscover, ClickHouse audit | user | | 12 мес |
+| 1 | **ERA Mail Server** | Integrated stack (Rust+Go): SMTP/IMAP, EWS, CalDAV, CardDAV, ActiveSync, Autodiscover, ClickHouse audit | user | | 12 мес |
 | 2 | **ERA Mail Client** | Webmail + mobile/desktop (включён с Server) | user | | incl. |
 
 **Примечание:** ERA Mail Client включён в ERA Mail Server. **ERA Core не требуется.**
 
 ---
 
-## 3. Migration tier — ERA Mail Connect
+## 3. Hybrid tier — ERA Mail Connect
 
 | № | Издание | Описание | Ед. | Кол-во | Срок |
 |---|---------|----------|-----|--------|------|
 | 1 | **ERA Mail Connect** | Webmail + BFF к существующему IMAP/JMAP/EWS | user | | 12 мес |
 
-**Примечание:** не заменяет ERA Mail Server; для поэтапной миграции.
+**Примечание:** не заменяет ERA Mail Server; для поэтапного hybrid-сценария.
+
+---
+
+## 3b. Optional upsell — ERA Comms Migration
+
+| № | Издание | Описание | Ед. | Кол-во | Срок |
+|---|---------|----------|-----|--------|------|
+| 1 | **ERA Comms Migration** | Перенос почты/календарей/архивов в ERA Mail Server | mailbox | | проект |
+
+**Примечание:** one-time лицензирование (€1/mailbox), отдельно от ERA Mail Connect.
 
 ---
 

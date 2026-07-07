@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -10,14 +10,23 @@
   <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
   <div class="body">
     <h1>ERA Communications<span class="sub">Суверенные корпоративные коммуникации</span></h1>
-    <p class="lead">Полная on-prem замена <b>Microsoft Exchange</b>, <b>CommuniGate Pro</b> и <b>IceWarp</b> — почта, календарь, чат и видеовстречи в контуре заказчика. Backend на Rust + Go; интеграция с единым слоем identity ERA One и SIEM ERA Control. Данные и Air-Gap AI не покидают периметр.</p>
+    <p class="lead">Полная on-prem замена <b>Microsoft Exchange</b>, <b>CommuniGate Pro</b> и <b>IceWarp</b> — почта, календарь, чат и видеовстречи в контуре заказчика. <b>Integrated native stack</b> (Rust + Go) — не Postfix + Dovecot. Parity Outlook и mobile через <b>серверные</b> Autodiscover, EWS, CalDAV, CardDAV и ActiveSync — без desktop-коннектора.</p>
+    <h2>Протокольный стек для госсектора</h2>
+    <ul class="feats">
+      <li><b>Autodiscover + EWS</b> — Outlook видит Exchange; почта, календарь, контакты, заметки/задачи (subset).</li>
+      <li><b>CalDAV + CardDAV</b> — открытые стандарты календаря и контактов.</li>
+      <li><b>ActiveSync subset</b> — мобильная синхронизация как Exchange.</li>
+      <li><b>SMTP/IMAP + TLS</b> — Thunderbird и стандартные клиенты.</li>
+      <li><b>Без MAPI</b> и без Outlook Connector в стиле IceWarp — только серверная прослойка.</li>
+    </ul>
     <h2>Издания</h2>
     <div class="grid">
-      <div class="card"><div class="nm">ERA Mail Server</div><div class="ds">Почтовый backend, календарь, Autodiscover для массового развёртывания.</div></div>
-      <div class="card"><div class="nm">ERA Mail Client</div><div class="ds">Webmail и desktop/mobile-клиенты; Zero-Touch migration.</div></div>
+      <div class="card"><div class="nm">ERA Mail Server</div><div class="ds">Integrated backend: EWS, CalDAV, CardDAV, ActiveSync; Autodiscover.</div></div>
+      <div class="card"><div class="nm">ERA Mail Client</div><div class="ds">Webmail + OIDC; работает с серверным Exchange façade.</div></div>
       <div class="card"><div class="nm">ERA Conference</div><div class="ds">Видеовстречи on-prem (LiveKit), 1000+ участников.</div></div>
       <div class="card"><div class="nm">ERA Chat</div><div class="ds">Корпоративный мессенджер; интеграция с почтой и Conference.</div></div>
       <div class="card"><div class="nm">ERA Comms AI</div><div class="ds">Air-Gap LLM: аудит безопасности почты, саммари переписки.</div></div>
+      <div class="card"><div class="nm">ERA Mail Connect</div><div class="ds">Hybrid tier: webmail + BFF к внешнему IMAP/JMAP/EWS.</div></div>
     </div>
     <h2>Killer features</h2>
     <ul class="feats">
@@ -29,7 +38,7 @@
     </ul>
     <h2>Технический контур</h2>
     <ul class="feats">
-      <li>Ядро: Rust + Go; хранилище аудита ClickHouse.</li>
+      <li>Ядро: integrated Rust mail + Go protocol adapters (класс Stalwart; код ERA).</li>
       <li>ВКС: LiveKit on-prem.</li>
       <li>Shared SaaS: identity, tenant, admin-portal (ADR-0024).</li>
     </ul>

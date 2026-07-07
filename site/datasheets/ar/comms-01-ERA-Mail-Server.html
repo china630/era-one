@@ -5,13 +5,28 @@
 <div class="page page-stretch">
   <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
   <div class="body">
-    <h1>ERA Mail Server<span class="sub">خلفية بريد سيادية</span></h1>
-    <p class="lead">خادم بريد وتقويم داخل محيط العميل. بديل on-prem لخلفيات Exchange وCommuniGate وIceWarp. Autodiscover، توسّع لـ 60,000+ صندوق بريد.</p>
-    <h2>القدرات الرئيسية</h2>
+    <h1>ERA Mail Server<span class="sub">خادم بريد متكامل سيادي</span></h1>
+    <p class="lead">خادم بريد وتعاون محلي — <b>ليس Postfix + Dovecot</b>. مكدس Rust + Go متكامل (معمارية من فئة Stalwart، تنفيذ ERA). بديل لـ Exchange وCommuniGate وIceWarp <b>بدون موصل Outlook على العميل</b> — توافق Exchange من الخادم عبر Autodiscover وEWS.</p>
+    <h2>توافق Outlook والجوال (من الخادم)</h2>
     <ul class="feats">
-      <li>SMTP/IMAP/CalDAV on-prem.</li>
-      <li>تكامل ERA Control SIEM وتدقيق ClickHouse.</li>
-      <li>air-gap وترخيص Ed25519 دون اتصال.</li>
+      <li><b>Autodiscover + EXCH</b> — Outlook يرى ملف Exchange؛ بدون إضافة عميل.</li>
+      <li><b>EWS subset</b> — بريد، تقويم، جهات اتصال، ملاحظات/مهام (مجموعة فرعية موثقة).</li>
+      <li><b>CalDAV</b> — تقويم كامل للقراءة/الكتابة.</li>
+      <li><b>CardDAV</b> — جهات اتصال مؤسسية.</li>
+      <li><b>ActiveSync subset</b> — مزامنة iOS/Android مثل Exchange.</li>
+      <li><b>SMTP/IMAP + TLS</b> — عملاء قياسيون.</li>
+    </ul>
+    <h2>قدرات رئيسية</h2>
+    <ul class="feats">
+      <li>نواة بريد متكاملة — منتج واحد، air-gap.</li>
+      <li>تدقيق ClickHouse — أثر SIEM إلزامي.</li>
+      <li>تراخيص Ed25519 دون اتصال؛ هدف 60,000+ صندوق بريد.</li>
+    </ul>
+    <h2>المعمارية التقنية</h2>
+    <ul class="feats">
+      <li><b>Rust</b> — <code>era-mail-core</code>: SMTP/IMAP.</li>
+      <li><b>Go</b> — <code>mail-api</code>: Autodiscover، EWS، CalDAV، CardDAV، ActiveSync.</li>
+      <li>أنماط Stalwart — <b>كود ERA أصلي</b>، بدون fork.</li>
     </ul>
   </div>
   <div class="ftr"><div class="ftr-contact"><div class="col"><b>التواصل</b><a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a></div></div><div class="ftr-brand"><img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One"></div></div>

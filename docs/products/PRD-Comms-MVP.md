@@ -11,7 +11,9 @@
 ## 1. Цель MVP
 
 On-prem **почта + клиент + autodiscover + календарь**; **ClickHouse audit обязателен**.
-Phase 1.1: **ERA Mail Connect**. Без chat/VCS/Comms AI в первом релизе.
+Phase 1.1: **ERA Mail Connect** (hybrid tier).
+Phase 1.2 upsell: **ERA Comms Migration** (см. [`PRD-Comms-Migration.md`](PRD-Comms-Migration.md)).
+Без chat/VCS/Comms AI в первом релизе.
 
 ---
 
@@ -24,9 +26,9 @@ Phase 1.1: **ERA Mail Connect**. Без chat/VCS/Comms AI в первом рел
 | **Autodiscover** | Автонастройка Outlook/мобильных (XML/SRV) | ✅ |
 | **CalDAV** | Открытый стандарт **календаря** (события, приглашения) — Apple Calendar, Thunderbird | ✅ **full** read/write |
 | **EWS** (Exchange Web Services) | API Microsoft **Exchange** — Outlook для Windows часто требует EWS для «полного» UX | ✅ **subset** (mail + calendar sync для Outlook) |
-| **ActiveSync** | Протокол Microsoft для **синхронизации с телефонами** (почта/календарь/контакты) как у Exchange | ❌ **Phase 2** |
+| **ActiveSync** | Протокол Microsoft для **синхронизации с телефонами** (почта/календарь/контакты) как у Exchange | ✅ **gov pilot** (subset) |
 
-**Рекомендация MVP:** IMAP + CalDAV full + EWS subset для Outlook desktop; ActiveSync — отдельный PRD Phase 2 (мобильный parity).
+**Рекомендация MVP:** IMAP + CalDAV full + EWS subset для Outlook desktop; **ActiveSync subset — обязателен для gov pilot** ([`PRD-Comms-Gov-Protocols.md`](PRD-Comms-Gov-Protocols.md)).
 
 ---
 
@@ -66,7 +68,7 @@ Phase 1.1: **ERA Mail Connect**. Без chat/VCS/Comms AI в первом рел
 
 | # | Capability |
 |---|------------|
-| 8 | **ERA Mail Connect** — BFF → external IMAP/JMAP |
+| 8 | **ERA Mail Connect** — hybrid BFF → external IMAP/JMAP |
 
 ### Phase 2 (отдельный PRD — от вас не требуется сейчас)
 
@@ -90,6 +92,9 @@ Phase 1.1: **ERA Mail Connect**. Без chat/VCS/Comms AI в первом рел
 | **ERA Mail Connect** | Phase 1.1 | **€4** (отдельно) |
 | ERA Drive / Office | optional | см. pricing-office-data.yaml |
 
+Отдельный upsell, не входящий в MVP AC-C1…AC-C9:
+- **ERA Comms Migration** — €1/mailbox one-time (см. [`pricing-comms-data.yaml`](../distributor/pricing-comms-data.yaml)).
+
 **Не требует ERA Core.** Pricing: [`pricing-comms-data.yaml`](../distributor/pricing-comms-data.yaml).
 
 ---
@@ -112,9 +117,11 @@ Phase 1.1: **ERA Mail Connect**. Без chat/VCS/Comms AI в первом рел
 
 ## 8. Phase 2+ — что потребуется от product owner
 
-**Сейчас от вас ничего не требуется.** При старте Phase 2 — решить:
+**Gov pilot (обязательно):** [`PRD-Comms-Gov-Protocols.md`](PRD-Comms-Gov-Protocols.md) — EWS façade, CardDAV, ActiveSync subset. См. [`Comms-Pilot-Gap-List.md`](../Comms-Pilot-Gap-List.md) P0-GOV.
 
-1. ActiveSync — must-have для AZ gov mobile или достаточно IMAP app?
+При старте Phase 2 (chat/VCS) — решить:
+
+1. ActiveSync — **must-have для gov mobile** (subset, R-GOV-5); IMAP-only app — fallback only
 2. Comms AI — scope (только mail или + chat transcripts)?
 3. LiveKit — self-hosted sizing / HA
 4. PowerPC — подтверждение спроса
@@ -123,5 +130,8 @@ Phase 1.1: **ERA Mail Connect**. Без chat/VCS/Comms AI в первом рел
 
 ## 9. Связанные документы
 
+- [`Comms-Acceptance-System.md`](Comms-Acceptance-System.md) — контроль и приёмка
+- [`Comms-MVP-Spec.md`](../Comms-MVP-Spec.md)
+- [`Comms-Implementation-Matrix.md`](../Comms-Implementation-Matrix.md)
 - [`ERA-RFQ-Comms-Template.md`](../distributor/ERA-RFQ-Comms-Template.md)
 - [`editions-comms.yaml`](../../editions-comms.yaml)

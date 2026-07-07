@@ -283,10 +283,21 @@ window.ERA_PRICING = {
         },
         "comms-mail-connect": {
           "title": "ERA Mail Connect",
-          "desc": "Migration: webmail + BFF к внешнему IMAP/JMAP/EWS (без native backend)",
+          "desc": "Hybrid: webmail + BFF к внешнему IMAP/JMAP/EWS (без native backend)",
           "eu_year": 4,
           "availability": "roadmap",
-          "tier": "migration"
+          "tier": "hybrid"
+        },
+        "comms-migration": {
+          "title": "ERA Comms Migration",
+          "desc": "Bulk migration в ERA Mail Server: почта, календарь, контакты, архив",
+          "pricing_model": "per_mailbox_one_time",
+          "eu_one_time": 1,
+          "availability": "roadmap",
+          "tier": "upsell",
+          "requires": [
+            "comms-mail-server"
+          ]
         },
         "comms-conference": {
           "title": "ERA Conference",
