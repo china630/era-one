@@ -17,7 +17,7 @@
     '      <div class="field"><label for="ws" data-i18n-calc="calcWs">Workstations</label><input type="number" id="ws" min="0" /></div>' +
     '      <div class="field"><label for="servers" data-i18n-calc="calcServers">Servers (×3)</label><input type="number" id="servers" min="0" /></div>' +
     '      <div class="field field-full"><label for="bundle" data-i18n-calc="calcBundle">Bundle</label><select id="bundle"></select></div>' +
-    '      <div data-license-fields></div>' +
+      '      <div class="field field-full" data-license-fields></div>' +
     '    </div>' +
     '    <h3 class="modules-title" data-i18n-calc="calcModules">Modules</h3>' +
     '    <div class="modules" id="modules"></div>' +
