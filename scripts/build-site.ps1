@@ -14,6 +14,9 @@ python (Join-Path $Root "scripts\build_portal.py")
 Write-Host "==> calculator golden tests" -ForegroundColor Cyan
 node (Join-Path $Root "site\test\calculator.test.js")
 
+Write-Host "==> RU datasheet UTF-8 gate" -ForegroundColor Cyan
+python (Join-Path $Root "site\test\check_datasheet_encoding.py")
+
 Write-Host "==> copy site/ -> $Out" -ForegroundColor Cyan
 if (Test-Path $Out) { Remove-Item -Recurse -Force $Out }
 New-Item -ItemType Directory -Path $Out -Force | Out-Null

@@ -14,6 +14,9 @@ python3 "$ROOT/scripts/build_portal.py"
 echo "==> calculator golden tests"
 node "$ROOT/site/test/calculator.test.js"
 
+echo "==> RU datasheet UTF-8 gate"
+python3 "$ROOT/site/test/check_datasheet_encoding.py"
+
 echo "==> copy site/ → $OUT"
 rm -rf "$OUT"
 mkdir -p "$OUT"
