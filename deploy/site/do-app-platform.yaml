@@ -1,26 +1,23 @@
-# DigitalOcean App Platform — статический сайт из монорепо (только site/).
-# Создание: doctl apps create --spec deploy/site/do-app-platform.yaml
-# Обновление: doctl apps update $APP_ID --spec deploy/site/do-app-platform.yaml
+# DigitalOcean App Platform — production static site (ветка site-prod).
 #
-# App Platform клонирует репо, выполняет build_command и публикует output_dir.
-# Продуктовый код (services/, crates/) в артефакт не попадает.
+# site-prod содержит ТОЛЬКО собранный dist/site/ (без Cargo.toml, без Rust buildpack).
+# Сборка — в GitHub Actions (workflow Site deploy) из монорепо main.
+#
+# doctl apps create --spec deploy/site/do-app-platform.yaml
+# doctl apps update $APP_ID --spec deploy/site/do-app-platform.yaml
 
-name: era-one-site
+name: era-one-site-prod
 region: fra
 
 static_sites:
   - name: web
     github:
       repo: china630/era-one
-      branch: dev
+      branch: site-prod
       deploy_on_push: true
     source_dir: /
-    build_command: pip install pyyaml && bash scripts/build-site.sh
-    output_dir: dist/site
+    output_dir: /
     environment_slug: html
     catchall_document: index.html
     routes:
       - path: /
-
-# Production: duplicate app with branch: main and name era-one-site-prod,
-# или второй static_site + custom domain www.era-one.solutions
