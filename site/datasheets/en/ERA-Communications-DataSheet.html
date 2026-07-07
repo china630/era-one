@@ -10,19 +10,19 @@
   <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
   <div class="body">
     <h1>ERA Communications<span class="sub">Sovereign enterprise communications</span></h1>
-    <p class="lead">A complete on-prem replacement for <b>Microsoft Exchange</b>, <b>CommuniGate Pro</b>, and <b>IceWarp</b> — email, calendar, chat, and video meetings within the customer perimeter. <b>Integrated native stack</b> (Rust + Go) — not Postfix + Dovecot. Outlook and mobile parity via <b>server-side</b> Autodiscover, EWS, CalDAV, CardDAV and ActiveSync — no desktop connector plugin.</p>
+    <p class="lead">Sovereign enterprise communications — email, calendar, chat, and video meetings within the customer perimeter. <b>Integrated native stack</b> (Rust + Go). Outlook and mobile parity via <b>server-side</b> Autodiscover, EWS, CalDAV, CardDAV and ActiveSync — compatibility on the server, no desktop plugins.</p>
     <h2>Gov-ready protocol stack</h2>
     <ul class="feats">
-      <li><b>Autodiscover + EWS</b> — Outlook desktop sees Exchange; mail, calendar, contacts, notes/tasks (documented subset).</li>
+      <li><b>Autodiscover + EWS</b> — Outlook connects via standard Autodiscover; mail, calendar, contacts, notes/tasks (documented subset).</li>
       <li><b>CalDAV + CardDAV</b> — open standards for calendar and contacts.</li>
-      <li><b>ActiveSync subset</b> — mobile sync like Exchange (iOS/Android).</li>
+      <li><b>ActiveSync subset</b> — mobile mail, calendar, and contacts sync (iOS/Android).</li>
       <li><b>SMTP/IMAP + TLS</b> — Thunderbird and standard clients.</li>
-      <li><b>No MAPI</b>, no IceWarp-style Outlook Connector — server façade only.</li>
+      <li><b>Documented protocol subset</b> — server façade only; no proprietary desktop connector.</li>
     </ul>
     <h2>Editions</h2>
     <div class="grid">
       <div class="card"><div class="nm">ERA Mail Server</div><div class="ds">Integrated mail backend: EWS, CalDAV, CardDAV, ActiveSync; Autodiscover.</div></div>
-      <div class="card"><div class="nm">ERA Mail Client</div><div class="ds">Webmail + OIDC; works with server Exchange façade.</div></div>
+      <div class="card"><div class="nm">ERA Mail Client</div><div class="ds">Webmail + OIDC; works with server-side compatibility layer.</div></div>
       <div class="card"><div class="nm">ERA Conference</div><div class="ds">On-prem video meetings (LiveKit), 1000+ participants.</div></div>
       <div class="card"><div class="nm">ERA Chat</div><div class="ds">Enterprise messenger; integration with mail and Conference.</div></div>
       <div class="card"><div class="nm">ERA Comms AI</div><div class="ds">Air-Gap LLM: mail security audit, correspondence summaries.</div></div>
@@ -38,7 +38,7 @@
     </ul>
     <h2>Technical stack</h2>
     <ul class="feats">
-      <li>Core: integrated Rust mail + Go protocol adapters (Stalwart-class; native ERA code).</li>
+      <li>Core: integrated Rust mail + Go protocol adapters (native ERA implementation).</li>
       <li>Video conferencing: LiveKit on-prem.</li>
       <li>Shared SaaS: identity, tenant, admin portal (ADR-0024).</li>
     </ul>

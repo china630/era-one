@@ -247,7 +247,7 @@ window.ERA_CALC_I18N = {
       pam: "Password vault, checkout, SSH/RDP session recording",
       federated: "IoC and metadata sharing within the organization",
       national: "Cross-organization STIX/TAXII hub",
-      "comms-mail-server": "Integrated mail: SMTP/IMAP, EWS Exchange façade, CalDAV, CardDAV, ActiveSync; Autodiscover",
+      "comms-mail-server": "Integrated mail: SMTP/IMAP, EWS server façade, CalDAV, CardDAV, ActiveSync; Autodiscover",
       "comms-mail-connect": "Hybrid tier: webmail + BFF to external IMAP/JMAP/EWS",
       "comms-conference": "On-prem video conferencing (LiveKit)",
       "comms-chat": "Enterprise messenger",
