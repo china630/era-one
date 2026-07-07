@@ -42,7 +42,7 @@ window.ERA_I18N = {
 
     /* ---- Product pages ---- */
     "pg.control.h1":"ERA Control","pg.control.lead":"Security and IT-Ops on one platform: XDR, vulnerabilities, UEM, ITSM, PAM and network monitoring — a single lightweight agent, server editions activated by license. All data stays in your contour.",
-    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Sovereign corporate communications — integrated mail stack (Rust + Go, not Postfix+Dovecot). Server-side Outlook parity: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync — no desktop connector. Chat and meetings on-prem.",
+    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Sovereign corporate communications — integrated mail stack (Rust + Go). Server-side Outlook parity: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync — compatibility on the server, no client plugins. Chat and meetings on-prem.",
     "pg.office.h1":"ERA Office","pg.office.lead":"Documents, tables, presentations and projects with real-time co-editing — in the isolated contour, without cloud dependencies.",
 
     "calc.h2":"Price calculator","calc.sub":"Indicative estimate. Final price is fixed in the commercial proposal.",
@@ -147,7 +147,7 @@ window.ERA_I18N = {
     "vision.d":"Безопасность, коммуникации и продуктивность под одним суверенным брендом, с ИИ, который остаётся в контуре.","vision.cta":"Связаться с нами",
 
     "pg.control.h1":"ERA Control","pg.control.lead":"Безопасность и IT-Ops на одной платформе: XDR, уязвимости, UEM, ITSM, PAM и мониторинг сети — один лёгкий агент, серверные издания по лицензии. Данные остаются в вашем контуре.",
-    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Суверенные корпоративные коммуникации — integrated mail stack (Rust + Go, не Postfix+Dovecot). Серверный parity Outlook: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync — без desktop-коннектора. Чат и встречи on-prem.",
+    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Суверенные корпоративные коммуникации — integrated mail stack (Rust + Go). Серверный parity Outlook: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync — совместимость на сервере, без плагинов на клиенте. Чат и встречи on-prem.",
     "pg.office.h1":"ERA Office","pg.office.lead":"Документы, таблицы, презентации и проекты с совместным редактированием — в изолированном контуре, без облака.",
 
     "calc.h2":"Калькулятор стоимости","calc.sub":"Индикативный расчёт. Точная цена фиксируется в коммерческом предложении.",
@@ -252,7 +252,7 @@ window.ERA_I18N = {
     "vision.d":"Güvenlik, iletişim ve üretkenlik tek egemen marka altında; YZ çevre içinde kalır.","vision.cta":"Bize ulaşın",
 
     "pg.control.h1":"ERA Control","pg.control.lead":"Tek platformda güvenlik ve BT-Ops: XDR, açıklar, UEM, ITSM, PAM ve ağ izleme — tek hafif ajan, lisanslı sunucu sürümleri. Veri çevrenizde kalır.",
-    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Egemen kurumsal iletişim — entegre posta yığını (Rust + Go, Postfix+Dovecot değil). Sunucu tarafı Outlook uyumu: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync — masaüstü eklentisi yok.",
+    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Egemen kurumsal iletişim — entegre posta yığını (Rust + Go). Sunucu tarafı Outlook uyumu: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync — uyumluluk sunucuda, istemci eklentisi yok.",
     "pg.office.h1":"ERA Office","pg.office.lead":"Belgeler, tablolar, sunumlar ve projeler — izole çevrede ortak düzenleme ile, bulutsuz.",
 
     "pg.about.h1":"ERA One hakkında",
@@ -357,7 +357,7 @@ window.ERA_I18N = {
     "vision.d":"الأمن والاتصالات والإنتاجية تحت علامة سيادية واحدة، مع ذكاء اصطناعي يبقى داخل المحيط.","vision.cta":"تحدّث إلينا",
 
     "pg.control.h1":"ERA Control","pg.control.lead":"الأمن وعمليات تقنية المعلومات على منصة واحدة: XDR والثغرات وإدارة الأجهزة وITSM وPAM ومراقبة الشبكة — وكيل خفيف واحد وإصدارات خادم حسب الترخيص. تبقى البيانات في محيطك.",
-    "pg.comms.h1":"ERA Communications","pg.comms.lead":"اتصالات مؤسسية سيادية — مكدس بريد متكامل (Rust + Go، ليس Postfix+Dovecot). توافق Outlook من الخادم: Autodiscover وEWS وCalDAV وCardDAV وActiveSync — بدون موصل سطح مكتب.",
+    "pg.comms.h1":"ERA Communications","pg.comms.lead":"اتصالات مؤسسية سيادية — مكدس بريد متكامل (Rust + Go). توافق Outlook من الخادم: Autodiscover وEWS وCalDAV وCardDAV وActiveSync — التوافق على الخادم، بدون إضافات على العميل.",
     "pg.office.h1":"ERA Office","pg.office.lead":"مستندات وجداول وعروض ومشاريع مع تحرير مشترك — داخل المحيط المعزول، دون سحابة.",
 
     "pg.about.h1":"عن ERA One",

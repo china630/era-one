@@ -6,14 +6,14 @@
   <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
   <div class="body">
     <h1>ERA Mail Server<span class="sub">Суверенный integrated mail backend</span></h1>
-    <p class="lead">Нативный on-prem почтовый и collaboration backend — <b>не Postfix + Dovecot</b>. Integrated стек Rust + Go (архитектура класса Stalwart, реализация ERA). Замена Exchange, CommuniGate и IceWarp <b>без Outlook-коннектора на клиенте</b> — серверная совместимость через Autodiscover и EWS.</p>
+    <p class="lead">Нативный on-prem почтовый и collaboration backend. Integrated стек Rust + Go — единый продукт, air-gap. <b>Совместимость с клиентами реализована на сервере</b> через Autodiscover, EWS, CalDAV, CardDAV и ActiveSync — без плагинов и коннекторов на рабочих станциях.</p>
     <h2>Outlook и mobile parity (серверная сторона)</h2>
     <ul class="feats">
-      <li><b>Autodiscover + EXCH</b> — Outlook видит профиль Exchange; без плагина.</li>
-      <li><b>EWS subset</b> — почта, календарь, контакты, заметки/задачи (документированный subset; не полный MAPI).</li>
+      <li><b>Autodiscover + EXCH</b> — Outlook использует стандартный EXCH-профиль Autodiscover; без плагина.</li>
+      <li><b>EWS subset</b> — почта, календарь, контакты, заметки/задачи (документированный subset).</li>
       <li><b>CalDAV</b> — полный календарь read/write (Apple Calendar, Thunderbird).</li>
       <li><b>CardDAV</b> — корпоративные контакты (gov pilot).</li>
-      <li><b>ActiveSync subset</b> — синхронизация iOS/Android как Exchange (gov pilot).</li>
+      <li><b>ActiveSync subset</b> — мобильная синхронизация iOS/Android (gov pilot).</li>
       <li><b>SMTP/IMAP + TLS</b> — стандартные клиенты и массовое развёртывание.</li>
     </ul>
     <h2>Ключевые возможности</h2>
@@ -27,7 +27,7 @@
     <ul class="feats">
       <li><b>Rust</b> — <code>era-mail-core</code>: доставка SMTP/IMAP.</li>
       <li><b>Go</b> — <code>mail-api</code>: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync.</li>
-      <li>Паттерны Stalwart (integrated protocols) — <b>нативный код ERA</b>, без fork.</li>
+      <li>Integrated multi-protocol design — <b>нативный код ERA</b>.</li>
     </ul>
     <p class="note-int">Co-editing вложений — <b>ERA Office</b> (отдельная лицензия). Гибридный переход — <b>ERA Mail Connect</b>.</p>
   </div>

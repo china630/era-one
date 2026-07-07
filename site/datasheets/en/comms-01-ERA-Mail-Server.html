@@ -6,14 +6,14 @@
   <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
   <div class="body">
     <h1>ERA Mail Server<span class="sub">Sovereign integrated mail backend</span></h1>
-    <p class="lead">Native on-prem mail and collaboration backend — <b>not Postfix + Dovecot</b>. Integrated Rust + Go stack (Stalwart-class architecture, ERA implementation). Replaces Exchange, CommuniGate and IceWarp <b>without an Outlook desktop connector</b> — server-side Exchange compatibility via Autodiscover and EWS.</p>
+    <p class="lead">Native on-prem mail and collaboration backend. Integrated Rust + Go stack — single product, air-gap ready. <b>Client compatibility is implemented on the server</b> via Autodiscover, EWS, CalDAV, CardDAV, and ActiveSync — no desktop plugins or client-side connectors.</p>
     <h2>Outlook &amp; mobile parity (server-side)</h2>
     <ul class="feats">
-      <li><b>Autodiscover + EXCH</b> — Outlook sees an Exchange profile; no client plugin.</li>
-      <li><b>EWS subset</b> — mail, calendar, contacts, notes/tasks (documented subset; not full MAPI).</li>
+      <li><b>Autodiscover + EXCH</b> — Outlook uses standard EXCH Autodiscover profile; no client plugin.</li>
+      <li><b>EWS subset</b> — mail, calendar, contacts, notes/tasks (documented subset).</li>
       <li><b>CalDAV</b> — full calendar read/write (Apple Calendar, Thunderbird).</li>
       <li><b>CardDAV</b> — corporate contacts (gov pilot scope).</li>
-      <li><b>ActiveSync subset</b> — iOS/Android sync like Exchange (gov pilot scope).</li>
+      <li><b>ActiveSync subset</b> — iOS/Android mobile sync (gov pilot scope).</li>
       <li><b>SMTP/IMAP + TLS</b> — standard clients and mass deployment.</li>
     </ul>
     <h2>Key capabilities</h2>
@@ -27,7 +27,7 @@
     <ul class="feats">
       <li><b>Rust</b> — <code>era-mail-core</code>: SMTP/IMAP delivery.</li>
       <li><b>Go</b> — <code>mail-api</code>: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync adapters.</li>
-      <li>Patterns from Stalwart (integrated protocols) — <b>native ERA code</b>, no fork.</li>
+      <li>Integrated multi-protocol design — <b>native ERA code</b>.</li>
     </ul>
     <p class="note-int">Co-editing attachments requires <b>ERA Office</b> (separate license). Hybrid transition: <b>ERA Mail Connect</b>.</p>
   </div>
