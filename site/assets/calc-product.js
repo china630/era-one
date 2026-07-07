@@ -8,8 +8,16 @@
   function lic() { return window.ERA_CALC_License || null; }
 
   function termLabel(key, fallback) {
-    var v = t("termLabel." + key);
-    return (v && v.indexOf("termLabel.") !== 0) ? v : fallback;
+    return L() && L().termLabel ? L().termLabel(key, fallback) : fallback || key;
+  }
+  function bundleTitle(key, fallback) {
+    return L() && L().bundleTitle ? L().bundleTitle(key, fallback) : fallback || key;
+  }
+  function moduleTitle(key) {
+    return L() && L().moduleTitle ? L().moduleTitle(key) : key;
+  }
+  function regionLabel(regionKey) {
+    return L() && L().regionLabel ? L().regionLabel(regionKey) : regionKey;
   }
 
   function plOf(key) {
@@ -79,7 +87,7 @@
       var inB = !!bundleSet[key];
       var disc = inB && bundle ? (bundle.discount || 0) : 0;
       var reg = m.eu_year * users * R * (1 - disc);
-      lines.push({ key: key, title: m.title, reg: reg, inB: inB, eu: m.eu_year });
+      lines.push({ key: key, title: moduleTitle(key), reg: reg, inB: inB, eu: m.eu_year });
     });
 
     var subtotal = lines.reduce(function (s, l) { return s + l.reg; }, 0);
@@ -144,11 +152,11 @@
       }
     }
 
-    var regionLabel = (root().regions[state.region] && root().regions[state.region].label) || state.region;
+    var regionLabelText = regionLabel(state.region);
     var mailBody = Lm ? Lm.mailQuoteBody({
       t: t,
       money: money,
-      regionLabel: regionLabel,
+      regionLabel: regionLabelText,
       users: state.users,
       licenseModel: state.licenseModel,
       subscription: res.subscription,
@@ -161,7 +169,6 @@
       encodeURIComponent(t("mailSubject") + " — " + productTag) + "&body=" +
       encodeURIComponent(mailBody) + '">' + t("ctaQuote") + "</a>";
 
-    if (pl.disclaimer) html += '<p class="note">' + pl.disclaimer + "</p>";
     html += '<p class="note">' + t("disclaimer") + "</p>";
     el.innerHTML = html;
   }
@@ -226,12 +233,16 @@
     var termSel = rootEl.querySelector("#term");
     var maintSel = rootEl.querySelector("#perp_maint_years");
 
-    sel.innerHTML =
-      (pl.bundles || []).map(function (b) {
-        return '<option value="' + b.key + '">' + b.title + "</option>";
-      }).join("") +
-      '<option value="__manual__">' + t("bundleNone") + "</option>";
-    sel.value = state.bundle;
+    function fillBundleSelect() {
+      sel.innerHTML =
+        (pl.bundles || []).map(function (b) {
+          return '<option value="' + b.key + '">' + bundleTitle(b.key, b.title) + "</option>";
+        }).join("") +
+        '<option value="__manual__">' + t("bundleNone") + "</option>";
+      sel.value = state.manual ? "__manual__" : state.bundle;
+    }
+
+    fillBundleSelect();
 
     if (Lm) {
       fillTermSelect(termSel, state);
@@ -242,7 +253,7 @@
       var m = pl.modules[key];
       return '<label class="mod" data-mod="' + key + '">' +
         '<input type="checkbox" />' +
-        '<div class="mod-body"><span class="mname">' + m.title + "</span></div>" +
+        '<div class="mod-body"><span class="mname">' + moduleTitle(key) + "</span></div>" +
         '<span class="mprice">€' + m.eu_year + t("perUserYear") + "</span></label>";
     }).join("");
 
@@ -302,6 +313,21 @@
 
     if (window.ERA_CALC_applyStatic) window.ERA_CALC_applyStatic();
     recalc();
+
+    document.addEventListener("eralangchange", function () {
+      if (window.ERA_CALC_applyStatic) window.ERA_CALC_applyStatic();
+      fillBundleSelect();
+      if (Lm) {
+        fillTermSelect(termSel, state);
+        Lm.fillMaintYearsSelect(maintSel, state, t);
+      }
+      modBox.querySelectorAll("[data-mod]").forEach(function (row) {
+        var key = row.getAttribute("data-mod");
+        var name = row.querySelector(".mname");
+        if (name) name.textContent = moduleTitle(key);
+      });
+      recalc();
+    });
   }
 
   window.ERA_mountProductCalc = function (container, lineKey) {

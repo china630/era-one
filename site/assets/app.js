@@ -24,12 +24,19 @@
   function t(k) { var lang = L(); return lang ? lang.t(k) : k; }
   function unitLabel(u) { return t("unit." + u) || u; }
   function termLabel(key, fallback) {
-    var v = t("termLabel." + key);
-    return (v && v.indexOf("termLabel.") !== 0) ? v : fallback;
+    return L() && L().termLabel ? L().termLabel(key, fallback) : fallback || key;
   }
   function bundleTitle(key, fallback) {
-    var v = t("bundleTitle." + key);
-    return (v && v.indexOf("bundleTitle.") !== 0) ? v : fallback;
+    return L() && L().bundleTitle ? L().bundleTitle(key, fallback) : fallback || key;
+  }
+  function moduleTitle(key) {
+    return L() && L().moduleTitle ? L().moduleTitle(key) : key;
+  }
+  function addonTitle(key) {
+    return L() && L().addonTitle ? L().addonTitle(key) : key;
+  }
+  function regionLabel(regionKey) {
+    return L() && L().regionLabel ? L().regionLabel(regionKey) : regionKey;
   }
 
   function fmtMoney() {
@@ -115,13 +122,13 @@
       var reg = euBase * R * (1 - bDisc);
       if (isEndpoint && vol.discount) reg *= (1 - vol.discount);
 
-      lines.push({ key: key, title: m.title, unit: m.unit, qty: qty, reg: reg, inB: inB, isEndpoint: isEndpoint });
+      lines.push({ key: key, title: moduleTitle(key), unit: m.unit, qty: qty, reg: reg, inB: inB, isEndpoint: isEndpoint });
 
       if (key === "pam" && m.addon && (state.qty.pam_target || 0) > 0) {
         var ad = m.addon[0];
         var tQty = state.qty.pam_target;
         var tReg = ad.eu_year * tQty * R * (1 - bDisc);
-        lines.push({ key: "pam_target", title: ad.title, unit: ad.unit, qty: tQty, reg: tReg, inB: inB, isEndpoint: false });
+        lines.push({ key: "pam_target", title: addonTitle("pam_target"), unit: ad.unit, qty: tQty, reg: tReg, inB: inB, isEndpoint: false });
       }
     });
 
@@ -186,7 +193,7 @@
     var body = document.createElement("div");
     body.className = "mod-body";
     var tag = m.availability === "project" ? ' <span class="tag">' + t("projectTag") + "</span>" : "";
-    body.innerHTML = '<div class="mname">' + m.title + tag + '</div><div class="mmeta" id="desc_' + key + '"></div>';
+    body.innerHTML = '<div class="mname">' + moduleTitle(key) + tag + '</div><div class="mmeta" id="desc_' + key + '"></div>';
     body.querySelector("#desc_" + key).textContent = L() ? L().moduleDesc(key) : (m.desc || "");
 
     var price = document.createElement("div");
@@ -410,7 +417,7 @@
     var mailBody = lic ? lic.mailQuoteBody({
       t: t,
       money: money,
-      regionLabel: D.regions[state.region].label,
+      regionLabel: regionLabel(state.region),
       ws: state.ws,
       servers: state.servers,
       licenseModel: state.licenseModel,
@@ -423,8 +430,7 @@
       encodeURIComponent(t("mailSubject")) + "&body=" + encodeURIComponent(mailBody) +
       '">' + t("ctaQuote") + "</a>";
 
-    var disc = (L() && L().t("disclaimer")) || D.disclaimer;
-    html += '<div class="note">' + disc + "</div>";
+    html += '<div class="note">' + t("disclaimer") + "</div>";
     out.innerHTML = html;
     if (lic) lic.syncLicenseModelUI(document.getElementById("era-calc"), state);
   }
