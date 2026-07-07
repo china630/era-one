@@ -105,18 +105,20 @@
 
   function licenseModelFieldsHtml(t) {
     return (
-      '<div class="field field-full">' +
-      '  <label data-i18n-calc="calcLicenseModel">' + t("calcLicenseModel") + "</label>" +
-      '  <div class="seg" data-license-model-seg>' +
-      '    <button type="button" data-license-model="subscription" class="active" data-i18n-calc="licenseSubscription">' + t("licenseSubscription") + "</button>" +
-      '    <button type="button" data-license-model="perpetual" data-i18n-calc="licensePerpetual">' + t("licensePerpetual") + "</button>" +
-      "  </div></div>" +
-      '<div class="field field-full" data-sub-only id="term-field">' +
-      '  <label for="term" data-i18n-calc="calcTerm">' + t("calcTerm") + '</label>' +
-      '  <select id="term"></select></div>' +
-      '<div class="field field-full" data-perp-only id="perp-maint-field" style="display:none">' +
-      '  <label for="perp_maint_years" data-i18n-calc="calcPerpMaintYears">' + t("calcPerpMaintYears") + "</label>" +
-      '  <select id="perp_maint_years"></select></div>'
+      '<div class="field field-full calc-license-row">' +
+      '  <div class="calc-license-model">' +
+      '    <label data-i18n-calc="calcLicenseModel">' + t("calcLicenseModel") + "</label>" +
+      '    <div class="seg" data-license-model-seg>' +
+      '      <button type="button" data-license-model="subscription" class="active" data-i18n-calc="licenseSubscription">' + t("licenseSubscription") + "</button>" +
+      '      <button type="button" data-license-model="perpetual" data-i18n-calc="licensePerpetual">' + t("licensePerpetual") + "</button>" +
+      "    </div></div>" +
+      '  <div class="calc-license-period" data-sub-only id="term-field">' +
+      '    <label for="term" data-i18n-calc="calcTerm">' + t("calcTerm") + '</label>' +
+      '    <select id="term"></select></div>' +
+      '  <div class="calc-license-period" data-perp-only id="perp-maint-field" style="display:none">' +
+      '    <label for="perp_maint_years" data-i18n-calc="calcPerpMaintYears">' + t("calcPerpMaintYears") + "</label>" +
+      '    <select id="perp_maint_years"></select></div>' +
+      "</div>"
     );
   }
 
