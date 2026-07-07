@@ -1,10 +1,11 @@
 # Деплой публичного сайта (site/) — отдельно от продукта ERA XDR.
-# Триггер: push в dev (staging) или main (production), только при изменении site/ или SSOT цен.
 #
-# Секреты (Settings → Secrets):
-#   DO_APP_ID_STAGING  — App Platform app id для dev/staging
-#   DO_APP_ID_PROD     — App Platform app id для main/production
-#   DIGITALOCEAN_ACCESS_TOKEN
+# Production: GitHub Actions собирает dist/site/ → пушит в ветку site-prod (только HTML/JS).
+# DigitalOcean App Platform подключён к site-prod (без Rust buildpack, без build command).
+#
+# Опциональные секреты (Settings → Secrets):
+#   DIGITALOCEAN_ACCESS_TOKEN + DO_APP_ID_PROD — force redeploy через API
+#   DO_APP_ID_STAGING — только если нужен staging на dev
 
 name: Site deploy
 
@@ -94,28 +95,57 @@ jobs:
             -d '{"force_build":true}'
           echo "Staging deployment triggered"
 
-  deploy-production:
-    name: deploy production (main)
+  publish-site-prod:
+    name: publish site-prod branch
     needs: build
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: publish
+
+      - name: Add DO app spec for site-prod root
+        run: |
+          mkdir -p publish/.do
+          cp deploy/site/site-prod.do-app.yaml publish/.do/app.yaml
+
+      - name: Push to site-prod (static only, no Cargo.toml)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd publish
+          git init -b site-prod
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "deploy(site): ${{ github.sha }} from main"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git" HEAD:site-prod
+          echo "Published $(find . -type f | wc -l) files to branch site-prod"
+
+  deploy-production:
+    name: trigger DO redeploy (optional)
+    needs: publish-site-prod
     if: |
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
     runs-on: ubuntu-latest
     environment: site-production
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: site-dist
-          path: dist/site
-
       - name: Trigger DigitalOcean redeploy (production)
         env:
           DO_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
           DO_APP_ID: ${{ secrets.DO_APP_ID_PROD }}
         run: |
           if [ -z "$DO_TOKEN" ] || [ -z "$DO_APP_ID" ]; then
-            echo "SKIP: configure DO_APP_ID_PROD + DIGITALOCEAN_ACCESS_TOKEN"
-            find dist/site -type f | wc -l
+            echo "SKIP: DO autodeploy on site-prod push is enough"
             exit 0
           fi
           curl -sf -X POST \

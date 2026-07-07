@@ -1,0 +1,11 @@
+# Копируется в корень ветки site-prod при публикации (см. site-deploy.yml).
+name: era-one-site-prod
+region: fra
+static_sites:
+  - name: web
+    source_dir: /
+    output_dir: /
+    environment_slug: html
+    catchall_document: index.html
+    routes:
+      - path: /
