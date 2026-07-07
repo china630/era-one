@@ -131,7 +131,7 @@
         '</span><span class="v disc">' + t("priceByRequest") + "</span></div>";
     } else if (opts.volDiscount) {
       html += '<div class="line"><span class="l disc">' + t("volDisc") +
-        (opts.epCount != null ? " (" + opts.epCount + " endpoints)" : "") +
+        (opts.epCount != null ? " (" + opts.epCount + " " + t("volEndpoints") + ")" : "") +
         '</span><span class="v disc">−' + Math.round(opts.volDiscount * 100) + "%</span></div>";
     }
 

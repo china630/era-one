@@ -43,6 +43,7 @@ window.ERA_CALC_I18N = {
     volByRequest: "Объём 25 000+",
     priceByRequest: "цена по запросу",
     volDisc: "Скидка за объём",
+    volEndpoints: "endpoint",
     termDisc: "Скидка за срок",
     totalYear: "Итого в год",
     totalTerm: "За",
@@ -77,7 +78,25 @@ window.ERA_CALC_I18N = {
       secops_v: "SecOps + уязвимости",
       itops: "ERA IT-Ops",
       unified: "ERA Unified",
-      full: "Full"
+      full: "Full",
+      "comms-full": "ERA Communications Full Suite",
+      "comms-mail-only": "ERA Mail (Server + Client)",
+      "office-mvp": "ERA Office MVP",
+      "office-suite": "ERA Office Suite",
+      "office-suite-ai": "ERA Office Suite + AI"
+    },
+    addonTitle: {
+      pam_target: "ERA PAM — управляемая цель"
+    },
+    moduleTitle: {
+      core: "ERA Core", "control-ai": "ERA Control AI", response: "ERA Response", vuln: "ERA Vuln",
+      exposure: "ERA Exposure", manage: "ERA Manage", observe: "ERA Observe", byo_edr: "ERA BYO-EDR Hub",
+      service: "ERA Service", provision: "ERA Provision", pam: "ERA PAM", federated: "ERA Federated",
+      national: "ERA National",
+      "comms-mail-server": "ERA Mail Server", "comms-mail-connect": "ERA Mail Connect",
+      "comms-conference": "ERA Conference", "comms-chat": "ERA Chat", "comms-ai": "ERA Comms AI",
+      "platform-drive": "ERA Drive", "office-documents": "ERA Documents", "office-tables": "ERA Tables",
+      "office-presentations": "ERA Presentations", "office-projects": "ERA Projects", "office-ai": "ERA Office AI"
     },
     unit: {
       endpoint: "endpoint", device: "устройство", source: "источник",
@@ -86,7 +105,7 @@ window.ERA_CALC_I18N = {
     },
     moduleDesc: {
       core: "XDR-база: телеметрия, детекция (Sigma+MITRE), кейсы, SOC-портал, Workbench",
-      control-ai: "ИИ-аналитик SOC, расследование инцидентов, LLM в контуре",
+      "control-ai": "ИИ-аналитик SOC, расследование инцидентов, LLM в контуре",
       response: "SOAR: изоляция хоста, блок IP, автоматические плейбуки",
       vuln: "Сканер уязвимостей (CVE), credentialed-скан, приоритизация",
       exposure: "Risk-score актива, поверхность атаки (требует Core + Vuln)",
@@ -97,7 +116,18 @@ window.ERA_CALC_I18N = {
       provision: "Развёртывание ОС: PXE, imaging, bare-metal",
       pam: "Сейф паролей, checkout, запись SSH/RDP-сессий",
       federated: "Обмен IoC и метаданными внутри организации",
-      national: "Межорганизационный хаб STIX/TAXII"
+      national: "Межорганизационный хаб STIX/TAXII",
+      "comms-mail-server": "Почта + календарь (SMTP/IMAP, CalDAV, EWS subset), Autodiscover",
+      "comms-mail-connect": "Migration: webmail + BFF к внешнему IMAP/JMAP/EWS (без native backend)",
+      "comms-conference": "Видеоконференции on-prem (LiveKit)",
+      "comms-chat": "Корпоративный мессенджер",
+      "comms-ai": "Air-Gap LLM: аудит почты, саммари",
+      "platform-drive": "Файлы, sync, ACL, версии; API для Mail и Office",
+      "office-documents": "Текстовые документы, co-editing on-prem (.era-doc, docx I/O)",
+      "office-tables": "Таблицы, формулы, co-editing (.era-sheet, xlsx I/O)",
+      "office-presentations": "Презентации on-prem (.era-deck)",
+      "office-projects": "Управление проектами (post-MVP)",
+      "office-ai": "Air-Gap LLM: саммари, assist по документам"
     }
   },
   en: {
@@ -143,6 +173,7 @@ window.ERA_CALC_I18N = {
     volByRequest: "Volume 25,000+",
     priceByRequest: "price on request",
     volDisc: "Volume discount",
+    volEndpoints: "endpoints",
     termDisc: "Term discount",
     totalYear: "Total per year",
     totalTerm: "For",
@@ -177,7 +208,25 @@ window.ERA_CALC_I18N = {
       secops_v: "SecOps + Vuln",
       itops: "ERA IT-Ops",
       unified: "ERA Unified",
-      full: "Full"
+      full: "Full",
+      "comms-full": "ERA Communications Full Suite",
+      "comms-mail-only": "ERA Mail (Server + Client)",
+      "office-mvp": "ERA Office MVP",
+      "office-suite": "ERA Office Suite",
+      "office-suite-ai": "ERA Office Suite + AI"
+    },
+    addonTitle: {
+      pam_target: "ERA PAM — managed target"
+    },
+    moduleTitle: {
+      core: "ERA Core", "control-ai": "ERA Control AI", response: "ERA Response", vuln: "ERA Vuln",
+      exposure: "ERA Exposure", manage: "ERA Manage", observe: "ERA Observe", byo_edr: "ERA BYO-EDR Hub",
+      service: "ERA Service", provision: "ERA Provision", pam: "ERA PAM", federated: "ERA Federated",
+      national: "ERA National",
+      "comms-mail-server": "ERA Mail Server", "comms-mail-connect": "ERA Mail Connect",
+      "comms-conference": "ERA Conference", "comms-chat": "ERA Chat", "comms-ai": "ERA Comms AI",
+      "platform-drive": "ERA Drive", "office-documents": "ERA Documents", "office-tables": "ERA Tables",
+      "office-presentations": "ERA Presentations", "office-projects": "ERA Projects", "office-ai": "ERA Office AI"
     },
     unit: {
       endpoint: "endpoint", device: "device", source: "source",
@@ -186,7 +235,7 @@ window.ERA_CALC_I18N = {
     },
     moduleDesc: {
       core: "XDR base: telemetry, detection (Sigma+MITRE), cases, SOC portal, Workbench",
-      control-ai: "AI analyst, incident investigation, on-prem LLM",
+      "control-ai": "AI analyst, incident investigation, on-prem LLM",
       response: "SOAR: host isolation, IP blocking, automated playbooks",
       vuln: "Vulnerability scanner (CVE), credentialed scan, prioritization",
       exposure: "Asset risk score, attack surface (requires Core + Vuln)",
@@ -197,7 +246,18 @@ window.ERA_CALC_I18N = {
       provision: "OS deployment: PXE, imaging, bare-metal",
       pam: "Password vault, checkout, SSH/RDP session recording",
       federated: "IoC and metadata sharing within the organization",
-      national: "Cross-organization STIX/TAXII hub"
+      national: "Cross-organization STIX/TAXII hub",
+      "comms-mail-server": "Mail + calendar (SMTP/IMAP, CalDAV, EWS subset), Autodiscover",
+      "comms-mail-connect": "Migration: webmail + BFF to external IMAP/JMAP/EWS (no native backend)",
+      "comms-conference": "On-prem video conferencing (LiveKit)",
+      "comms-chat": "Enterprise messenger",
+      "comms-ai": "Air-gap LLM: mail audit, summaries",
+      "platform-drive": "Files, sync, ACL, versions; API for Mail and Office",
+      "office-documents": "Text documents, on-prem co-editing (.era-doc, docx I/O)",
+      "office-tables": "Spreadsheets, formulas, co-editing (.era-sheet, xlsx I/O)",
+      "office-presentations": "On-prem presentations (.era-deck)",
+      "office-projects": "Project management (post-MVP)",
+      "office-ai": "Air-gap LLM: summaries, document assist"
     }
   },
   tr: {
@@ -243,6 +303,7 @@ window.ERA_CALC_I18N = {
     volByRequest: "Hacim 25.000+",
     priceByRequest: "fiyat talep üzerine",
     volDisc: "Hacim indirimi",
+    volEndpoints: "endpoint",
     termDisc: "Süre indirimi",
     totalYear: "Yıllık toplam",
     totalTerm: "Toplam",
@@ -277,7 +338,25 @@ window.ERA_CALC_I18N = {
       secops_v: "SecOps + Zafiyet",
       itops: "ERA IT-Ops",
       unified: "ERA Unified",
-      full: "Full"
+      full: "Full",
+      "comms-full": "ERA Communications Full Suite",
+      "comms-mail-only": "ERA Mail (Server + Client)",
+      "office-mvp": "ERA Office MVP",
+      "office-suite": "ERA Office Suite",
+      "office-suite-ai": "ERA Office Suite + AI"
+    },
+    addonTitle: {
+      pam_target: "ERA PAM — yönetilen hedef"
+    },
+    moduleTitle: {
+      core: "ERA Core", "control-ai": "ERA Control AI", response: "ERA Response", vuln: "ERA Vuln",
+      exposure: "ERA Exposure", manage: "ERA Manage", observe: "ERA Observe", byo_edr: "ERA BYO-EDR Hub",
+      service: "ERA Service", provision: "ERA Provision", pam: "ERA PAM", federated: "ERA Federated",
+      national: "ERA National",
+      "comms-mail-server": "ERA Mail Server", "comms-mail-connect": "ERA Mail Connect",
+      "comms-conference": "ERA Conference", "comms-chat": "ERA Chat", "comms-ai": "ERA Comms AI",
+      "platform-drive": "ERA Drive", "office-documents": "ERA Documents", "office-tables": "ERA Tables",
+      "office-presentations": "ERA Presentations", "office-projects": "ERA Projects", "office-ai": "ERA Office AI"
     },
     unit: {
       endpoint: "endpoint", device: "cihaz", source: "kaynak",
@@ -286,7 +365,7 @@ window.ERA_CALC_I18N = {
     },
     moduleDesc: {
       core: "XDR tabanı: telemetri, tespit (Sigma+MITRE), vakalar, SOC portalı, Workbench",
-      control-ai: "Yapay zeka analisti, olay incelemesi, on-prem LLM",
+      "control-ai": "Yapay zeka analisti, olay incelemesi, on-prem LLM",
       response: "SOAR: host izolasyonu, IP engelleme, otomatik playbook'lar",
       vuln: "Zafiyet tarayıcısı (CVE), kimlik doğrulamalı tarama, önceliklendirme",
       exposure: "Varlık risk skoru, saldırı yüzeyi (Core + Vuln gerekir)",
@@ -297,7 +376,18 @@ window.ERA_CALC_I18N = {
       provision: "OS dağıtımı: PXE, imaging, bare-metal",
       pam: "Parola kasası, checkout, SSH/RDP oturum kaydı",
       federated: "Kurum içi IoC ve metadata paylaşımı",
-      national: "Kurumlar arası STIX/TAXII hub"
+      national: "Kurumlar arası STIX/TAXII hub",
+      "comms-mail-server": "Posta + takvim (SMTP/IMAP, CalDAV, EWS subset), Autodiscover",
+      "comms-mail-connect": "Migration: webmail + harici IMAP/JMAP/EWS BFF (native backend yok)",
+      "comms-conference": "On-prem video konferans (LiveKit)",
+      "comms-chat": "Kurumsal messenger",
+      "comms-ai": "Air-gap LLM: posta denetimi, özetler",
+      "platform-drive": "Dosyalar, sync, ACL, sürümler; Mail ve Office API",
+      "office-documents": "Metin belgeleri, on-prem co-editing (.era-doc, docx I/O)",
+      "office-tables": "Tablolar, formüller, co-editing (.era-sheet, xlsx I/O)",
+      "office-presentations": "On-prem sunumlar (.era-deck)",
+      "office-projects": "Proje yönetimi (post-MVP)",
+      "office-ai": "Air-gap LLM: özetler, belge asistanı"
     }
   },
   ar: {
@@ -343,6 +433,7 @@ window.ERA_CALC_I18N = {
     volByRequest: "حجم 25,000+",
     priceByRequest: "السعر عند الطلب",
     volDisc: "خصم الحجم",
+    volEndpoints: "endpoint",
     termDisc: "خصم المدة",
     totalYear: "الإجمالي سنوياً",
     totalTerm: "لمدة",
@@ -377,7 +468,25 @@ window.ERA_CALC_I18N = {
       secops_v: "SecOps + Vuln",
       itops: "ERA IT-Ops",
       unified: "ERA Unified",
-      full: "Full"
+      full: "Full",
+      "comms-full": "ERA Communications Full Suite",
+      "comms-mail-only": "ERA Mail (Server + Client)",
+      "office-mvp": "ERA Office MVP",
+      "office-suite": "ERA Office Suite",
+      "office-suite-ai": "ERA Office Suite + AI"
+    },
+    addonTitle: {
+      pam_target: "ERA PAM — هدف مُدار"
+    },
+    moduleTitle: {
+      core: "ERA Core", "control-ai": "ERA Control AI", response: "ERA Response", vuln: "ERA Vuln",
+      exposure: "ERA Exposure", manage: "ERA Manage", observe: "ERA Observe", byo_edr: "ERA BYO-EDR Hub",
+      service: "ERA Service", provision: "ERA Provision", pam: "ERA PAM", federated: "ERA Federated",
+      national: "ERA National",
+      "comms-mail-server": "ERA Mail Server", "comms-mail-connect": "ERA Mail Connect",
+      "comms-conference": "ERA Conference", "comms-chat": "ERA Chat", "comms-ai": "ERA Comms AI",
+      "platform-drive": "ERA Drive", "office-documents": "ERA Documents", "office-tables": "ERA Tables",
+      "office-presentations": "ERA Presentations", "office-projects": "ERA Projects", "office-ai": "ERA Office AI"
     },
     unit: {
       endpoint: "endpoint", device: "جهاز", source: "مصدر",
@@ -386,7 +495,7 @@ window.ERA_CALC_I18N = {
     },
     moduleDesc: {
       core: "قاعدة XDR: telemetry، كشف (Sigma+MITRE)، حالات، بوابة SOC، Workbench",
-      control-ai: "محلل ذكاء اصطناعي، تحقيق الحوادث، LLM داخل المحيط",
+      "control-ai": "محلل ذكاء اصطناعي، تحقيق الحوادث، LLM داخل المحيط",
       response: "SOAR: عزل المضيف، حظر IP، playbooks تلقائية",
       vuln: "ماسح الثغرات (CVE)، فحص بمصادقة، أولوية",
       exposure: "درجة مخاطر الأصل، سطح الهجوم (يتطلب Core + Vuln)",
@@ -397,7 +506,18 @@ window.ERA_CALC_I18N = {
       provision: "نشر نظام التشغيل: PXE، imaging، bare-metal",
       pam: "خزنة كلمات المرور، checkout، تسجيل جلسات SSH/RDP",
       federated: "مشاركة IoC وبيانات وصفية داخل المؤسسة",
-      national: "محور STIX/TAXII بين المؤسسات"
+      national: "محور STIX/TAXII بين المؤسسات",
+      "comms-mail-server": "بريد + تقويم (SMTP/IMAP, CalDAV, EWS subset), Autodiscover",
+      "comms-mail-connect": "Migration: webmail + BFF إلى IMAP/JMAP/EWS خارجي (بدون native backend)",
+      "comms-conference": "مؤتمرات فيديو on-prem (LiveKit)",
+      "comms-chat": "مراسلة مؤسسية",
+      "comms-ai": "Air-gap LLM: تدقيق البريد، ملخصات",
+      "platform-drive": "ملفات، sync، ACL، إصدارات؛ API للبريد وOffice",
+      "office-documents": "مستندات نصية، co-editing on-prem (.era-doc, docx I/O)",
+      "office-tables": "جداول، صيغ، co-editing (.era-sheet, xlsx I/O)",
+      "office-presentations": "عروض on-prem (.era-deck)",
+      "office-projects": "إدارة المشاريع (post-MVP)",
+      "office-ai": "Air-gap LLM: ملخصات، مساعدة في المستندات"
     }
   }
 };

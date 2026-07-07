@@ -59,11 +59,44 @@
     }).join("");
   }
 
+  function mobileNavHTML() {
+    var famLinks = "";
+    if (CAT) {
+      famLinks = CAT.FAMS.map(function (f) {
+        return '<a class="mobile-nav-link" href="' + f.page + '"><b>' + f.name + '</b><span data-i18n="' + f.tagKey + '"></span></a>';
+      }).join("");
+    }
+    return '' +
+      '<nav class="mobile-nav" id="mobileNav" hidden aria-label="Main">' +
+      '  <div class="mobile-nav-inner">' +
+      '    <div class="mobile-nav-group">' +
+      '      <div class="mobile-nav-lbl" data-i18n="nav.products">Products</div>' +
+           famLinks +
+      '      <a class="mobile-nav-link" href="compare.html" data-i18n="nav.compare">Compare</a>' +
+      '      <a class="mobile-nav-link" href="downloads.html" data-i18n="nav.downloads">Downloads</a>' +
+      '    </div>' +
+      '    <a class="mobile-nav-link mobile-nav-top" href="index.html#why" data-i18n="nav.why">Why ERA One</a>' +
+      '    <div class="mobile-nav-group">' +
+      '      <div class="mobile-nav-lbl" data-i18n="nav.company">Company</div>' +
+      '      <a class="mobile-nav-link" href="about.html" data-i18n="nav.about">About</a>' +
+      '      <a class="mobile-nav-link" href="vision.html" data-i18n="nav.vision">Vision</a>' +
+      '      <a class="mobile-nav-link" href="contacts.html" data-i18n="nav.contacts">Contacts</a>' +
+      '      <a class="mobile-nav-link" href="contacts.html" data-i18n="nav.partners">Partners</a>' +
+      '      <a class="mobile-nav-link" href="contacts.html" data-i18n="nav.careers">Careers</a>' +
+      '    </div>' +
+      '    <div class="mobile-nav-actions">' +
+      '      <a class="login-btn" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
+      '      <button type="button" class="cta-btn" data-i18n="nav.demo" onclick="location.href=\'contacts.html\'">Book a demo</button>' +
+      '    </div>' +
+      '  </div>' +
+      '</nav>';
+  }
+
   function headerHTML() {
     return '' +
-      '<div class="wrap">' +
+      '<div class="wrap top-bar">' +
       '  <a class="brand" href="index.html"><img src="assets/era-one-logo.png" alt="ERA One" onerror="this.onerror=null;this.src=\'assets/era-one-logo.svg\'" /></a>' +
-      '  <nav>' +
+      '  <nav class="top-nav" aria-label="Main">' +
       '    <div class="nav-item has-mega" data-menu="products">' +
       '      <a href="index.html#products" class="nav-link" data-nav="products"><span data-i18n="nav.products">Products</span> <span class="caret">▾</span></a>' +
       megaHTML() +
@@ -82,6 +115,7 @@
       '      </div>' +
       '    </div>' +
       '  </nav>' +
+      '  <div class="top-tools">' +
       '  <div class="search" id="search">' +
       '    <button class="icon-btn" id="searchBtn" aria-label="Search" aria-expanded="false">' +
       '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>' +
@@ -103,9 +137,14 @@
       '      <button data-lang="ar"><span class="flag">🇸🇦</span> العربية</button>' +
       '    </div>' +
       '  </div>' +
-      '  <a class="login-btn" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
-      '  <button class="cta-btn" data-i18n="nav.demo" onclick="location.href=\'contacts.html\'">Book a demo</button>' +
-      '</div>';
+      '  <a class="login-btn top-login" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
+      '  <button class="cta-btn top-cta" data-i18n="nav.demo" onclick="location.href=\'contacts.html\'">Book a demo</button>' +
+      '  <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Menu">' +
+      '    <span class="menu-toggle-box" aria-hidden="true"><span></span><span></span><span></span></span>' +
+      '  </button>' +
+      '  </div>' +
+      '</div>' +
+      mobileNavHTML();
   }
 
   function footerHTML() {
@@ -289,6 +328,33 @@
       sPanel.addEventListener("click", function (e) { e.stopPropagation(); });
       sInput.addEventListener("input", function () { renderResults(sInput.value); });
       document.addEventListener("click", function () { sPanel.classList.remove("open"); });
+    }
+
+    var menuBtn = document.getElementById("menuToggle");
+    var mobileNav = document.getElementById("mobileNav");
+    function setMenuOpen(open) {
+      if (!mobileNav || !menuBtn) return;
+      mobileNav.hidden = !open;
+      menuBtn.classList.toggle("open", open);
+      menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      document.body.classList.toggle("menu-open", open);
+    }
+    if (menuBtn && mobileNav) {
+      menuBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        setMenuOpen(mobileNav.hidden);
+      });
+      mobileNav.querySelectorAll("a, button").forEach(function (el) {
+        el.addEventListener("click", function () { setMenuOpen(false); });
+      });
+      document.addEventListener("click", function (e) {
+        if (!mobileNav.hidden && !mobileNav.contains(e.target) && e.target !== menuBtn && !menuBtn.contains(e.target)) {
+          setMenuOpen(false);
+        }
+      });
+      window.addEventListener("resize", function () {
+        if (window.innerWidth > 900) setMenuOpen(false);
+      });
     }
   });
 })();

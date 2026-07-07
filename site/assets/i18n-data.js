@@ -97,7 +97,7 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"Contacts","pg.contacts.lead":"Talk to our team about pilots, licensing and deployment in your contour.",
     "contacts.sales":"Sales","contacts.email":"Email","contacts.site":"Website","contacts.office":"Head office",
-    "contacts.addr":"Baku, Azerbaijan · MENA & CIS",
+    "contacts.addr":"Dublin, Ireland",
     "form.name":"Your name","form.email":"Work email","form.org":"Organization","form.msg":"How can we help?","form.send":"Send request",
     "form.note":"This prototype form does not submit. Use the email above.",
 
@@ -201,7 +201,7 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"Контакты","pg.contacts.lead":"Обсудите с нами пилот, лицензирование и развёртывание в вашем контуре.",
     "contacts.sales":"Продажи","contacts.email":"Эл. почта","contacts.site":"Сайт","contacts.office":"Головной офис",
-    "contacts.addr":"Баку, Азербайджан · MENA и СНГ",
+    "contacts.addr":"Дублин, Ирландия",
     "form.name":"Ваше имя","form.email":"Рабочая почта","form.org":"Организация","form.msg":"Чем можем помочь?","form.send":"Отправить запрос",
     "form.note":"Форма прототипа не отправляется. Используйте почту выше.",
 
@@ -306,7 +306,7 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"İletişim","pg.contacts.lead":"Pilot, lisanslama ve kurulum için ekibimizle görüşün.",
     "contacts.sales":"Satış","contacts.email":"E-posta","contacts.site":"Web sitesi","contacts.office":"Merkez ofis",
-    "contacts.addr":"Bakü, Azerbaycan · MENA ve BDT",
+    "contacts.addr":"Dublin, İrlanda",
     "form.name":"Adınız","form.email":"İş e-postası","form.org":"Kurum","form.msg":"Nasıl yardımcı olabiliriz?","form.send":"Gönder",
     "form.note":"Bu prototip form gönderilmez. Yukarıdaki e-postayı kullanın.",
 
@@ -411,7 +411,7 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"اتصل بنا","pg.contacts.lead":"تحدّث مع فريقنا حول التجارب والتراخيص والنشر داخل محيطك.",
     "contacts.sales":"المبيعات","contacts.email":"البريد","contacts.site":"الموقع","contacts.office":"المكتب الرئيسي",
-    "contacts.addr":"باكو، أذربيجان · مِنا ورابطة الدول المستقلة",
+    "contacts.addr":"دبلن، أيرلندا",
     "form.name":"اسمك","form.email":"بريد العمل","form.org":"المؤسسة","form.msg":"كيف يمكننا المساعدة؟","form.send":"إرسال الطلب",
     "form.note":"نموذج تجريبي لا يُرسَل. استخدم البريد أعلاه.",
 
