@@ -23,7 +23,7 @@ window.ERA_I18N = {
     "products.tag":"Product families","products.h2":"Three products. One sovereign ecosystem.",
     "products.sub":"Everything runs in your contour under one brand, one identity layer and one admin. Buy only what you need.",
     "tile.control.t":"Security & IT-Ops","tile.control.d":"XDR, vulnerabilities, UEM, ITSM, PAM and network monitoring — one lightweight agent, modular server editions activated by license.",
-    "tile.comms.t":"Mail, chat & meetings","tile.comms.d":"Sovereign corporate communications — a full on-prem replacement for Exchange, CommuniGate and IceWarp.",
+    "tile.comms.t":"Mail, chat & meetings","tile.comms.d":"Sovereign corporate communications — integrated mail stack with server-side Outlook parity (EWS, CalDAV, CardDAV, ActiveSync).",
     "tile.office.t":"Documents & collaboration","tile.office.d":"Office productivity and co-editing in the isolated contour — without cloud dependencies.",
     "tile.learn":"Learn more","badge.ga":"GA","badge.gaopt":"GA option","badge.mvp":"MVP","badge.road":"Roadmap",
 
@@ -42,7 +42,7 @@ window.ERA_I18N = {
 
     /* ---- Product pages ---- */
     "pg.control.h1":"ERA Control","pg.control.lead":"Security and IT-Ops on one platform: XDR, vulnerabilities, UEM, ITSM, PAM and network monitoring — a single lightweight agent, server editions activated by license. All data stays in your contour.",
-    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Sovereign corporate communications — mail, chat and video meetings in your own perimeter. A full on-prem replacement for Exchange, CommuniGate and IceWarp.",
+    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Sovereign corporate communications — integrated mail stack (Rust + Go, not Postfix+Dovecot). Server-side Outlook parity: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync — no desktop connector. Chat and meetings on-prem.",
     "pg.office.h1":"ERA Office","pg.office.lead":"Documents, tables, presentations and projects with real-time co-editing — in the isolated contour, without cloud dependencies.",
 
     "calc.h2":"Price calculator","calc.sub":"Indicative estimate. Final price is fixed in the commercial proposal.",
@@ -97,7 +97,7 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"Contacts","pg.contacts.lead":"Talk to our team about pilots, licensing and deployment in your contour.",
     "contacts.sales":"Sales","contacts.email":"Email","contacts.site":"Website","contacts.office":"Head office",
-    "contacts.addr":"Dublin, Ireland",
+    "contacts.addr":"Prague, Czech Republic",
     "form.name":"Your name","form.email":"Work email","form.org":"Organization","form.msg":"How can we help?","form.send":"Send request",
     "form.note":"This prototype form does not submit. Use the email above.",
 
@@ -129,7 +129,7 @@ window.ERA_I18N = {
     "products.tag":"Продуктовые семейства","products.h2":"Три продукта. Одна суверенная экосистема.",
     "products.sub":"Всё работает в вашем контуре под одним брендом, единым слоем identity и одной админкой. Платите только за нужное.",
     "tile.control.t":"Безопасность и IT-Ops","tile.control.d":"XDR, уязвимости, UEM, ITSM, PAM и мониторинг сети — один лёгкий агент, серверные издания по лицензии.",
-    "tile.comms.t":"Почта, чат и встречи","tile.comms.d":"Суверенные корпоративные коммуникации — полная on-prem замена Exchange, CommuniGate и IceWarp.",
+    "tile.comms.t":"Почта, чат и встречи","tile.comms.d":"Суверенные корпоративные коммуникации — integrated mail stack с серверным parity Outlook (EWS, CalDAV, CardDAV, ActiveSync).",
     "tile.office.t":"Документы и совместная работа","tile.office.d":"Офисная продуктивность и совместное редактирование в изолированном контуре — без облака.",
     "tile.learn":"Подробнее","badge.ga":"GA","badge.gaopt":"GA-опция","badge.mvp":"MVP","badge.road":"Roadmap",
 
@@ -147,7 +147,7 @@ window.ERA_I18N = {
     "vision.d":"Безопасность, коммуникации и продуктивность под одним суверенным брендом, с ИИ, который остаётся в контуре.","vision.cta":"Связаться с нами",
 
     "pg.control.h1":"ERA Control","pg.control.lead":"Безопасность и IT-Ops на одной платформе: XDR, уязвимости, UEM, ITSM, PAM и мониторинг сети — один лёгкий агент, серверные издания по лицензии. Данные остаются в вашем контуре.",
-    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Суверенные корпоративные коммуникации — почта, чат и видеовстречи в вашем периметре. Полная on-prem замена Exchange, CommuniGate и IceWarp.",
+    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Суверенные корпоративные коммуникации — integrated mail stack (Rust + Go, не Postfix+Dovecot). Серверный parity Outlook: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync — без desktop-коннектора. Чат и встречи on-prem.",
     "pg.office.h1":"ERA Office","pg.office.lead":"Документы, таблицы, презентации и проекты с совместным редактированием — в изолированном контуре, без облака.",
 
     "calc.h2":"Калькулятор стоимости","calc.sub":"Индикативный расчёт. Точная цена фиксируется в коммерческом предложении.",
@@ -201,7 +201,7 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"Контакты","pg.contacts.lead":"Обсудите с нами пилот, лицензирование и развёртывание в вашем контуре.",
     "contacts.sales":"Продажи","contacts.email":"Эл. почта","contacts.site":"Сайт","contacts.office":"Головной офис",
-    "contacts.addr":"Дублин, Ирландия",
+    "contacts.addr":"Прага, Чехия",
     "form.name":"Ваше имя","form.email":"Рабочая почта","form.org":"Организация","form.msg":"Чем можем помочь?","form.send":"Отправить запрос",
     "form.note":"Форма прототипа не отправляется. Используйте почту выше.",
 
@@ -234,7 +234,7 @@ window.ERA_I18N = {
     "products.tag":"Ürün aileleri","products.h2":"Üç ürün. Tek egemen ekosistem.",
     "products.sub":"Her şey tek marka, tek kimlik katmanı ve tek yönetim altında çevrenizde çalışır. Yalnızca ihtiyacınız olanı alın.",
     "tile.control.t":"Güvenlik ve BT-Ops","tile.control.d":"XDR, güvenlik açıkları, UEM, ITSM, PAM ve ağ izleme — tek hafif ajan, lisansla etkinleşen sunucu sürümleri.",
-    "tile.comms.t":"Posta, sohbet ve toplantılar","tile.comms.d":"Egemen kurumsal iletişim — Exchange, CommuniGate ve IceWarp için tam yerinde alternatif.",
+    "tile.comms.t":"Posta, sohbet ve toplantılar","tile.comms.d":"Egemen kurumsal iletişim — sunucu tarafı Outlook uyumu (EWS, CalDAV, CardDAV, ActiveSync) ile entegre posta yığını.",
     "tile.office.t":"Belgeler ve iş birliği","tile.office.d":"İzole çevrede ofis üretkenliği ve ortak düzenleme — bulut bağımlılığı olmadan.",
     "tile.learn":"Daha fazla","badge.ga":"GA","badge.gaopt":"GA opsiyon","badge.mvp":"MVP","badge.road":"Yol haritası",
 
@@ -252,7 +252,7 @@ window.ERA_I18N = {
     "vision.d":"Güvenlik, iletişim ve üretkenlik tek egemen marka altında; YZ çevre içinde kalır.","vision.cta":"Bize ulaşın",
 
     "pg.control.h1":"ERA Control","pg.control.lead":"Tek platformda güvenlik ve BT-Ops: XDR, açıklar, UEM, ITSM, PAM ve ağ izleme — tek hafif ajan, lisanslı sunucu sürümleri. Veri çevrenizde kalır.",
-    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Egemen kurumsal iletişim — posta, sohbet ve görüntülü toplantılar kendi çevrenizde. Exchange, CommuniGate ve IceWarp için tam yerinde alternatif.",
+    "pg.comms.h1":"ERA Communications","pg.comms.lead":"Egemen kurumsal iletişim — entegre posta yığını (Rust + Go, Postfix+Dovecot değil). Sunucu tarafı Outlook uyumu: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync — masaüstü eklentisi yok.",
     "pg.office.h1":"ERA Office","pg.office.lead":"Belgeler, tablolar, sunumlar ve projeler — izole çevrede ortak düzenleme ile, bulutsuz.",
 
     "pg.about.h1":"ERA One hakkında",
@@ -306,7 +306,7 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"İletişim","pg.contacts.lead":"Pilot, lisanslama ve kurulum için ekibimizle görüşün.",
     "contacts.sales":"Satış","contacts.email":"E-posta","contacts.site":"Web sitesi","contacts.office":"Merkez ofis",
-    "contacts.addr":"Dublin, İrlanda",
+    "contacts.addr":"Prag, Çekya",
     "form.name":"Adınız","form.email":"İş e-postası","form.org":"Kurum","form.msg":"Nasıl yardımcı olabiliriz?","form.send":"Gönder",
     "form.note":"Bu prototip form gönderilmez. Yukarıdaki e-postayı kullanın.",
 
@@ -339,7 +339,7 @@ window.ERA_I18N = {
     "products.tag":"عائلات المنتجات","products.h2":"ثلاثة منتجات. منظومة سيادية واحدة.",
     "products.sub":"كل شيء يعمل داخل محيطك تحت علامة واحدة وطبقة هوية واحدة وإدارة واحدة. ادفع فقط لما تحتاجه.",
     "tile.control.t":"الأمن وعمليات تقنية المعلومات","tile.control.d":"XDR والثغرات وإدارة الأجهزة وITSM وPAM ومراقبة الشبكة — وكيل خفيف واحد وإصدارات خادم حسب الترخيص.",
-    "tile.comms.t":"البريد والدردشة والاجتماعات","tile.comms.d":"اتصالات مؤسسية سيادية — بديل محلي كامل لـ Exchange وCommuniGate وIceWarp.",
+    "tile.comms.t":"البريد والدردشة والاجتماعات","tile.comms.d":"اتصالات مؤسسية سيادية — مكدس بريد متكامل مع توافق Outlook من الخادم (EWS، CalDAV، CardDAV، ActiveSync).",
     "tile.office.t":"المستندات والتعاون","tile.office.d":"إنتاجية مكتبية وتحرير مشترك داخل المحيط المعزول — دون الاعتماد على السحابة.",
     "tile.learn":"اعرف المزيد","badge.ga":"GA","badge.gaopt":"خيار GA","badge.mvp":"MVP","badge.road":"خارطة الطريق",
 
@@ -357,7 +357,7 @@ window.ERA_I18N = {
     "vision.d":"الأمن والاتصالات والإنتاجية تحت علامة سيادية واحدة، مع ذكاء اصطناعي يبقى داخل المحيط.","vision.cta":"تحدّث إلينا",
 
     "pg.control.h1":"ERA Control","pg.control.lead":"الأمن وعمليات تقنية المعلومات على منصة واحدة: XDR والثغرات وإدارة الأجهزة وITSM وPAM ومراقبة الشبكة — وكيل خفيف واحد وإصدارات خادم حسب الترخيص. تبقى البيانات في محيطك.",
-    "pg.comms.h1":"ERA Communications","pg.comms.lead":"اتصالات مؤسسية سيادية — بريد ودردشة واجتماعات فيديو داخل محيطك. بديل محلي كامل لـ Exchange وCommuniGate وIceWarp.",
+    "pg.comms.h1":"ERA Communications","pg.comms.lead":"اتصالات مؤسسية سيادية — مكدس بريد متكامل (Rust + Go، ليس Postfix+Dovecot). توافق Outlook من الخادم: Autodiscover وEWS وCalDAV وCardDAV وActiveSync — بدون موصل سطح مكتب.",
     "pg.office.h1":"ERA Office","pg.office.lead":"مستندات وجداول وعروض ومشاريع مع تحرير مشترك — داخل المحيط المعزول، دون سحابة.",
 
     "pg.about.h1":"عن ERA One",
@@ -411,7 +411,7 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"اتصل بنا","pg.contacts.lead":"تحدّث مع فريقنا حول التجارب والتراخيص والنشر داخل محيطك.",
     "contacts.sales":"المبيعات","contacts.email":"البريد","contacts.site":"الموقع","contacts.office":"المكتب الرئيسي",
-    "contacts.addr":"دبلن، أيرلندا",
+    "contacts.addr":"براغ، التشيك",
     "form.name":"اسمك","form.email":"بريد العمل","form.org":"المؤسسة","form.msg":"كيف يمكننا المساعدة؟","form.send":"إرسال الطلب",
     "form.note":"نموذج تجريبي لا يُرسَل. استخدم البريد أعلاه.",
 
