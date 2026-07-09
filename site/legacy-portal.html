@@ -66,20 +66,12 @@
   <section id="calc">
     <div class="wrap">
       <h2 data-i18n="calcH2">Калькулятор стоимости</h2>
-      <p class="sub" data-i18n="calcSub">Индикативный расчёт по региональному прайсу.</p>
+      <p class="sub" data-i18n="calcSub">Индикативный расчёт по единой тарифной сетке (list price).</p>
       <div class="calc">
         <div class="panel calc-form">
           <h3 data-i18n="calcParams">Параметры</h3>
 
           <div class="calc-grid">
-            <div class="field field-full" id="region">
-              <label data-i18n="calcRegion">Регион</label>
-              <div class="seg">
-                <button type="button" data-region="cis" data-i18n="regionCis">СНГ (−50%)</button>
-                <button type="button" data-region="eu" data-i18n="regionEu">EU / Global</button>
-              </div>
-            </div>
-
             <div class="field">
               <label for="ws" data-i18n="calcWs">Рабочих станций</label>
               <input type="number" id="ws" min="0" />
@@ -107,9 +99,6 @@
         <div class="panel summary">
           <h3 data-i18n="calcSummary">Ориентировочная стоимость</h3>
           <div id="result"></div>
-          <div class="note region-note" id="region-note" style="display:none;" data-i18n="calcRegionNote">
-            Для стран СНГ действует региональная скидка −50% от базовой (EU) цены.
-          </div>
         </div>
       </div>
     </div>

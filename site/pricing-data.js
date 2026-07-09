@@ -6,13 +6,9 @@ window.ERA_PRICING = {
   "currency": "EUR",
   "vat_included": false,
   "regions": {
-    "eu": {
-      "label": "EU / Global",
+    "global": {
+      "label": "Global list price",
       "multiplier": 1.0
-    },
-    "cis": {
-      "label": "СНГ",
-      "multiplier": 0.5
     }
   },
   "server_multiplier": 3,
@@ -262,7 +258,7 @@ window.ERA_PRICING = {
     "maintenance_rate": 0.2
   },
   "calc_formula": "total = sum(module_reg) * (1 - volume) * (1 - term); для Control AI берётся min(per-endpoint, flat)",
-  "disclaimer": "Индикативный расчёт для региона СНГ; не публичная оферта. Итоговая цена — в КП.",
+  "disclaimer": "Индикативный расчёт по list price; не публичная оферта. Итоговая цена — в КП.",
   "product_lines": {
     "communications": {
       "schema_version": "1.0",
@@ -290,14 +286,20 @@ window.ERA_PRICING = {
         },
         "comms-migration": {
           "title": "ERA Comms Migration",
-          "desc": "Bulk migration в ERA Mail Server: почта, календарь, контакты, архив",
+          "desc": "Bulk migration source→target (CG, Lotus, IMAP, PST → ERA Mail, IceWarp, …)",
           "pricing_model": "per_mailbox_one_time",
           "eu_one_time": 1,
           "availability": "roadmap",
           "tier": "upsell",
-          "requires": [
-            "comms-mail-server"
-          ]
+          "vendor_matrix": "docs/Comms-Migration-Vendor-Matrix.md"
+        },
+        "comms-outlook-bridge": {
+          "title": "ERA Outlook Bridge",
+          "desc": "Server EWS/Autodiscover façade для Outlook без desktop plugin",
+          "eu_year": 3,
+          "availability": "roadmap",
+          "tier": "upsell",
+          "note": "Per-mailbox/year или project license — deal-desk"
         },
         "comms-conference": {
           "title": "ERA Conference",

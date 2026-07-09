@@ -89,10 +89,6 @@
     return fallback || key;
   }
 
-  function regionLabel(regionKey) {
-    return regionKey === "cis" ? t("regionCis") : t("regionEu");
-  }
-
   function moduleDesc(key) {
     var v = t("moduleDesc." + key);
     if (v && v.indexOf("moduleDesc.") !== 0) return v;
@@ -130,7 +126,6 @@
     addonTitle: addonTitle,
     bundleTitle: bundleTitle,
     termLabel: termLabel,
-    regionLabel: regionLabel,
     getLang: getLang,
     setLang: setLang
   };

@@ -7,16 +7,9 @@
     '  <div class="panel calc-form">' +
     '    <h3 data-i18n-calc="calcParams">Parameters</h3>' +
     '    <div class="calc-grid">' +
-    '      <div class="field field-full" id="region">' +
-    '        <label data-i18n-calc="calcRegion">Region</label>' +
-    '        <div class="seg">' +
-    '          <button type="button" data-region="cis" data-i18n-calc="regionCis">CIS (−50%)</button>' +
-    '          <button type="button" data-region="eu" data-i18n-calc="regionEu">EU / Global</button>' +
-    '        </div>' +
-    '      </div>' +
-    '      <div class="field"><label for="ws" data-i18n-calc="calcWs">Workstations</label><input type="number" id="ws" min="0" /></div>' +
-    '      <div class="field"><label for="servers" data-i18n-calc="calcServers">Servers (×3)</label><input type="number" id="servers" min="0" /></div>' +
-    '      <div class="field field-full"><label for="bundle" data-i18n-calc="calcBundle">Bundle</label><select id="bundle"></select></div>' +
+      '      <div class="field"><label for="ws" data-i18n-calc="calcWs">Workstations</label><input type="number" id="ws" min="0" /></div>' +
+      '      <div class="field"><label for="servers" data-i18n-calc="calcServers">Servers (×3)</label><input type="number" id="servers" min="0" /></div>' +
+      '      <div class="field field-full"><label for="bundle" data-i18n-calc="calcBundle">Bundle</label><select id="bundle"></select></div>' +
       '      <div class="field field-full" data-license-fields></div>' +
     '    </div>' +
     '    <h3 class="modules-title" data-i18n-calc="calcModules">Modules</h3>' +
@@ -25,7 +18,6 @@
     '  <div class="panel summary">' +
     '    <h3 data-i18n-calc="calcSummary">Estimated cost</h3>' +
     '    <div id="result"></div>' +
-    '    <div class="note region-note" id="region-note" style="display:none;" data-i18n-calc="calcRegionNote"></div>' +
     '  </div>' +
     '</div>';
 

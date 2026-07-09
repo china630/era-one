@@ -9,7 +9,6 @@
   var moneyFmt = null;
 
   var state = {
-    region: "cis",
     ws: 1000,
     servers: 50,
     term: "3y_prepaid",
@@ -35,9 +34,8 @@
   function addonTitle(key) {
     return L() && L().addonTitle ? L().addonTitle(key) : key;
   }
-  function regionLabel(regionKey) {
-    return L() && L().regionLabel ? L().regionLabel(regionKey) : regionKey;
-  }
+
+  function listMultiplier() { return 1; }
 
   function fmtMoney() {
     var l = L() ? L().getLang() : "en";
@@ -87,7 +85,7 @@
   }
 
   function compute() {
-    var R = D.regions[state.region].multiplier;
+    var R = listMultiplier();
     var S = D.server_multiplier || 3;
     var epCount = (state.ws || 0) + (state.servers || 0);
     var epWeighted = (state.ws || 0) + (state.servers || 0) * S;
@@ -147,7 +145,7 @@
       subscription: sub, perpetual: perp,
       totalYear: sub.totalYear, totalTerm: sub.totalTerm,
       perpOnetime: perp.perpOnetime, perpMaint: perp.perpMaintYear,
-      epCount: epCount, region: state.region, licenseModel: state.licenseModel
+      epCount: epCount, licenseModel: state.licenseModel
     };
   }
 
@@ -325,15 +323,6 @@
   }
 
   function buildControls() {
-    document.querySelectorAll("#region .seg button").forEach(function (b) {
-      b.classList.toggle("active", b.dataset.region === state.region);
-      b.onclick = function () {
-        state.region = b.dataset.region;
-        syncRegionUI();
-        render();
-      };
-    });
-
     var ws = document.getElementById("ws");
     var sv = document.getElementById("servers");
     if (ws) { ws.value = state.ws; ws.oninput = function () { state.ws = parseInt(ws.value || "0", 10) || 0; render(); }; }
@@ -341,7 +330,7 @@
 
     fillSelects();
     buildModules();
-    syncRegionUI();
+    syncModulePrices();
     var eraRoot = document.getElementById("era-calc");
     if (eraRoot && G.ERA_CALC_License) {
       G.ERA_CALC_License.fillMaintYearsSelect(
@@ -362,25 +351,18 @@
     });
   }
 
-  function syncRegionUI() {
-    document.querySelectorAll("#region .seg button").forEach(function (b) {
-      b.classList.toggle("active", b.dataset.region === state.region);
-    });
-    var note = document.getElementById("region-note");
-    if (note) note.style.display = state.region === "cis" ? "block" : "none";
-
-    var R = D.regions[state.region].multiplier;
+  function syncModulePrices() {
     moduleKeys().forEach(function (key) {
       var m = D.modules[key];
       var el = document.getElementById("price_" + key);
       if (!el) return;
-      var p = m.eu_year * R;
+      var p = m.eu_year;
       el.textContent = p === 0 ? t("included") : (money(p) + "/" + unitLabel(m.unit) + t("perYear"));
     });
   }
 
   function render() {
-    syncRegionUI();
+    syncModulePrices();
     var r = compute();
     var out = document.getElementById("result");
     if (!out) return;
@@ -417,7 +399,6 @@
     var mailBody = lic ? lic.mailQuoteBody({
       t: t,
       money: money,
-      regionLabel: regionLabel(state.region),
       ws: state.ws,
       servers: state.servers,
       licenseModel: state.licenseModel,

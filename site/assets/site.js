@@ -193,8 +193,7 @@
       if (mods[k] && mods[k].eu_year != null) sum += mods[k].eu_year;
     });
     var disc = bundle.discount || 0;
-    var cis = (root.regions && root.regions.cis && root.regions.cis.multiplier) || 0.5;
-    return sum * (1 - disc) * cis;
+    return sum * (1 - disc);
   }
 
   function renderCalc(container, productKey, dict) {
