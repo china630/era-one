@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>ERA One — ورقة بيانات</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA One — منصة موحدة للأمن وIT-Ops</h1>
+    <p class="lead">منصة سيادية تجمع XDR وإدارة البنية التحتية IT في عميل خفيف واحد ووحدة تحكم واحدة. تعمل بالكامل داخل محيط العميل —
+      <b>on-prem / air-gap</b>، بلا سحابة أجنبية. عميل واحد، منصة واحدة،
+      مركز تحكم واحد بدلاً من «حديقة» 5–6 أنظمة واشتراكات.</p>
+
+    <h2>إصدارات المنصة</h2>
+    <div class="grid">
+      <div class="card"><div class="nm">ERA Core (XDR)</div><div class="ds">تيليمترية، مستودع بيانات، Sigma + MITRE، أصول، حالات، بوابة SOC.</div></div>
+      <div class="card"><div class="nm">ERA Control AI</div><div class="ds">تحقيق AI: storyline، حكم. LLM داخل المحيط.</div></div>
+      <div class="card"><div class="nm">ERA Response</div><div class="ds">SOAR: عزل مضيف، حظر IP، تذكرة ITSM.</div></div>
+      <div class="card"><div class="nm">ERA Vuln</div><div class="ds">فحص CVE، جداول، فحص ببيانات اعتماد.</div></div>
+      <div class="card"><div class="nm">ERA Federated / National</div><div class="ds">STIX/TAXII، تبادل IoC بين المحيطات.</div></div>
+      <div class="card"><div class="nm">ERA Workbench</div><div class="ds">جدول زمني موحد: نقطة نهاية + هوية + شبكة + بريد.</div></div>
+      <div class="card"><div class="nm">ERA Exposure</div><div class="ds">CREM محلي: درجة مخاطر الأصول داخل المحيط.</div></div>
+      <div class="card"><div class="nm">ERA BYO-EDR Hub</div><div class="ds">تيليمترية EDR من طرف ثالث إلى مستودع بيانات موحد.</div></div>
+      <div class="card"><div class="nm">ERA Manage</div><div class="ds">UEM: ITAM، تصحيحات، تحكم تطبيق/USB، BitLocker، Virtual Patching.</div></div>
+      <div class="card"><div class="nm">ERA Service</div><div class="ds">ITSM-lite: مكتب خدمة، SLA، CMDB.</div></div>
+      <div class="card"><div class="nm">ERA Provision</div><div class="ds">PXE/تصوير bare-metal، تسجيل عميل آلي.</div></div>
+      <div class="card"><div class="nm">ERA PAM</div><div class="ds">خزنة، بروكسي SSH/RDP، تسجيل جلسات.</div></div>
+      <div class="card"><div class="nm">ERA Observe</div><div class="ds">SNMP، NetFlow، اكتشاف (بدون عميل).</div></div>
+    </div>
+  </div>
+</div>
+<div class="page page-stretch">
+  <div class="body">
+    <h2>الإرث الهندسي</h2>
+    <div class="heritage">
+      <div class="origin"><div class="o-nm">Promisec</div><div class="o-tag">Infrastructure Intelligence</div><div class="o-ds">تدقيق تكوين مستمر ومراقبة امتثال — أساس إدارة نقاط النهاية.</div></div>
+      <div class="origin"><div class="o-nm">Sirin Labs</div><div class="o-tag">Secure-by-Design</div><div class="o-ds">عزل التهديدات، حماية القنوات، وأمان على مستوى البنية الأساسية.</div></div>
+      <div class="origin"><div class="o-nm">Syrinx Systems</div><div class="o-tag">High-Performance Telemetry</div><div class="o-ds">جمع تيليمترية فائق الخفة ومراقبة شبكة دون عبء على الشبكة.</div></div>
+    </div>
+
+    <h2>بنية المنصة</h2>
+    <div class="flow">
+      <span class="node k">ERA One</span><span class="arr">&rsaquo;</span>
+      <span class="node">إصدارات (XDR / Manage / Service / PAM …)</span><span class="arr">&rsaquo;</span>
+      <span class="node">خادم إدارة + مستودع بيانات</span><span class="arr">&rsaquo;</span>
+      <span class="node">مستودع محلي (MinIO)</span><span class="arr">&rsaquo;</span>
+      <span class="node k">عميل واحد</span><span class="arr">&rsaquo;</span>
+      <span class="node">Windows / Linux / macOS / خوادم</span><span class="arr">&rsaquo;</span>
+      <span class="node">وحدة تحكم ويب</span>
+    </div>
+
+    <h2>نموذج النشر</h2>
+    <p class="lead" style="margin-bottom:6px">منصة واحدة — ملفان للنشر. البيانات ومستودع البيانات
+      والذكاء الاصطناعي والتحقيقات <b>تبقى دائماً في محيطكم</b>؛ حركة الصادر محدودة بالتراخيص
+      وتحديثات الحماية وتيليمترية الدعم (فقط إذا سمحتم).</p>
+    <table class="cmp">
+      <tr><th>المعيار</th><th>ERA Sovereign (air-gap)</th><th>ERA Sovereign Hybrid</th></tr>
+      <tr><td>بيانات، مستودع، AI، حالات</td><td class="win">داخل محيط العميل</td><td class="win">داخل محيط العميل</td></tr>
+      <tr><td>تحديثات قواعد / CVE / حزم AI</td><td>حزمة دون اتصال (وسائط قابلة للإزالة)</td><td class="win">تلقائي من سحابة ERA</td></tr>
+      <tr><td>الترخيص والدعم</td><td>مفتاح دون اتصال</td><td>اشتراك عبر الإنترنت + احتياطي دون اتصال</td></tr>
+      <tr><td>اتصال صادر</td><td>لا يوجد (عزل كامل)</td><td>صادر فقط، حسب السياسة</td></tr>
+      <tr><td>الأنسب لـ</td><td>قطاع عام، بنية حرجة، air-gap صارم</td><td>مصارف: «البيانات في الداخل — الدعم كالسحابة»</td></tr>
+    </table>
+    <p class="note-int">يُفعّل وضع Hybrid عن قصد وهو قابل للتكوين: البيانات الخام والمعلومات الشخصية
+      ومواد التحقيق لا تغادر المحيط في أي من الوضعين.</p>
+
+    <h2>فوائد المؤسسة</h2>
+    <div class="benefits">
+      <div>عميل خفيف واحد (CPU &lt; 2%، RAM &lt; 150 MB) ووحدة تحكم موحدة.</div>
+      <div>UEM وXDR — كيان واحد دون فجوات تكامل.</div>
+      <div>On-prem وair-gap: البيانات لا تغادر المحيط أبداً.</div>
+      <div>تحديثات حماية مستمرة — حزمة دون اتصال أو من سحابة ERA (hybrid).</div>
+      <div>ترخيص Ed25519 دون اتصال؛ إخفاء PII على العميل.</div>
+      <div>توسّع لعشرات آلاف العقد في عنقود.</div>
+      <div>تراخيص معيارية — ادفع لما تستخدم.</div>
+      <div>تكامل AD/LDAP، REST API، SIEM، STIX/TAXII، NGFW.</div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>المقر الرئيسي</b>جنيف، سويسرا</div>
+      <div class="col"><b>مركز الهندسة</b>وارسو، بولندا</div>
+      <div class="col"><b>التواصل</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

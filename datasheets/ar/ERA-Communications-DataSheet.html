@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>ERA One — ERA Communications</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
+  <div class="body">
+    <h1>ERA Communications<span class="sub">اتصالات مؤسسية سيادية</span></h1>
+    <p class="lead">اتصالات مؤسسية سيادية — بريد وتقويم ودردشة واجتماعات فيديو داخل محيط العميل. <b>مكدس أصلي متكامل</b> (Rust + Go). توافق Outlook والجوال <b>من الخادم</b> عبر Autodiscover وEWS وCalDAV وCardDAV وActiveSync — التوافق على الخادم، بدون إضافات سطح مكتب.</p>
+    <h2>حزمة بروتوكولات للقطاع الحكومي</h2>
+    <ul class="feats">
+      <li><b>Autodiscover + EWS</b> — Outlook يتصل عبر Autodiscover القياسي؛ بريد وتقويم وجهات اتصال.</li>
+      <li><b>CalDAV + CardDAV</b> — معايير مفتوحة.</li>
+      <li><b>ActiveSync subset</b> — مزامنة بريد وتقويم وجهات اتصال للجوال (iOS/Android).</li>
+      <li><b>مجموعة بروتوكولات موثّقة</b> — واجهة خادم فقط؛ بدون موصل سطح مكتب خاص.</li>
+    </ul>
+    <h2>الإصدارات</h2>
+    <div class="grid">
+      <div class="card"><div class="nm">ERA Mail Server</div><div class="ds">خلفية متكاملة: EWS، CalDAV، CardDAV، ActiveSync.</div></div>
+      <div class="card"><div class="nm">ERA Mail Client</div><div class="ds">Webmail + OIDC؛ مع طبقة توافق من الخادم.</div></div>
+      <div class="card"><div class="nm">ERA Conference</div><div class="ds">اجتماعات فيديو on-prem (LiveKit)، 1000+ مشارك.</div></div>
+      <div class="card"><div class="nm">ERA Chat</div><div class="ds">مراسل مؤسسي؛ تكامل مع البريد وConference.</div></div>
+      <div class="card"><div class="nm">ERA Comms AI</div><div class="ds">Air-Gap LLM: تدقيق أمان البريد، ملخصات المراسلات.</div></div>
+      <div class="card"><div class="nm">ERA Mail Connect</div><div class="ds">طبقة هجينة: webmail + BFF إلى IMAP/JMAP/EWS خارجي.</div></div>
+    </div>
+    <h2>ميزات بارزة</h2>
+    <ul class="feats">
+      <li>مقياس مستهدف <b>60,000+</b> مستخدم متزامن دون تدهور.</li>
+      <li>Air-Gap AI — LLM محلي للبريد؛ البيانات لا تغادر المحيط.</li>
+      <li>ترحيل Zero-Touch — Autodiscover لـ Outlook والعملاء الجوال.</li>
+      <li>بلا قفل على العتاد — بناء x86 وPowerPC.</li>
+      <li>DevSecOps — حاويات Distroless؛ تدقيق في ClickHouse؛ تكامل ERA Control.</li>
+    </ul>
+    <h2>المكدس التقني</h2>
+    <ul class="feats">
+      <li>النواة: Rust + Go؛ تخزين تدقيق ClickHouse.</li>
+      <li>مؤتمرات فيديو: LiveKit on-prem.</li>
+      <li>SaaS مشترك: هوية، مستأجر، بوابة إدارة (ADR-0024).</li>
+    </ul>
+    <p class="note-int">المستندات والجداول والعروض في منتج <b>ERA Office</b> المنفصل، وليس في Communications.</p>
+  </div>
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>التواصل</b><a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a></div>
+    </div>
+    <div class="ftr-brand"><img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
+  </div>
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

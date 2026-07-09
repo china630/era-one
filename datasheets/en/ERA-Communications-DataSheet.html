@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ERA One — ERA Communications</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
+  <div class="body">
+    <h1>ERA Communications<span class="sub">Sovereign enterprise communications</span></h1>
+    <p class="lead">Sovereign enterprise communications — email, calendar, chat, and video meetings within the customer perimeter. <b>Integrated native stack</b> (Rust + Go). Outlook and mobile parity via <b>server-side</b> Autodiscover, EWS, CalDAV, CardDAV and ActiveSync — compatibility on the server, no desktop plugins.</p>
+    <h2>Gov-ready protocol stack</h2>
+    <ul class="feats">
+      <li><b>Autodiscover + EWS</b> — Outlook connects via standard Autodiscover; mail, calendar, contacts, notes/tasks (documented subset).</li>
+      <li><b>CalDAV + CardDAV</b> — open standards for calendar and contacts.</li>
+      <li><b>ActiveSync subset</b> — mobile mail, calendar, and contacts sync (iOS/Android).</li>
+      <li><b>SMTP/IMAP + TLS</b> — Thunderbird and standard clients.</li>
+      <li><b>Documented protocol subset</b> — server façade only; no proprietary desktop connector.</li>
+    </ul>
+    <h2>Editions</h2>
+    <div class="grid">
+      <div class="card"><div class="nm">ERA Mail Server</div><div class="ds">Integrated mail backend: EWS, CalDAV, CardDAV, ActiveSync; Autodiscover.</div></div>
+      <div class="card"><div class="nm">ERA Mail Client</div><div class="ds">Webmail + OIDC; works with server-side compatibility layer.</div></div>
+      <div class="card"><div class="nm">ERA Conference</div><div class="ds">On-prem video meetings (LiveKit), 1000+ participants.</div></div>
+      <div class="card"><div class="nm">ERA Chat</div><div class="ds">Enterprise messenger; integration with mail and Conference.</div></div>
+      <div class="card"><div class="nm">ERA Comms AI</div><div class="ds">Air-Gap LLM: mail security audit, correspondence summaries.</div></div>
+      <div class="card"><div class="nm">ERA Mail Connect</div><div class="ds">Hybrid tier: webmail + BFF to external IMAP/JMAP/EWS.</div></div>
+    </div>
+    <h2>Killer features</h2>
+    <ul class="feats">
+      <li>Target scale of <b>60,000+</b> concurrent users without degradation.</li>
+      <li>Air-Gap AI — local LLM for mail; data never leaves the perimeter.</li>
+      <li>Zero-Touch migration — Autodiscover for Outlook and mobile clients.</li>
+      <li>Zero hardware lock-in — x86 and PowerPC builds.</li>
+      <li>DevSecOps — Distroless containers; audit in ClickHouse; integration with ERA Control.</li>
+    </ul>
+    <h2>Technical stack</h2>
+    <ul class="feats">
+      <li>Core: integrated Rust mail + Go protocol adapters (native ERA implementation).</li>
+      <li>Video conferencing: LiveKit on-prem.</li>
+      <li>Shared SaaS: identity, tenant, admin portal (ADR-0024).</li>
+    </ul>
+    <p class="note-int">Documents, spreadsheets, and presentations are in the separate <b>ERA Office</b> product, not in Communications.</p>
+  </div>
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Contact</b><a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a></div>
+    </div>
+    <div class="ftr-brand"><img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
+  </div>
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

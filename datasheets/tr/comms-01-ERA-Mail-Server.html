@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><title>ERA One — ERA Mail Server</title><link rel="stylesheet" href="../assets/datasheet-common.css"></head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr"><img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One"></div>
+  <div class="body">
+    <h1>ERA Mail Server<span class="sub">Egemen entegre posta backend</span></h1>
+    <p class="lead">Yerinde (on-prem) yerel posta ve iş birliği backend. Entegre Rust + Go yığını — tek ürün, air-gap. <b>İstemci uyumluluğu sunucuda uygulanır</b> — Autodiscover, EWS, CalDAV, CardDAV ve ActiveSync; masaüstü eklentisi veya istemci konnektörü yok.</p>
+    <h2>Outlook ve mobil parity (sunucu tarafı)</h2>
+    <ul class="feats">
+      <li><b>Autodiscover + EXCH</b> — Outlook standart EXCH Autodiscover profilini kullanır; istemci eklentisi yok.</li>
+      <li><b>EWS subset</b> — posta, takvim, kişiler, notlar/görevler (belgeli alt küme).</li>
+      <li><b>CalDAV</b> — tam takvim okuma/yazma.</li>
+      <li><b>CardDAV</b> — kurumsal kişiler (kamu pilotu).</li>
+      <li><b>ActiveSync subset</b> — iOS/Android mobil senkron (kamu pilotu).</li>
+      <li><b>SMTP/IMAP + TLS</b> — standart istemciler.</li>
+    </ul>
+    <h2>Temel yetenekler</h2>
+    <ul class="feats">
+      <li>Entegre posta çekirdeği — tek ürün, air-gap.</li>
+      <li>ClickHouse denetimi — zorunlu SIEM izi.</li>
+      <li>Çevrimdışı Ed25519 lisanslama; 60.000+ posta kutusu hedefi.</li>
+    </ul>
+    <h2>Teknik mimari</h2>
+    <ul class="feats">
+      <li><b>Rust</b> — <code>era-mail-core</code>: SMTP/IMAP.</li>
+      <li><b>Go</b> — <code>mail-api</code>: Autodiscover, EWS, CalDAV, CardDAV, ActiveSync.</li>
+      <li>Entegre çoklu protokol tasarımı — <b>yerel ERA kodu</b>.</li>
+    </ul>
+  </div>
+  <div class="ftr"><div class="ftr-contact"><div class="col"><b>İletişim</b><a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a></div></div><div class="ftr-brand"><img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One"></div></div>
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>

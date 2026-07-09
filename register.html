@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Register — ERA One</title>
+<meta name="description" content="Register with your corporate email to access ERA One trial downloads." />
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body data-page="login">
+
+<header class="top" id="site-header"></header>
+
+<section class="hero subhero">
+  <div class="wrap">
+    <div class="eyebrow" data-i18n="reg.tag">Registration</div>
+    <h1 data-i18n="reg.h1">Create a corporate account</h1>
+    <p class="lead" data-i18n="reg.lead">Register with your work email to download 30-day trial packages for ERA Control, Communications and Office.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="login-wrap">
+      <form class="form login-card" id="register-form">
+        <div class="fld">
+          <label data-i18n="form.name">Your name</label>
+          <input type="text" name="name" required autocomplete="name" />
+        </div>
+        <div class="fld">
+          <label data-i18n="form.org">Organization</label>
+          <input type="text" name="org" required autocomplete="organization" />
+        </div>
+        <div class="fld">
+          <label data-i18n="reg.email">Corporate email</label>
+          <input type="email" name="email" required autocomplete="email" />
+        </div>
+        <p class="reg-error" id="reg-error" hidden data-i18n="reg.emailError">Please use your corporate email address (not Gmail, Yahoo, etc.).</p>
+        <button class="btn-lg btn-primary" type="submit" style="width:100%" data-i18n="reg.btn">Register &amp; continue</button>
+        <div style="text-align:center;margin-top:14px">
+          <span data-i18n="reg.haveAccount">Already registered?</span>
+          <a href="login.html" data-i18n="nav.login">Log in</a>
+        </div>
+        <div class="fnote" data-i18n="reg.note">Prototype — in production, registration is verified via corporate email confirmation in your contour.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="ftr" id="site-footer"></footer>
+
+<script src="assets/i18n-data.js"></script>
+<script src="assets/products-catalog.js"></script>
+<script src="assets/auth-store.js"></script>
+<script src="assets/site.js"></script>
+<script src="assets/register-view.js"></script>
+</body>
+</html>

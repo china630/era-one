@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>ERA One — Sovereign Hybrid</title>
+<link rel="stylesheet" href="../assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr">
+    <img class="logo-full" src="../assets/era-one-logo-banner.png" alt="ERA One">
+  </div>
+  <div class="body">
+    <h1>ERA Sovereign Hybrid<span class="sub">البيانات في الداخل — الدعم كالسحابة</span></h1>
+    <p class="lead">نموذج تشغيل حديث دون فقدان السيادة: تبقى المنصة ومستودع البيانات
+      والذكاء الاصطناعي ومواد التحقيق <b>داخل محيطكم</b>، بينما تُسلّم تحديثات الحماية والتراخيص
+      وتيليمترية الدعم من سحابة ERA عبر قناة <b>صادرة</b>.
+      إجابة على «نحتاج on-prem، لكن دون السحابة نتأخر في التشغيل».</p>
+
+    <h2>كيف يعمل</h2>
+    <div class="flow">
+      <span class="node">العملاء</span><span class="arr">&rsaquo;</span>
+      <span class="node k">مستودع البيانات · AI · الحالات — داخل محيط العميل</span><span class="arr">&rsaquo;</span>
+      <span class="node">Relay (صادر فقط)</span><span class="arr">&rsaquo;</span>
+      <span class="node k">سحابة ERA: تراخيص · تحديثات · دعم</span>
+    </div>
+    <p class="note-int">يُفعّل وضع Hybrid عن قصد ويُكوّن بالسياسة. يبقى الوضع المعزول بالكامل (air-gap) متاحاً دون أي اتصالات صادرة.</p>
+
+    <h2>ما يبقى في المحيط، وما يخرج</h2>
+    <table class="cmp">
+      <tr><th>دائماً في محيطكم</th><th>صادر (حسب سياستكم فقط)</th></tr>
+      <tr><td>أحداث خام وتيليمترية</td><td>تراخيص وتجديد اشتراك</td></tr>
+      <tr><td>مستودع البيانات (ClickHouse / MinIO)</td><td>تحديثات قواعد وCVE وحزم AI</td></tr>
+      <tr><td>استدلال AI (LLM داخل المحيط)</td><td>قائمة إلغاء الشهادات (CRL)</td></tr>
+      <tr><td>حالات وتحقيقات وبيانات شخصية</td><td>تيليمترية دعم (حسب المستوى)</td></tr>
+      <tr><td class="win">لا تغادر المحيط أبداً</td><td>مؤشرات مجهولة الهوية — فقط إذا سمحتم</td></tr>
+    </table>
+
+    <h2>مكونات الحل</h2>
+    <table class="cmp">
+      <tr><th>المكوّن</th><th>الموقع</th><th>الغرض</th></tr>
+      <tr><td><b>ERA Cloud Portal</b></td><td>سحابة ERA</td><td>تراخيص وعقود، تجديد اشتراك، قائمة إلغاء، استيعاب حالة الصحة</td></tr>
+      <tr><td><b>ERA Update Service</b></td><td>سحابة ERA</td><td>تسليم محتوى موقّع: قواعد، CVE، موصلات، حزم AI (يعمل أيضاً عبر حزمة دون اتصال)</td></tr>
+      <tr><td><b>ERA Hybrid Relay</b></td><td>محيطكم</td><td>قناة صادرة واحدة مع سجل وقائمة سماح</td></tr>
+      <tr><td><b>ERA Managed View</b></td><td>سحابة ERA</td><td>لوحة المكامل / MSSP: صحة، تراخيص، إصدارات — <b>دون وصول لبياناتكم</b></td></tr>
+    </table>
+
+    <h2>ملفان للنشر</h2>
+    <table class="cmp">
+      <tr><th>المعيار</th><th>ERA Sovereign (air-gap)</th><th>ERA Sovereign Hybrid</th></tr>
+      <tr><td>بيانات / مستودع / AI / حالات</td><td class="win">داخل المحيط</td><td class="win">داخل المحيط</td></tr>
+      <tr><td>تحديثات الحماية</td><td>حزمة دون اتصال</td><td class="win">تلقائي من سحابة ERA</td></tr>
+      <tr><td>اتصال صادر</td><td>لا يوجد</td><td>صادر فقط، حسب السياسة</td></tr>
+      <tr><td>الأنسب لـ</td><td>قطاع عام، بنية حرجة، air-gap صارم</td><td>مصارف ومؤسسات كبرى: سيادة + تشغيل مريح</td></tr>
+    </table>
+
+    <h2>للأمن والمشتريات</h2>
+    <div class="benefits">
+      <div>مخطط تدفق شفاف: واضح ما يذهب أين.</div>
+      <div>البيانات الشخصية ومواد التحقيق لا تُرسل للخارج أبداً.</div>
+      <div>القناة الصادرة — واحدة، مع سجل وقائمة سماح.</div>
+      <div>بوابة إقليمية أو مستضافة لدى العميل متاحة.</div>
+      <div>اتفاقية معالجة بيانات (DPA) ومخطط تدفق مضمّنان.</div>
+      <div>إمكانية التحول دائماً للوضع المعزول بالكامل.</div>
+    </div>
+  </div>
+
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>المقر الرئيسي</b>جنيف، سويسرا</div>
+      <div class="col"><b>مركز الهندسة</b>وارسو، بولندا</div>
+      <div class="col"><b>التواصل</b>
+        <a href="https://www.era-one.solutions">www.era-one.solutions</a><br>
+        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br>
+        <a href="mailto:support@era-one.solutions">support@era-one.solutions</a>
+      </div>
+    </div>
+    <div class="ftr-brand">
+      <img class="logo-ftr" src="../assets/era-one-logo-banner.png" alt="ERA One">
+    </div>
+  </div>
+
+</div>
+<script src="../assets/datasheet-common.js"></script>
+</body>
+</html>
