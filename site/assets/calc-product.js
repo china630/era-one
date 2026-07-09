@@ -16,9 +16,6 @@
   function moduleTitle(key) {
     return L() && L().moduleTitle ? L().moduleTitle(key) : key;
   }
-  function regionLabel(regionKey) {
-    return L() && L().regionLabel ? L().regionLabel(regionKey) : regionKey;
-  }
 
   function plOf(key) {
     var r = root();
@@ -38,6 +35,8 @@
     return (pl.bundles || []).find(function (b) { return b.key === k; }) || null;
   }
 
+  function listMultiplier() { return 1; }
+
   function defaultState(lineKey) {
     var pl = plOf(lineKey);
     var defBundle = lineKey === "communications" ? "comms-full" : "office-suite";
@@ -45,7 +44,6 @@
       defBundle = pl.bundles[0].key;
     }
     return {
-      region: "cis",
       users: 500,
       bundle: defBundle,
       manual: false,
@@ -71,7 +69,7 @@
     var r = root();
     var pl = plOf(lineKey);
     if (!r || !pl) return null;
-    var R = (r.regions && r.regions[state.region] && r.regions[state.region].multiplier) || 1;
+    var R = listMultiplier();
     var users = Math.max(0, state.users || 0);
     var bundle = state.manual ? null : bundleByKey(pl, state.bundle);
     var bundleSet = {};
@@ -106,7 +104,6 @@
       subscription: subscription,
       perpetual: perpetual,
       users: users,
-      region: state.region,
       bundle: bundle,
       licenseModel: state.licenseModel || "subscription"
     };
@@ -152,11 +149,9 @@
       }
     }
 
-    var regionLabelText = regionLabel(state.region);
     var mailBody = Lm ? Lm.mailQuoteBody({
       t: t,
       money: money,
-      regionLabel: regionLabelText,
       users: state.users,
       licenseModel: state.licenseModel,
       subscription: res.subscription,
@@ -205,12 +200,6 @@
       '    <div class="panel calc-form">' +
       '      <h3 data-i18n-calc="calcParams">' + t("calcParams") + "</h3>" +
       '      <div class="calc-grid">' +
-      '        <div class="field field-full">' +
-      '          <label data-i18n-calc="calcRegion">' + t("calcRegion") + "</label>" +
-      '          <div class="seg" data-region-seg>' +
-      '            <button type="button" data-region="cis" class="active" data-i18n-calc="regionCis">' + t("regionCis") + "</button>" +
-      '            <button type="button" data-region="eu" data-i18n-calc="regionEu">' + t("regionEu") + "</button>" +
-      "          </div></div>" +
       '        <div class="field"><label for="era-calc-users" data-i18n-calc="calcUsers">' + t("calcUsers") + '</label>' +
       '          <input type="number" id="era-calc-users" min="0" value="' + state.users + '" /></div>' +
       '        <div class="field field-full"><label for="era-calc-bundle" data-i18n-calc="calcBundle">' + t("calcBundle") + "</label>" +
@@ -220,8 +209,7 @@
       '      <h3 class="modules-title" data-i18n-calc="calcModules">' + t("calcModules") + "</h3>" +
       '      <div class="modules" data-mod-box></div>' +
       "    </div>" +
-      '    <div class="panel summary"><h3 data-i18n-calc="calcSummary">' + t("calcSummary") + '</h3><div data-result></div>' +
-      '      <div class="note region-note" data-region-note style="display:none;" data-i18n-calc="calcRegionNote">' + t("calcRegionNote") + "</div></div>" +
+      '    <div class="panel summary"><h3 data-i18n-calc="calcSummary">' + t("calcSummary") + '</h3><div data-result></div></div>' +
       "  </div></div>";
 
     container.innerHTML = html;
@@ -229,7 +217,6 @@
     var sel = rootEl.querySelector("#era-calc-bundle");
     var modBox = rootEl.querySelector("[data-mod-box]");
     var resultEl = rootEl.querySelector("[data-result]");
-    var regionNote = rootEl.querySelector("[data-region-note]");
     var termSel = rootEl.querySelector("#term");
     var maintSel = rootEl.querySelector("#perp_maint_years");
 
@@ -260,19 +247,8 @@
     function recalc() {
       syncModules(state, pl, modBox);
       renderResult(resultEl, compute(lineKey, state), pl, state, lineKey);
-      if (regionNote) regionNote.style.display = state.region === "cis" ? "" : "none";
       if (Lm) Lm.syncLicenseModelUI(rootEl, state);
     }
-
-    rootEl.querySelector("[data-region-seg]").addEventListener("click", function (e) {
-      var btn = e.target.closest("[data-region]");
-      if (!btn) return;
-      state.region = btn.getAttribute("data-region");
-      rootEl.querySelectorAll("[data-region-seg] button").forEach(function (b) {
-        b.classList.toggle("active", b === btn);
-      });
-      recalc();
-    });
 
     rootEl.querySelector("#era-calc-users").addEventListener("input", function (e) {
       state.users = +(e.target.value || 0);

@@ -175,7 +175,7 @@
 
   function mailQuoteBody(opts) {
     var t = opts.t;
-    var lines = [t("mailBody"), t("mailRegion") + ": " + opts.regionLabel];
+    var lines = [t("mailBody")];
     if (opts.ws != null) lines.push(t("mailWs") + ": " + opts.ws);
     if (opts.servers != null) lines.push(t("mailServers") + ": " + opts.servers);
     if (opts.users != null) lines.push(t("mailUsers") + ": " + opts.users);

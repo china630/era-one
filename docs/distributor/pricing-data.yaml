@@ -5,25 +5,24 @@
 #   - справочников docs/distributor/ERA-Pricing.md (внутр.) и ERA-Pricing-Client.md (клиент.).
 # Числа в этом файле — АВТОРИТЕТНЫЕ; markdown-справочники должны им соответствовать.
 #
-# ВАЖНО (граница публичности): здесь ТОЛЬКО клиентские правила (list + региональный множитель,
-# объём, срок, bundle). Внутренние floor / партнёрская маржа / competitive-displacement сюда
-# НЕ попадают — они живут только в ERA-Pricing.md и решаются deal-desk. Калькулятор портала
-# показывает ИНДИКАТИВНУЮ цену и предлагает «запросить КП».
+# ВАЖНО (граница публичности): здесь ТОЛЬКО клиентские правила (единая list price,
+# объём, срок, bundle). Партнёрская маржа / floor / competitive-displacement сюда
+# НЕ попадают — они живут только в ERA-Pricing.md и в устных соглашениях с партнёрами.
+# Калькулятор портала показывает ИНДИКАТИВНУЮ цену и предлагает «запросить КП».
 
 schema_version: "1.0"
 edition: "2026-07"
 currency: EUR
 vat_included: false
 
-# Региональные множители к EU list. По умолчанию для портала — cis.
+# Единая тарифная сетка (list price). Региональные скидки сняты с портала.
 regions:
-  eu:  { label: "EU / Global", multiplier: 1.00 }
-  cis: { label: "СНГ",         multiplier: 0.50 }   # региональный прайс (−50%)
+  global: { label: "Global list price", multiplier: 1.00 }
 
 # Множитель для серверов применяется к модулям с unit=endpoint.
 server_multiplier: 3
 
-# Цены — EU list за год за единицу (unit). Региональная = eu_year * regions[*].multiplier.
+# Цены — list price за год за единицу (unit).
 # availability: ga (серийно) | project (проектное внедрение / пилот).
 modules:
   core:
@@ -145,10 +144,10 @@ perpetual:
 
 # Правило комбинирования для калькулятора:
 #   line_eu   = module.eu_year * qty * (server? server_multiplier : 1)
-#   line_reg  = line_eu * region.multiplier
+#   line_reg  = line_eu (единая list price)
 #   subtotal  = сумма line_reg, при этом на bundle-модули вместо индивидуальных цен — bundle-скидка
 #   total     = subtotal * (1 - volume) * (1 - term)
 # control-ai: line = min(per_endpoint_total, flat_by_tier(endpoints))
 calc_formula: "total = sum(module_reg) * (1 - volume) * (1 - term); для Control AI берётся min(per-endpoint, flat)"
 
-disclaimer: "Индикативный расчёт для региона СНГ; не публичная оферта. Итоговая цена — в КП."
+disclaimer: "Индикативный расчёт по list price; не публичная оферта. Итоговая цена — в КП."
