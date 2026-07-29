@@ -9,7 +9,8 @@ product: era-communications
 editions:
   era-mail-server:
     title: ERA Mail Server
-    status: ga
+    # Honesty 2026-07-29: code restored from stash; scaffold gates pending re-proof; field RT-09 open → not ga
+    status: mvp
     license_module: { name: comms-mail-server, exists: true }
     description: Почтовый backend — SMTP/IMAP, Autodiscover, CalDAV; EWS subset (Outlook).
     services: [comms-mail]
@@ -29,7 +30,8 @@ editions:
   era-mail-connect:
     title: ERA Mail Connect
     status: roadmap
-    license_module: { name: comms-mail-connect, exists: false }
+    # Module code restored + C-1.1 gate PASS; edition stays roadmap until hybrid field
+    license_module: { name: comms-mail-connect, exists: true }
     description: >
       Hybrid tier: Mail Client + BFF к внешнему IMAP/JMAP/EWS.
       Отдельная лицензия; не заменяет Mail Server в Full Suite GA narrative.
@@ -39,7 +41,8 @@ editions:
 
   era-comms-migration:
     title: ERA Comms Migration
-    status: ga
+    # Honesty 2026-07-29: restored; unit proof required before ga; field cutover open
+    status: mvp
     license_module: { name: comms-migration, exists: true }
     description: >
       Bulk migration many-to-many: Communigate, Lotus, Exchange, IMAP, PST →
@@ -52,7 +55,8 @@ editions:
 
   era-outlook-bridge:
     title: ERA Outlook Bridge
-    status: ga
+    # Honesty 2026-07-29: restored; unit proof required before ga; field Exchange/100mb open
+    status: mvp
     license_module: { name: comms-outlook-bridge, exists: true }
     description: >
       Server Exchange façade (Autodiscover + EWS) перед IceWarp, Communigate,

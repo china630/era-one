@@ -1,0 +1,10 @@
+==> stage gate C-1 20260729-235925
+[PASS] F-C5/cargo-mail-core :: cargo test -p era-mail-core --quiet
+[PASS] F-C1/smtp-imap-e2e :: cargo test -p era-mail-core --test smtp_imap_e2e --quiet
+[PASS] F-C5/go-mail :: go test -C services/comms/mail ./... -count=1
+[PASS] F-C2/autodiscover-golden :: go test -C services/comms/mail ./internal/autodiscover/... -count=1
+[PASS] F-C3/policy :: go test -C services/comms/mail ./internal/policy/... -count=1
+[PASS] CM1-6/licensegate :: go test -C services/platform ./licensegate/... -count=1
+[PASS] CM1-1/comms-proto :: go test -C gen/go ./era/v1/... -count=1
+[SKIP] F-C4/ch-audit-e2e :: clickhouse at 127.0.0.1:9000 (AllowSkipCH)
+STAGE GATE PASS (C-1)

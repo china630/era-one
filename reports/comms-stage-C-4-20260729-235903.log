@@ -1,0 +1,5 @@
+==> stage gate C-4 20260729-235903
+[PASS] F-C21/chat :: go test -C services/comms/chat ./... -count=1
+[PASS] F-C22/vcs :: go test -C services/comms/vcs ./... -count=1
+[PASS] F-C23/chat-vcs-audit :: go test -C services/comms/auditch -tags integration ./... -count=1
+STAGE GATE PASS (C-4)

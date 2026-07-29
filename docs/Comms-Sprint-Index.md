@@ -10,53 +10,53 @@
 
 | # | Wave | Spec | Backlog | F-C / AC | Gate | Статус |
 |---|------|------|---------|----------|------|--------|
-| 1 | **C-1** | [`MVP-Comms-Mail-Sprint-1-Spec.md`](MVP-Comms-Mail-Sprint-1-Spec.md) | CM1-* | F-C1…F-C7 · AC-C1,C3,C4,C7 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-1` | [x] |
-| 2 | **C-1.1** | [`Comms-Stage-C1.1-Spec.md`](Comms-Stage-C1.1-Spec.md) | CM2-* | F-C11 · AC-C6 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-1.1` | [x] |
-| 3 | **C-2** | [`Comms-Stage-C2-Spec.md`](Comms-Stage-C2-Spec.md) | CM3-* | F-C12,F-C13 · AC-C8,C9 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-2` | [x] |
-| 4 | **C-3** | [`Comms-Stage-C3-Spec.md`](Comms-Stage-C3-Spec.md) | CM4-* | F-C14,F-C15 · AC-C2,C5 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-3` | [x] |
-| 5 | **C-4** | [`Comms-Stage-C4-Spec.md`](Comms-Stage-C4-Spec.md) | CM5-* | F-C21…F-C23 · Phase 2 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-4` | [x] |
-| 6 | **C-5** | [`Comms-Stage-C5-Spec.md`](Comms-Stage-C5-Spec.md) | CM6-* | F-C31,F-C32 · Phase 3 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-5` | [x] |
-| 7 | **C-MIG** | [`Comms-Stage-CMIG-Spec.md`](Comms-Stage-CMIG-Spec.md) | CM-MIG-* | F-C16…F-C16d · AC-MIG-1…5 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-MIG` | [x] |
-| 8 | **C-GA** | [`Comms-Stage-CGA-Spec.md`](Comms-Stage-CGA-Spec.md) | CM-GA-* | все MVP AC + пилот | `.\scripts\run-comms-stage-gate.ps1 -Stage C-GA` | [~] scaffold; field pending — см. [`Comms-Pilot-Gap-List.md`](Comms-Pilot-Gap-List.md) |
+| 1 | **C-1** | [`MVP-Comms-Mail-Sprint-1-Spec.md`](MVP-Comms-Mail-Sprint-1-Spec.md) | CM1-* | F-C1…F-C7 · AC-C1,C3,C4,C7 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-1` | [x] re-gate PASS 2026-07-29 · `reports/comms-stage-C-1-20260729-235925.log` (CH SKIP) |
+| 2 | **C-1.1** | [`Comms-Stage-C1.1-Spec.md`](Comms-Stage-C1.1-Spec.md) | CM2-* | F-C11 · AC-C6 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-1.1` | [x] PASS `…C-1.1-20260729-235840.log` |
+| 3 | **C-2** | [`Comms-Stage-C2-Spec.md`](Comms-Stage-C2-Spec.md) | CM3-* | F-C12,F-C13 · AC-C8,C9 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-2` | [x] PASS `…C-2-20260729-235843.log` |
+| 4 | **C-3** | [`Comms-Stage-C3-Spec.md`](Comms-Stage-C3-Spec.md) | CM4-* | F-C14,F-C15 · AC-C2,C5 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-3` | [x] PASS `…C-3-20260729-235850.log` |
+| 5 | **C-4** | [`Comms-Stage-C4-Spec.md`](Comms-Stage-C4-Spec.md) | CM5-* | F-C21…F-C23 · Phase 2 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-4` | [x] PASS `…C-4-20260729-235903.log` (scaffold) |
+| 6 | **C-5** | [`Comms-Stage-C5-Spec.md`](Comms-Stage-C5-Spec.md) | CM6-* | F-C31,F-C32 · Phase 3 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-5` | [x] PASS `…C-5-20260729-235914.log` (scaffold) |
+| 7 | **C-MIG** | [`Comms-Stage-CMIG-Spec.md`](Comms-Stage-CMIG-Spec.md) | CM-MIG-* | F-C16…F-C16d · AC-MIG-1…5 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-MIG` | [x] PASS `…C-MIG-20260729-235852.log` |
+| 8 | **C-GA** | [`Comms-Stage-CGA-Spec.md`](Comms-Stage-CGA-Spec.md) | CM-GA-* | все MVP AC + пилот | `.\scripts\run-comms-stage-gate.ps1 -Stage C-GA` | [~] scaffold gates OK; **RT-09 field pending** |
 
 ## 1b. Волны R-* (gov pilot P0)
 
 | # | Wave | Spec | GAP | Gate | Статус |
 |---|------|------|-----|------|--------|
-| R-0 | **R-0** | ADR-0029 · [`Comms-Stage-R-Index.md`](Comms-Stage-R-Index.md) | P0-40 prep | schema + specs | [x] ADR-0029, migrations, R-specs |
-| R-1 | **R-1** | [`Comms-Stage-R1-Persistence-Spec.md`](Comms-Stage-R1-Persistence-Spec.md) | P0-01…04 | restart test | [x] `go test era/services/comms/mail/internal/repo/...` PASS |
-| R-2 | **R-2** | [`Comms-Stage-R2-Protocols-Spec.md`](Comms-Stage-R2-Protocols-Spec.md) | P0-10…14 | TLS+AUTH smoke | [x] `cargo test -p era-mail-core` PASS |
-| R-GOV | **R-GOV** | [`Comms-Stage-R-GOV-Spec.md`](Comms-Stage-R-GOV-Spec.md) | GOV-01…07 | golden + staging | [x] EWS v2, CardDAV, ActiveSync subset tests |
-| R-3 | **R-3** | [`Comms-Stage-R3-Webmail-Spec.md`](Comms-Stage-R3-Webmail-Spec.md) | P0-20…24 | OIDC + webmail | [x] `go test era/ui/mail/...` + identity-api OIDC |
-| R-4 | **R-4** | [`Comms-Stage-R4-Deploy-Spec.md`](Comms-Stage-R4-Deploy-Spec.md) | P0-30…35 | compose + runbook | [x] `deploy/docker-compose.comms.yml` + runbook |
-| R-5 | **R-5** | docs honesty | P0-40…42 | matrix column | [x] Pilot-ready column, checklist reset |
-| RT | **RT-01…09** | staging + field | — | `run-comms-pilot-*.ps1` | [~] staging script RT-01…08; field RT-09 pending |
+| R-0 | **R-0** | ADR-0029 · [`Comms-Stage-R-Index.md`](Comms-Stage-R-Index.md) | P0-40 prep | schema + specs | [~] specs in git; re-verify after restore |
+| R-1 | **R-1** | [`Comms-Stage-R1-Persistence-Spec.md`](Comms-Stage-R1-Persistence-Spec.md) | P0-01…04 | restart test | [~] code restored; integration pending |
+| R-2 | **R-2** | [`Comms-Stage-R2-Protocols-Spec.md`](Comms-Stage-R2-Protocols-Spec.md) | P0-10…14 | TLS+AUTH smoke | [~] re-gate via C-1 cargo |
+| R-GOV | **R-GOV** | [`Comms-Stage-R-GOV-Spec.md`](Comms-Stage-R-GOV-Spec.md) | GOV-01…07 | golden + staging | [~] unit golden in mail; field open |
+| R-3 | **R-3** | [`Comms-Stage-R3-Webmail-Spec.md`](Comms-Stage-R3-Webmail-Spec.md) | P0-20…24 | OIDC + webmail | [~] `ui/mail` restored |
+| R-4 | **R-4** | [`Comms-Stage-R4-Deploy-Spec.md`](Comms-Stage-R4-Deploy-Spec.md) | P0-30…35 | compose + runbook | [~] compose restored |
+| R-5 | **R-5** | docs honesty | P0-40…42 | matrix column | [x] 2026-07-29 Evidence-Rules |
+| RT | **RT-01…09** | staging + field | — | `run-comms-pilot-*.ps1` | [~] scripts restored; RT-09 SKIP until field |
 
 ## 1c. Волны R2-* (Cycle 2 hardening)
 
 | # | Wave | GAP | Gate | Статус |
 |---|------|-----|------|--------|
-| R2-A | Schema + repo | P0-01…02 | `go test -tags=integration .../repo` | [x] unified DDL, argon2, PATCH |
-| R2-B | MinIO blobs | P0-01 | blob threshold + readyz | [x] `blobstore` + policy 413 golden |
-| R2-C | TLS + SMTP policy | P0-10…14 | `cargo test -p era-mail-core` TLS e2e | [x] STARTTLS rustls, 552, autodiscover SSL |
-| R2-D | Compose + remote E2E | P0-30, RT-01…08 | compose config + staging script | [x] migrate init, remote_e2e integration |
-| R2-E | Gov protocols | GOV-01…07 | golden + WBXML | [x] EWS matrix, CalDAV iTIP, CardDAV sync, ActiveSync |
-| R2-F | Webmail + OIDC PG | P0-20…23 | `go test era/ui/mail/...` | [x] JWT BFF, Playwright smoke |
-| R2-G | CI + ops + field | P0-30…42, RT-09 | CI `comms-pilot` job | [x] CI+docs; RT-09 field pending |
+| R2-A | Schema + repo | P0-01…02 | `go test -tags=integration .../repo` | [~] restored |
+| R2-B | MinIO blobs | P0-01 | blob threshold + readyz | [~] restored |
+| R2-C | TLS + SMTP policy | P0-10…14 | `cargo test -p era-mail-core` TLS e2e | [~] re-gate |
+| R2-D | Compose + remote E2E | P0-30, RT-01…08 | compose config + staging script | [~] compose config valid |
+| R2-E | Gov protocols | GOV-01…07 | golden + WBXML | [~] unit tests in mail |
+| R2-F | Webmail + OIDC PG | P0-20…23 | `go test era/ui/mail/...` | [~] restored |
+| R2-G | CI + ops + field | P0-30…42, RT-09 | CI `comms-pilot` job | [~] RT-09 field pending |
 
 ## 1d. Волны партнёрских продуктов (post-MVP)
 
 | # | Wave | Spec | Backlog | Gate | Статус |
 |---|------|------|---------|------|--------|
-| BR-1 | **Outlook Bridge** | [`Comms-Outlook-Bridge-Spec.md`](Comms-Outlook-Bridge-Spec.md) | BR-1…8 | `go test ./services/comms/mail-bridge/...` | [~] BR-3/4/6/7 Phase 2 PASS 2026-07-10 |
-| MIG-P0 | **Migration production** | [`Comms-Migration-Vendor-Matrix.md`](Comms-Migration-Vendor-Matrix.md) | GAP-P1-10…15 | `go test ./services/comms/migration/...` | [~] Phase 2 CG+orchestrator PASS 2026-07-10 |
-| **MIG-CG-IW** | **CG/Lotus→IceWarp brief** | [`Comms-Migration-CG-Lotus-IceWarp-Brief.md`](Comms-Migration-CG-Lotus-IceWarp-Brief.md) | G1…G8 pre-pilot gates | discovery CSV + pilot | [~] позиция + gates 2026-07-10 |
-| **P3-FIELD** | **Customer RT-09** | [`Comms-Customer-Field-RT09.md`](Comms-Customer-Field-RT09.md) | A1…A6 | `run-comms-pilot-field.ps1 -SignOff` | [x] Phase 3 tooling 2026-07-10 |
-| **P3-BR** | **Exchange + 100mb** | [`Comms-Bridge-100-Mailbox-Runbook.md`](Comms-Bridge-100-Mailbox-Runbook.md) | BR-5,8 | `go test .../exchange/...` | [x] 2026-07-10 |
-| **P3-MIG** | **1k pilot + calendar** | [`Comms-Migration-1k-Pilot.md`](Comms-Migration-1k-Pilot.md) | C1…C7 | `run-comms-migration-pilot-1k.ps1` | [x] 2026-07-10 |
-| **P4-SCALE** | **40k worker farm** | [`Field-Server-Sizing.md`](Field-Server-Sizing.md) | A1…A6 | `run-comms-scale-40k.ps1` | [x] dry-run + shard tests 2026-07-10 |
-| **P4-GA** | **Partner bundle** | [`Comms-Partner-Edition-Bundle.md`](Comms-Partner-Edition-Bundle.md) | B1…B5 | `comms-sbom-gate.ps1` | [x] 2026-07-10 |
-| **P4-UPSELL** | **IceWarp→ERA** | [`Comms-Upsell-IceWarp-to-ERA-Runbook.md`](Comms-Upsell-IceWarp-to-ERA-Runbook.md) | C1…C3 | icewarp source tests | [x] 2026-07-10 |
+| BR-1 | **Outlook Bridge** | [`Comms-Outlook-Bridge-Spec.md`](Comms-Outlook-Bridge-Spec.md) | BR-1…8 | `go test -C services/comms/mail-bridge ./...` | [x] unit PASS 2026-07-29; field ⏸ · edition **mvp** |
+| MIG-P0 | **Migration production** | [`Comms-Migration-Vendor-Matrix.md`](Comms-Migration-Vendor-Matrix.md) | GAP-P1-10…15 | `go test -C services/comms/migration ./...` | [x] C-MIG PASS 2026-07-29; field cutover ⏸ · edition **mvp** |
+| **MIG-CG-IW** | **CG/Lotus→IceWarp brief** | [`Comms-Migration-CG-Lotus-IceWarp-Brief.md`](Comms-Migration-CG-Lotus-IceWarp-Brief.md) | G1…G8 pre-pilot gates | discovery CSV + pilot | [~] docs; field open |
+| **P3-FIELD** | **Customer RT-09** | [`Comms-Customer-Field-RT09.md`](Comms-Customer-Field-RT09.md) | A1…A6 | `run-comms-pilot-field.ps1 -SignOff` | [~] tooling restored; sign-off open |
+| **P3-BR** | **Exchange + 100mb** | [`Comms-Bridge-100-Mailbox-Runbook.md`](Comms-Bridge-100-Mailbox-Runbook.md) | BR-5,8 | `go test .../exchange/...` | [~] re-proof |
+| **P3-MIG** | **1k pilot + calendar** | [`Comms-Migration-1k-Pilot.md`](Comms-Migration-1k-Pilot.md) | C1…C7 | `run-comms-migration-pilot-1k.ps1` | [~] script restored |
+| **P4-SCALE** | **40k worker farm** | [`Field-Server-Sizing.md`](Field-Server-Sizing.md) | A1…A6 | `run-comms-scale-40k.ps1` | [~] dry-run script restored |
+| **P4-GA** | **Partner bundle** | [`Comms-Partner-Edition-Bundle.md`](Comms-Partner-Edition-Bundle.md) | B1…B5 | `comms-sbom-gate.ps1` | [~] docs |
+| **P4-UPSELL** | **IceWarp→ERA** | [`Comms-Upsell-IceWarp-to-ERA-Runbook.md`](Comms-Upsell-IceWarp-to-ERA-Runbook.md) | C1…C3 | icewarp source tests | [~] unit in migration |
 | **C-MM** | **Mail Moderation** | [`Comms-Stage-CMM-Spec.md`](Comms-Stage-CMM-Spec.md) | CM-MM-1…12 · AC-MM-1…10 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-MM` | [x] 2026-07-29 |
 | **C-MM-H** | **MM Hardening** | [`Comms-Stage-CMM-H-Spec.md`](Comms-Stage-CMM-H-Spec.md) | MM-H-1…8 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-MM-H` | [x] 2026-07-29 |
 | **C-MM-P1** | **MM P1** | [`Comms-Stage-CMM-P1-Spec.md`](Comms-Stage-CMM-P1-Spec.md) | MM-P1-1…3 | `go test -C services/comms/mail-moderation ./...` | [x] 2026-07-29 |
@@ -66,7 +66,8 @@
 
 | 9 | **R-GOV** | [`PRD-Comms-Gov-Protocols.md`](products/PRD-Comms-Gov-Protocols.md) | CM-GOV-* | AC-GOV-* · gov pilot | field RT-01…09 | [x] subset implemented |
 
-**Программа scaffold:** 8/8 волн C-* закрыты auto-gate. **Gov pilot:** P0 + P0-GOV + field sign-off. · **Gap до реального пилота:** [`Comms-Pilot-Gap-List.md`](Comms-Pilot-Gap-List.md)
+**Программа:** код восстановлен из stash (2026-07-29). Re-gate C-1…C-5/C-MIG/C-MM-H = PASS.  
+**Evidence:** [`Comms-Evidence-Rules.md`](Comms-Evidence-Rules.md) · [`Comms-Implementation-Matrix.md`](Comms-Implementation-Matrix.md) · [`Comms-Phase2-Roadmap-Evidence.md`](Comms-Phase2-Roadmap-Evidence.md) · RT-09: [`reports/comms-rt09-skip.md`](../reports/comms-rt09-skip.md)
 
 ---
 
