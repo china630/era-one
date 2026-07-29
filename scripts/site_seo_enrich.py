@@ -21,7 +21,7 @@ ORG = {
     "@type": "Organization",
     "name": "ERA One",
     "url": CANON,
-    "logo": f"{CANON}/assets/era-one-logo.svg",
+    "logo": f"{CANON}/assets/era-one-logo.png",
     "email": "sales@era-one.solutions",
 }
 
@@ -195,7 +195,7 @@ def seo_head_block(
     # Organization always; if list of graphs, emit one script per or combine
     scripts = "\n".join(json_ld(x) for x in ld_bits)
     return f"""{robots}<link rel="canonical" href="{url}" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/assets/favicon.png" type="image/png" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="ERA One" />
 <meta property="og:title" content="{esc_title}" />
@@ -331,32 +331,25 @@ def write_sitemap(out: Path, edition_paths: list[str], compare_en: list[str]) ->
 
 
 def copy_favicon_and_og(out: Path) -> None:
+    """Use the official brand PNG only (resize/convert allowed; no redesign)."""
     assets = out / "assets"
     assets.mkdir(parents=True, exist_ok=True)
-    logo = assets / "era-one-logo.svg"
-    if logo.is_file():
-        shutil.copy2(logo, out / "favicon.svg")
-    banner_candidates = [
-        out / "datasheets" / "assets" / "era-one-logo-banner.png",
-        ROOT / "docs" / "distributor" / "assets" / "era-one-logo-banner.png",
-        ROOT / "site" / "assets" / "era-one-logo-banner.png",
-    ]
-    dest = assets / "og-default.png"
-    for c in banner_candidates:
-        try:
-            if c.is_file():
-                shutil.copy2(c, dest)
-                break
-        except OSError:
-            continue
-    if not dest.is_file() and logo.is_file():
-        shutil.copy2(logo, assets / "og-default.svg")
+    logo_png = assets / "era-one-logo.png"
+    if not logo_png.is_file():
+        print("WARN: site/assets/era-one-logo.png missing", file=sys.stderr)
+        return
+    # Favicon + OG = same official artwork (no design changes).
+    shutil.copy2(logo_png, assets / "favicon.png")
+    shutil.copy2(logo_png, out / "favicon.png")
+    shutil.copy2(logo_png, assets / "og-default.png")
 
 
 def effective_og_image(out: Path) -> str:
     if (out / "assets" / "og-default.png").is_file():
         return f"{CANON}/assets/og-default.png"
-    return f"{CANON}/assets/era-one-logo.svg"
+    if (out / "assets" / "era-one-logo.png").is_file():
+        return f"{CANON}/assets/era-one-logo.png"
+    return f"{CANON}/assets/era-one-logo.png"
 
 
 def noindex_datasheets(out: Path) -> int:
@@ -556,7 +549,7 @@ def write_404(out: Path) -> None:
 <title>Page not found | ERA One</title>
 <meta name="description" content="The requested page was not found on era-one.solutions." />
 <meta name="robots" content="noindex,follow" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/assets/favicon.png" type="image/png" />
 <link rel="stylesheet" href="/assets/site.css" />
 </head>
 <body data-page="home">
