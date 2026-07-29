@@ -1,9 +1,29 @@
 ---
-description: Публичный сайт коммитится отдельно; не трогать чужие uncommitted изменения
+description: Сайт — отдельный коммит; деплой через ветки dev/main/site-prod
 alwaysApply: true
 ---
 
 # Сайт и git: жёсткие инварианты
+
+## Три ветки (канон)
+
+На GitHub для этого репо — **три рабочие ветки**:
+
+| Ветка | Назначение |
+|---|---|
+| `dev` | Разработка продукта и сайта (staging сайта при push path-filter) |
+| `main` | Прод-источник: продукт + **триггер публикации сайта** |
+| `site-prod` | **Только статика** (`dist/site/`). DigitalOcean App Platform деплоит прод с этой ветки |
+
+Публикация сайта на прод: **не руками править `site-prod`**. Workflow
+`.github/workflows/site-deploy.yml` на push в `main` (пути `site/**` и
+site-скрипты) собирает артефакт и **force-push в `site-prod`**. DO
+подключён к `site-prod` (простое static storage / App Platform, без
+Rust/Cargo).
+
+Итого для выката SEO/сайта на www: коммит сайта → попасть в **`main`**
+(cherry-pick / merge / прямой push — как скажет пользователь) → CI
+обновит `site-prod`. Push только в `dev` = staging, не прод.
 
 ## Сайт — всегда отдельный коммит
 
@@ -12,10 +32,6 @@ alwaysApply: true
 `.github/workflows/site-deploy.yml`, `deploy/site/**`) **никогда не
 смешивается** в одном коммите с продуктовым кодом (services, crates,
 comms, office, docs продукта и т.д.).
-
-Причина: на DigitalOcean для статики — отдельное простое хранилище /
-App Platform pipeline (`site-prod`). Сайтовый деплой должен уезжать
-изолированно.
 
 ### Что делать
 
@@ -36,6 +52,8 @@ App Platform pipeline (`site-prod`). Сайтовый деплой должен 
 - Hard reset, clean -fd, checkout чужих файлов «чтобы очистить дерево»
   ради сайтового билда.
 - Пуш / деплой сайта вместе с несвязанным продуктовым диффом.
+- Ручной commit в `site-prod` с исходниками монорепо (там только
+  собранная статика из CI).
 
 ## Чужие uncommitted изменения
 
