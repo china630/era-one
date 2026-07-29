@@ -267,11 +267,18 @@ def set_ds_content(html: str, body: str, *, prerendered: bool = True) -> str:
 def load_en_datasheet(out: Path, ds_file: str) -> str:
     path = out / "datasheets" / "en" / ds_file
     if not path.is_file():
-        # fallback ru
         path = out / "datasheets" / "ru" / ds_file
     if not path.is_file():
         raise FileNotFoundError(ds_file)
     return read(path)
+
+
+def try_load_en_datasheet(out: Path, ds_file: str) -> str | None:
+    try:
+        return load_en_datasheet(out, ds_file)
+    except FileNotFoundError:
+        print(f"WARN: skip missing datasheet {ds_file}", file=sys.stderr)
+        return None
 
 
 def write_robots(out: Path) -> None:
@@ -324,27 +331,26 @@ def write_sitemap(out: Path, edition_paths: list[str], compare_en: list[str]) ->
 
 
 def copy_favicon_and_og(out: Path) -> None:
-    logo = out / "assets" / "era-one-logo.svg"
+    assets = out / "assets"
+    assets.mkdir(parents=True, exist_ok=True)
+    logo = assets / "era-one-logo.svg"
     if logo.is_file():
         shutil.copy2(logo, out / "favicon.svg")
-    # OG image: prefer banner if present in distributor assets copied elsewhere
     banner_candidates = [
         out / "datasheets" / "assets" / "era-one-logo-banner.png",
         ROOT / "docs" / "distributor" / "assets" / "era-one-logo-banner.png",
         ROOT / "site" / "assets" / "era-one-logo-banner.png",
     ]
-    dest = out / "assets" / "og-default.png"
+    dest = assets / "og-default.png"
     for c in banner_candidates:
-        if c.is_file():
-            shutil.copy2(c, dest)
-            break
-    else:
-        # Fallback: copy svg as og-default.svg and point... plan wants png.
-        # If no banner, keep referencing logo svg via updating OG_IMAGE usage —
-        # write a tiny note by copying svg to og-default.svg and leave png missing;
-        # inject will use svg if png absent.
-        if logo.is_file():
-            shutil.copy2(logo, out / "assets" / "og-default.svg")
+        try:
+            if c.is_file():
+                shutil.copy2(c, dest)
+                break
+        except OSError:
+            continue
+    if not dest.is_file() and logo.is_file():
+        shutil.copy2(logo, assets / "og-default.svg")
 
 
 def effective_og_image(out: Path) -> str:
@@ -409,12 +415,16 @@ def enrich_static_page(
 def prerender_family(out: Path, key: str) -> None:
     meta = PRODUCTS[key]
     page = out / meta["page"]
+    if not page.is_file():
+        print(f"WARN: skip missing family page {meta['page']}", file=sys.stderr)
+        return
     html = read(page)
-    ds = load_en_datasheet(out, meta["familyDs"])
+    ds = try_load_en_datasheet(out, meta["familyDs"])
+    if ds is None:
+        return
     body = demote_h1(extract_bodies(ds))
     html = set_ds_content(html, body)
     soft = SoftwareApplication(meta["name"], meta["description"])
-    # head inject done later in enrich_static_page
     write(page, html)
     enrich_static_page(out, meta["page"], extra_ld=[soft])
 
@@ -505,7 +515,9 @@ def generate_editions(out: Path) -> list[str]:
     og = effective_og_image(out)
     for key, meta in PRODUCTS.items():
         for name, slug, ds_file in meta["editions"]:
-            ds = load_en_datasheet(out, ds_file)
+            ds = try_load_en_datasheet(out, ds_file)
+            if ds is None:
+                continue
             body = extract_bodies(ds)
             h1 = first_h1_text(body) or name
             desc = lead_text(body) or f"{name} — sovereign edition from ERA One."
