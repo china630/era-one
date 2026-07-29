@@ -6,14 +6,52 @@
 
   function t(dict, k) { return (dict && dict[k] != null) ? dict[k] : (I18N.en[k] != null ? I18N.en[k] : k); }
 
+  function siteLang() {
+    var m = location.pathname.match(/^\/(ru|tr|ar)(?=\/|$)/);
+    if (m) return m[1];
+    var b = document.body && document.body.getAttribute("data-site-lang");
+    if (b) return b;
+    return document.documentElement.lang || "en";
+  }
+
+  function withLangPrefix(href) {
+    if (!href || href.charAt(0) === "#" || href.indexOf("mailto:") === 0 || /^https?:/i.test(href)) return href;
+    var path = href;
+    var hash = "";
+    var query = "";
+    var hi = path.indexOf("#");
+    if (hi >= 0) { hash = path.slice(hi); path = path.slice(0, hi); }
+    var qi = path.indexOf("?");
+    if (qi >= 0) { query = path.slice(qi); path = path.slice(0, qi); }
+    path = path.replace(/^\/(ru|tr|ar)(?=\/|$)/, "") || "/";
+    if (path.charAt(0) !== "/") path = "/" + path;
+    var lang = siteLang();
+    if (lang && lang !== "en") {
+      if (path === "/") path = "/index.html";
+      path = "/" + lang + path;
+    }
+    return path + query + hash;
+  }
+
+  function pathForLang(lang) {
+    var path = location.pathname || "/";
+    path = path.replace(/^\/(ru|tr|ar)(?=\/|$)/, "") || "/";
+    if (path === "/") path = "/index.html";
+    if (lang && lang !== "en") path = "/" + lang + path;
+    return path + (location.search || "") + (location.hash || "");
+  }
+
   function products() { return CAT ? CAT.PRODUCTS : {}; }
   function fams() { return CAT ? CAT.FAMS : []; }
-  function moduleHref(fk, e) { return CAT ? CAT.moduleHref(fk, e) : "#"; }
+  function moduleHref(fk, e) {
+    var href = CAT ? CAT.moduleHref(fk, e) : "#";
+    return withLangPrefix(href);
+  }
 
   /* ---- Search index ---- */
   function buildSearchIndex() {
     if (!CAT) return [];
-    var idx = CAT.FAMS.map(function (f) { return { n: f.name, g: "Product", h: f.page }; });
+    var idx = CAT.FAMS.map(function (f) { return { n: f.name, g: "Product", h: withLangPrefix(f.page) }; });
     CAT.FAMS.forEach(function (f) {
       CAT.PRODUCTS[f.key].editions.forEach(function (e) {
         idx.push({ n: e.n, g: f.name, h: moduleHref(f.key, e) });
@@ -27,7 +65,7 @@
   function megaHTML() {
     if (!CAT) return "";
     var famList = CAT.FAMS.map(function (f, i) {
-      return '<a class="fam' + (i === 0 ? ' active' : '') + '" data-fam="' + f.key + '" href="' + f.page + '">' +
+      return '<a class="fam' + (i === 0 ? ' active' : '') + '" data-fam="' + f.key + '" href="' + withLangPrefix(f.page) + '">' +
         '<b>' + f.name + '</b><span data-i18n="' + f.tagKey + '"></span></a>';
     }).join("");
     var modPanels = CAT.FAMS.map(function (f) {
@@ -36,11 +74,11 @@
         return '<a href="' + moduleHref(f.key, e) + '">' + e.n + tag + '</a>';
       }).join("");
       return '<div class="mods" data-fam="' + f.key + '"' + (f.key !== "control" ? ' hidden' : '') + '>' +
-        '<div class="mods-head"><a href="' + f.page + '"><b>' + f.name + '</b> · <span data-i18n="common.learn">Learn more</span> →</a></div>' +
+        '<div class="mods-head"><a href="' + withLangPrefix(f.page) + '"><b>' + f.name + '</b> · <span data-i18n="common.learn">Learn more</span> →</a></div>' +
         '<div class="mods-grid">' + list + '</div>' +
         '<div class="mods-foot">' +
-        '<a href="/compare.html?family=' + f.key + '" data-i18n="nav.compare">Compare</a>' +
-        '<a href="/downloads.html" data-i18n="nav.downloads">Downloads</a>' +
+        '<a href="' + withLangPrefix("/compare.html?family=" + f.key) + '" data-i18n="nav.compare">Compare</a>' +
+        '<a href="' + withLangPrefix("/downloads.html") + '" data-i18n="nav.downloads">Downloads</a>' +
         '</div></div>';
     }).join("");
     return '<div class="mega"><div class="mega-inner">' +
@@ -51,11 +89,11 @@
   function footerProductCols() {
     if (!CAT) return "";
     return CAT.FAMS.map(function (f) {
-      var links = '<li><a href="/compare.html?family=' + f.key + '" data-i18n="nav.compare">Compare</a></li>';
+      var links = '<li><a href="' + withLangPrefix("/compare.html?family=" + f.key) + '" data-i18n="nav.compare">Compare</a></li>';
       links += CAT.PRODUCTS[f.key].editions.map(function (e) {
         return '<li><a href="' + moduleHref(f.key, e) + '">' + e.n + '</a></li>';
       }).join("");
-      return '<div><h4><a href="' + f.page + '">' + f.name + '</a></h4><ul>' + links + '</ul></div>';
+      return '<div><h4><a href="' + withLangPrefix(f.page) + '">' + f.name + '</a></h4><ul>' + links + '</ul></div>';
     }).join("");
   }
 
@@ -63,7 +101,7 @@
     var famLinks = "";
     if (CAT) {
       famLinks = CAT.FAMS.map(function (f) {
-        return '<a class="mobile-nav-link" href="' + f.page + '"><b>' + f.name + '</b><span data-i18n="' + f.tagKey + '"></span></a>';
+        return '<a class="mobile-nav-link" href="' + withLangPrefix(f.page) + '"><b>' + f.name + '</b><span data-i18n="' + f.tagKey + '"></span></a>';
       }).join("");
     }
     return '' +
@@ -72,21 +110,23 @@
       '    <div class="mobile-nav-group">' +
       '      <div class="mobile-nav-lbl" data-i18n="nav.products">Products</div>' +
            famLinks +
-      '      <a class="mobile-nav-link" href="/compare.html" data-i18n="nav.compare">Compare</a>' +
-      '      <a class="mobile-nav-link" href="/downloads.html" data-i18n="nav.downloads">Downloads</a>' +
+      '      <a class="mobile-nav-link" href="' + withLangPrefix("/compare.html") + '" data-i18n="nav.compare">Compare</a>' +
+      '      <a class="mobile-nav-link" href="' + withLangPrefix("/downloads.html") + '" data-i18n="nav.downloads">Downloads</a>' +
       '    </div>' +
-      '    <a class="mobile-nav-link mobile-nav-top" href="/index.html#why" data-i18n="nav.why">Why ERA One</a>' +
+      '    <a class="mobile-nav-link mobile-nav-top" href="' + withLangPrefix("/index.html#why") + '" data-i18n="nav.why">Why ERA One</a>' +
       '    <div class="mobile-nav-group">' +
       '      <div class="mobile-nav-lbl" data-i18n="nav.company">Company</div>' +
-      '      <a class="mobile-nav-link" href="/about.html" data-i18n="nav.about">About</a>' +
-      '      <a class="mobile-nav-link" href="/vision.html" data-i18n="nav.vision">Vision</a>' +
-      '      <a class="mobile-nav-link" href="/contacts.html" data-i18n="nav.contacts">Contacts</a>' +
-      '      <a class="mobile-nav-link" href="/contacts.html" data-i18n="nav.partners">Partners</a>' +
-      '      <a class="mobile-nav-link" href="/contacts.html" data-i18n="nav.careers">Careers</a>' +
+      '      <a class="mobile-nav-link" href="' + withLangPrefix("/about.html") + '" data-i18n="nav.about">About</a>' +
+      '      <a class="mobile-nav-link" href="' + withLangPrefix("/vision.html") + '" data-i18n="nav.vision">Vision</a>' +
+      '      <a class="mobile-nav-link" href="' + withLangPrefix("/contacts.html") + '" data-i18n="nav.contacts">Contacts</a>' +
+      '      <a class="mobile-nav-link" href="' + withLangPrefix("/partners.html") + '" data-i18n="nav.partners">Partners</a>' +
+      '      <a class="mobile-nav-link" href="' + withLangPrefix("/careers.html") + '" data-i18n="nav.careers">Careers</a>' +
+      '      <a class="mobile-nav-link" href="' + withLangPrefix("/privacy.html") + '" data-i18n="nav.privacy">Privacy</a>' +
+      '      <a class="mobile-nav-link" href="' + withLangPrefix("/impressum.html") + '" data-i18n="nav.impressum">Impressum</a>' +
       '    </div>' +
       '    <div class="mobile-nav-actions">' +
-      '      <a class="login-btn" href="/login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
-      '      <button type="button" class="cta-btn" data-i18n="nav.demo" onclick="location.href=\'/contacts.html\'">Book a demo</button>' +
+      '      <a class="login-btn" href="' + withLangPrefix("/login.html") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
+      '      <button type="button" class="cta-btn" data-i18n="nav.demo" onclick="location.href=\'' + withLangPrefix("/contacts.html") + '\'">Book a demo</button>' +
       '    </div>' +
       '  </div>' +
       '</nav>';
@@ -95,23 +135,25 @@
   function headerHTML() {
     return '' +
       '<div class="wrap top-bar">' +
-      '  <a class="brand" href="/index.html"><img src="/assets/era-one-logo.png" alt="ERA One" /></a>' +
+      '  <a class="brand" href="' + withLangPrefix("/index.html") + '"><img src="/assets/era-one-logo.png" alt="ERA One" /></a>' +
       '  <nav class="top-nav" aria-label="Main">' +
       '    <div class="nav-item has-mega" data-menu="products">' +
-      '      <a href="/index.html#products" class="nav-link" data-nav="products"><span data-i18n="nav.products">Products</span> <span class="caret">▾</span></a>' +
+      '      <a href="' + withLangPrefix("/index.html#products") + '" class="nav-link" data-nav="products"><span data-i18n="nav.products">Products</span> <span class="caret">▾</span></a>' +
       megaHTML() +
       '    </div>' +
-      '    <a href="/index.html#why" class="nav-link" data-nav="why" data-i18n="nav.why">Why ERA One</a>' +
+      '    <a href="' + withLangPrefix("/index.html#why") + '" class="nav-link" data-nav="why" data-i18n="nav.why">Why ERA One</a>' +
       '    <div class="nav-item has-drop" data-menu="company">' +
-      '      <a href="/about.html" class="nav-link" data-nav="company"><span data-i18n="nav.company">Company</span> <span class="caret">▾</span></a>' +
+      '      <a href="' + withLangPrefix("/about.html") + '" class="nav-link" data-nav="company"><span data-i18n="nav.company">Company</span> <span class="caret">▾</span></a>' +
       '      <div class="drop">' +
-      '        <a href="/about.html" data-i18n="nav.about">About</a>' +
-      '        <a href="/vision.html" data-i18n="nav.vision">Vision</a>' +
-      '        <a href="/contacts.html" data-i18n="nav.contacts">Contacts</a>' +
-      '        <a href="/compare.html" data-i18n="nav.compare">Compare</a>' +
-      '        <a href="/downloads.html" data-i18n="nav.downloads">Downloads</a>' +
-      '        <a href="/contacts.html" data-i18n="nav.partners">Partners</a>' +
-      '        <a href="/contacts.html" data-i18n="nav.careers">Careers</a>' +
+      '        <a href="' + withLangPrefix("/about.html") + '" data-i18n="nav.about">About</a>' +
+      '        <a href="' + withLangPrefix("/vision.html") + '" data-i18n="nav.vision">Vision</a>' +
+      '        <a href="' + withLangPrefix("/contacts.html") + '" data-i18n="nav.contacts">Contacts</a>' +
+      '        <a href="' + withLangPrefix("/compare.html") + '" data-i18n="nav.compare">Compare</a>' +
+      '        <a href="' + withLangPrefix("/downloads.html") + '" data-i18n="nav.downloads">Downloads</a>' +
+      '        <a href="' + withLangPrefix("/partners.html") + '" data-i18n="nav.partners">Partners</a>' +
+      '        <a href="' + withLangPrefix("/careers.html") + '" data-i18n="nav.careers">Careers</a>' +
+      '        <a href="' + withLangPrefix("/privacy.html") + '" data-i18n="nav.privacy">Privacy</a>' +
+      '        <a href="' + withLangPrefix("/impressum.html") + '" data-i18n="nav.impressum">Impressum</a>' +
       '      </div>' +
       '    </div>' +
       '  </nav>' +
@@ -137,8 +179,8 @@
       '      <button data-lang="ar"><span class="flag">🇸🇦</span> العربية</button>' +
       '    </div>' +
       '  </div>' +
-      '  <a class="login-btn top-login" href="/login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
-      '  <button class="cta-btn top-cta" data-i18n="nav.demo" onclick="location.href=\'/contacts.html\'">Book a demo</button>' +
+      '  <a class="login-btn top-login" href="' + withLangPrefix("/login.html") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
+      '  <button class="cta-btn top-cta" data-i18n="nav.demo" onclick="location.href=\'' + withLangPrefix("/contacts.html") + '\'">Book a demo</button>' +
       '  <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Menu">' +
       '    <span class="menu-toggle-box" aria-hidden="true"><span></span><span></span><span></span></span>' +
       '  </button>' +
@@ -154,13 +196,15 @@
       '    <div>' +
       '      <h4 data-i18n="foot.about">Company</h4>' +
       '      <ul>' +
-      '        <li><a href="/about.html" data-i18n="nav.about">About</a></li>' +
-      '        <li><a href="/vision.html" data-i18n="nav.vision">Vision</a></li>' +
-      '        <li><a href="/contacts.html" data-i18n="nav.contacts">Contacts</a></li>' +
-      '        <li><a href="/compare.html?family=control" data-i18n="nav.compare">Compare</a></li>' +
-      '        <li><a href="/downloads.html" data-i18n="nav.downloads">Downloads</a></li>' +
-      '        <li><a href="/contacts.html" data-i18n="nav.partners">Partners</a></li>' +
-      '        <li><a href="/contacts.html" data-i18n="nav.careers">Careers</a></li>' +
+      '        <li><a href="' + withLangPrefix("/about.html") + '" data-i18n="nav.about">About</a></li>' +
+      '        <li><a href="' + withLangPrefix("/vision.html") + '" data-i18n="nav.vision">Vision</a></li>' +
+      '        <li><a href="' + withLangPrefix("/contacts.html") + '" data-i18n="nav.contacts">Contacts</a></li>' +
+      '        <li><a href="' + withLangPrefix("/compare.html?family=control") + '" data-i18n="nav.compare">Compare</a></li>' +
+      '        <li><a href="' + withLangPrefix("/downloads.html") + '" data-i18n="nav.downloads">Downloads</a></li>' +
+      '        <li><a href="' + withLangPrefix("/partners.html") + '" data-i18n="nav.partners">Partners</a></li>' +
+      '        <li><a href="' + withLangPrefix("/careers.html") + '" data-i18n="nav.careers">Careers</a></li>' +
+      '        <li><a href="' + withLangPrefix("/privacy.html") + '" data-i18n="nav.privacy">Privacy</a></li>' +
+      '        <li><a href="' + withLangPrefix("/impressum.html") + '" data-i18n="nav.impressum">Impressum</a></li>' +
       '      </ul>' +
       '    </div>' +
       footerProductCols() +
@@ -273,8 +317,8 @@
       if (link) link.classList.add("active");
     }
 
-    var lang = "en";
-    try { lang = localStorage.getItem("era-lang") || "en"; } catch (e) {}
+    var lang = siteLang();
+    if (!LABEL[lang]) lang = "en";
 
     document.querySelectorAll("[data-calc]").forEach(function (c) {
       renderCalc(c, c.getAttribute("data-calc"), I18N[lang] || I18N.en);
@@ -291,7 +335,16 @@
         lbtn.setAttribute("aria-expanded", lmenu.classList.contains("open"));
       });
       lmenu.querySelectorAll("button").forEach(function (b) {
-        b.addEventListener("click", function () { applyLang(b.dataset.lang); lmenu.classList.remove("open"); });
+        b.addEventListener("click", function () {
+          var next = b.dataset.lang;
+          try { localStorage.setItem("era-lang", next); } catch (e) {}
+          lmenu.classList.remove("open");
+          if (next === siteLang()) {
+            applyLang(next);
+            return;
+          }
+          location.href = pathForLang(next);
+        });
       });
       document.addEventListener("click", function () { lmenu.classList.remove("open"); });
     }

@@ -97,13 +97,18 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"Contacts","pg.contacts.lead":"Talk to our team about pilots, licensing and deployment in your contour.",
     "contacts.sales":"Sales","contacts.email":"Email","contacts.site":"Website","contacts.office":"Head office",
-    "contacts.addr":"Prague, Czech Republic",
+    "contacts.addr":"Geneva, Switzerland",
     "form.name":"Your name","form.email":"Work email","form.org":"Organization","form.msg":"How can we help?","form.send":"Send request",
     "form.note":"This prototype form does not submit. Use the email above.",
 
     "foot.about":"Company","foot.aboutus":"About us","foot.vision":"Vision","foot.contacts":"Contacts","foot.partners":"Partners","foot.careers":"Careers",
     "foot.tagline":"Sovereign IT & security ecosystem for the isolated contour.",
-    "foot.rights":"© 2026 ERA One. All rights reserved.","foot.fine":"Indicative product information — not a public offer."
+    "foot.rights":"© 2026 ERA One. All rights reserved.","foot.fine":"Indicative product information — not a public offer.",
+    "nav.privacy":"Privacy","nav.impressum":"Impressum",
+    "legal.privacy.h1":"Privacy Policy","legal.privacy.lead":"How ERA One handles personal data for the public website and sales inquiries.",
+    "legal.impressum.h1":"Impressum","legal.impressum.lead":"Legal imprint for ERA One — vendor identity and contact details.",
+    "legal.partners.h1":"Partners","legal.partners.lead":"Distributors and system integrators for ERA One deployments.",
+    "legal.careers.h1":"Careers","legal.careers.lead":"Join the teams building sovereign IT platforms."
   },
 
   ru: {
@@ -201,13 +206,18 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"Контакты","pg.contacts.lead":"Обсудите с нами пилот, лицензирование и развёртывание в вашем контуре.",
     "contacts.sales":"Продажи","contacts.email":"Эл. почта","contacts.site":"Сайт","contacts.office":"Головной офис",
-    "contacts.addr":"Прага, Чехия",
+    "contacts.addr":"Женева, Швейцария",
     "form.name":"Ваше имя","form.email":"Рабочая почта","form.org":"Организация","form.msg":"Чем можем помочь?","form.send":"Отправить запрос",
     "form.note":"Форма прототипа не отправляется. Используйте почту выше.",
 
     "foot.about":"Компания","foot.aboutus":"О нас","foot.vision":"Vision","foot.contacts":"Контакты","foot.partners":"Партнёры","foot.careers":"Карьера",
     "foot.tagline":"Суверенная экосистема IT и безопасности для изолированного контура.",
-    "foot.rights":"© 2026 ERA One. Все права защищены.","foot.fine":"Информация индикативна и не является публичной офертой."
+    "foot.rights":"© 2026 ERA One. Все права защищены.","foot.fine":"Информация индикативна и не является публичной офертой.",
+    "nav.privacy":"Конфиденциальность","nav.impressum":"Impressum",
+    "legal.privacy.h1":"Политика конфиденциальности","legal.privacy.lead":"Как ERA One обрабатывает персональные данные на публичном сайте и в запросах продаж.",
+    "legal.impressum.h1":"Impressum","legal.impressum.lead":"Юридические реквизиты ERA One и контакты.",
+    "legal.partners.h1":"Партнёры","legal.partners.lead":"Дистрибьюторы и интеграторы для внедрений ERA One.",
+    "legal.careers.h1":"Карьера","legal.careers.lead":"Присоединяйтесь к командам суверенных IT-платформ."
   },
 
   tr: {
@@ -306,13 +316,18 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"İletişim","pg.contacts.lead":"Pilot, lisanslama ve kurulum için ekibimizle görüşün.",
     "contacts.sales":"Satış","contacts.email":"E-posta","contacts.site":"Web sitesi","contacts.office":"Merkez ofis",
-    "contacts.addr":"Prag, Çekya",
+    "contacts.addr":"Cenevre, İsviçre",
     "form.name":"Adınız","form.email":"İş e-postası","form.org":"Kurum","form.msg":"Nasıl yardımcı olabiliriz?","form.send":"Gönder",
     "form.note":"Bu prototip form gönderilmez. Yukarıdaki e-postayı kullanın.",
 
     "foot.about":"Şirket","foot.aboutus":"Hakkımızda","foot.vision":"Vizyon","foot.contacts":"İletişim","foot.partners":"İş ortakları","foot.careers":"Kariyer",
     "foot.tagline":"İzole çevre için egemen BT ve güvenlik ekosistemi.",
-    "foot.rights":"© 2026 ERA One. Tüm hakları saklıdır.","foot.fine":"Bilgiler yönlendiricidir, kamu teklifi değildir."
+    "foot.rights":"© 2026 ERA One. Tüm hakları saklıdır.","foot.fine":"Bilgiler yönlendiricidir, kamu teklifi değildir.",
+    "nav.privacy":"Gizlilik","nav.impressum":"Künye",
+    "legal.privacy.h1":"Gizlilik Politikası","legal.privacy.lead":"ERA One genel web sitesi ve satış taleplerinde kişisel verileri nasıl işler.",
+    "legal.impressum.h1":"Künye","legal.impressum.lead":"ERA One yasal kimliği ve iletişim bilgileri.",
+    "legal.partners.h1":"İş ortakları","legal.partners.lead":"ERA One dağıtıcıları ve sistem entegratörleri.",
+    "legal.careers.h1":"Kariyer","legal.careers.lead":"Egemen IT platformlarını oluşturan ekiplere katılın."
   },
 
   ar: {
@@ -411,12 +426,17 @@ window.ERA_I18N = {
 
     "pg.contacts.h1":"اتصل بنا","pg.contacts.lead":"تحدّث مع فريقنا حول التجارب والتراخيص والنشر داخل محيطك.",
     "contacts.sales":"المبيعات","contacts.email":"البريد","contacts.site":"الموقع","contacts.office":"المكتب الرئيسي",
-    "contacts.addr":"براغ، التشيك",
+    "contacts.addr":"جنيف، سويسرا",
     "form.name":"اسمك","form.email":"بريد العمل","form.org":"المؤسسة","form.msg":"كيف يمكننا المساعدة؟","form.send":"إرسال الطلب",
     "form.note":"نموذج تجريبي لا يُرسَل. استخدم البريد أعلاه.",
 
     "foot.about":"الشركة","foot.aboutus":"من نحن","foot.vision":"الرؤية","foot.contacts":"اتصل بنا","foot.partners":"الشركاء","foot.careers":"الوظائف",
     "foot.tagline":"منظومة سيادية للأمن وتقنية المعلومات للمحيط المعزول.",
-    "foot.rights":"© 2026 ERA One. جميع الحقوق محفوظة.","foot.fine":"المعلومات إرشادية وليست عرضًا عامًا."
+    "foot.rights":"© 2026 ERA One. جميع الحقوق محفوظة.","foot.fine":"المعلومات إرشادية وليست عرضًا عامًا.",
+    "nav.privacy":"الخصوصية","nav.impressum":"بيانات قانونية",
+    "legal.privacy.h1":"سياسة الخصوصية","legal.privacy.lead":"كيف نعالج البيانات الشخصية على الموقع العام وطلبات المبيعات.",
+    "legal.impressum.h1":"بيانات قانونية","legal.impressum.lead":"الهوية القانونية لـ ERA One وبيانات الاتصال.",
+    "legal.partners.h1":"الشركاء","legal.partners.lead":"الموزعون ومكاملو الأنظمة لمنتجات ERA One.",
+    "legal.careers.h1":"الوظائف","legal.careers.lead":"انضم إلى فرق بناء المنصات السيادية."
   }
 };

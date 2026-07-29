@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Enrich dist/site/ with SEO artifacts: robots, sitemap, canonical/OG/schema,
-prerendered family & edition pages, noindex datasheets, 404, clean-URL stubs.
+"""Enrich dist/site/ with SEO artifacts + multi-lang prerender (en/ru/tr/ar).
+
+EN lives at site root. Locales: /ru/, /tr/, /ar/ with hreflang alternates.
 Usage: python3 scripts/site_seo_enrich.py [dist/site]
 """
 from __future__ import annotations
@@ -9,6 +10,7 @@ import html as html_lib
 import json
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from xml.sax.saxutils import escape as xml_escape
@@ -16,6 +18,9 @@ from xml.sax.saxutils import escape as xml_escape
 ROOT = Path(__file__).resolve().parents[1]
 CANON = "https://www.era-one.solutions"
 OG_IMAGE = f"{CANON}/assets/og-default.png"
+LANGS = ("en", "ru", "tr", "ar")
+NON_EN = ("ru", "tr", "ar")
+
 ORG = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -23,15 +28,22 @@ ORG = {
     "url": CANON,
     "logo": f"{CANON}/assets/era-one-logo.png",
     "email": "sales@era-one.solutions",
+    "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Geneva",
+        "addressCountry": "CH",
+    },
 }
 
-# Mirrors site/assets/products-catalog.js (EN datasheets).
+# Mirrors site/assets/products-catalog.js (datasheet basenames).
 PRODUCTS = {
     "control": {
         "name": "ERA Control",
         "page": "control.html",
         "slogan": "ONE AGENT. ONE PLATFORM. ONE CONTROL.",
         "familyDs": "ERA-One-DataSheet.html",
+        "i18n_h1": "pg.control.h1",
+        "i18n_lead": "pg.control.lead",
         "description": (
             "ERA Control unifies XDR, vulnerability management, UEM, ITSM, PAM "
             "and network monitoring — one lightweight agent, modular licensing, air-gap ready."
@@ -60,6 +72,8 @@ PRODUCTS = {
         "page": "communications.html",
         "slogan": "ONE IDENTITY. ONE PLATFORM. ONE CONVERSATION.",
         "familyDs": "ERA-Communications-DataSheet.html",
+        "i18n_h1": "pg.comms.h1",
+        "i18n_lead": "pg.comms.lead",
         "description": (
             "ERA Communications delivers sovereign corporate mail, chat and video meetings "
             "with Outlook parity inside your perimeter."
@@ -78,6 +92,8 @@ PRODUCTS = {
         "page": "office.html",
         "slogan": "ONE WORKSPACE. ONE PLATFORM. ONE TEAM.",
         "familyDs": "ERA-Office-DataSheet.html",
+        "i18n_h1": "pg.office.h1",
+        "i18n_lead": "pg.office.lead",
         "description": (
             "ERA Office brings documents, tables, presentations and projects with co-editing "
             "into the isolated contour — without cloud dependencies."
@@ -103,7 +119,25 @@ INDEXABLE_STATIC = [
     "contacts.html",
     "downloads.html",
     "compare.html",
+    "privacy.html",
+    "impressum.html",
+    "partners.html",
+    "careers.html",
 ]
+
+# EN-relative path → (title_key, desc_key) for locale meta
+STATIC_I18N_META = {
+    "index.html": ("hero.tag", "hero.lead"),
+    "about.html": ("pg.about.h1", "pg.about.lead"),
+    "vision.html": ("pg.vision.h1", "pg.vision.lead"),
+    "contacts.html": ("pg.contacts.h1", "pg.contacts.lead"),
+    "downloads.html": ("dl.h1", "dl.lead"),
+    "compare.html": ("compare.h1", "compare.lead"),
+    "privacy.html": ("legal.privacy.h1", "legal.privacy.lead"),
+    "impressum.html": ("legal.impressum.h1", "legal.impressum.lead"),
+    "partners.html": ("legal.partners.h1", "legal.partners.lead"),
+    "careers.html": ("legal.careers.h1", "legal.careers.lead"),
+}
 
 
 def read(path: Path) -> str:
@@ -113,6 +147,38 @@ def read(path: Path) -> str:
 def write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8", newline="\n")
+
+
+def page_rel(rel: str, lang: str) -> str:
+    rel = rel.lstrip("/")
+    if lang == "en":
+        return rel
+    return f"{lang}/{rel}"
+
+
+def page_url(rel: str, lang: str) -> str:
+    r = page_rel(rel, lang)
+    if r in ("", "index.html"):
+        return f"{CANON}/"
+    if r.endswith("/index.html") and r.count("/") == 1:
+        # ru/index.html → /ru/
+        return f"{CANON}/{r.split('/')[0]}/"
+    if r.endswith("index.html") and "/" in r:
+        base = r[: -len("index.html")]
+        return f"{CANON}/{base}"
+    return f"{CANON}/{r}"
+
+
+def hreflang_links(en_rel: str) -> str:
+    lines: list[str] = []
+    for lang in LANGS:
+        lines.append(
+            f'<link rel="alternate" hreflang="{lang}" href="{page_url(en_rel, lang)}" />'
+        )
+    lines.append(
+        f'<link rel="alternate" hreflang="x-default" href="{page_url(en_rel, "en")}" />'
+    )
+    return "\n".join(lines) + "\n"
 
 
 def extract_bodies(ds_html: str) -> str:
@@ -167,6 +233,14 @@ def lead_text(fragment: str, limit: int = 160) -> str:
     return text
 
 
+def plain_from_html(fragment: str, limit: int = 160) -> str:
+    text = re.sub(r"<[^>]+>", " ", fragment)
+    text = re.sub(r"\s+", " ", text).strip()
+    if len(text) > limit:
+        text = text[: limit - 1].rstrip() + "…"
+    return text
+
+
 def json_ld(obj: dict | list) -> str:
     return (
         '<script type="application/ld+json">\n'
@@ -177,27 +251,26 @@ def json_ld(obj: dict | list) -> str:
 
 def seo_head_block(
     *,
-    canonical_path: str,
+    en_rel: str,
+    lang: str,
     title: str,
     description: str,
     extra_ld: list | None = None,
     noindex: bool = False,
 ) -> str:
-    url = f"{CANON}/{canonical_path.lstrip('/')}" if canonical_path != "index.html" else f"{CANON}/"
-    if canonical_path == "" or canonical_path == "/":
-        url = f"{CANON}/"
+    url = page_url(en_rel, lang)
     esc_title = html_lib.escape(title, quote=True)
     esc_desc = html_lib.escape(description, quote=True)
     robots = '<meta name="robots" content="noindex,nofollow" />\n' if noindex else ""
     ld_bits = [ORG]
     if extra_ld:
         ld_bits.extend(extra_ld)
-    # Organization always; if list of graphs, emit one script per or combine
     scripts = "\n".join(json_ld(x) for x in ld_bits)
     return f"""{robots}<link rel="canonical" href="{url}" />
-<link rel="icon" href="/assets/favicon.png" type="image/png" />
+{hreflang_links(en_rel)}<link rel="icon" href="/assets/favicon.png" type="image/png" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="ERA One" />
+<meta property="og:locale" content="{lang}" />
 <meta property="og:title" content="{esc_title}" />
 <meta property="og:description" content="{esc_desc}" />
 <meta property="og:url" content="{url}" />
@@ -210,10 +283,49 @@ def seo_head_block(
 """
 
 
+def strip_injected_seo(html: str) -> str:
+    """Remove previously injected canonical/hreflang/og/json-ld so we can re-inject."""
+    html = re.sub(
+        r'\s*<link\s+rel="canonical"[^>]*>\s*',
+        "\n",
+        html,
+        flags=re.I,
+    )
+    html = re.sub(
+        r'\s*<link\s+rel="alternate"\s+hreflang="[^"]*"\s+href="[^"]*"\s*/?>\s*',
+        "\n",
+        html,
+        flags=re.I,
+    )
+    html = re.sub(
+        r'\s*<link\s+rel="icon"[^>]*>\s*',
+        "\n",
+        html,
+        flags=re.I,
+    )
+    html = re.sub(
+        r'\s*<meta\s+(?:property|name)="(?:og|twitter):[^"]*"[^>]*>\s*',
+        "\n",
+        html,
+        flags=re.I,
+    )
+    html = re.sub(
+        r'\s*<meta\s+name="robots"[^>]*>\s*',
+        "\n",
+        html,
+        flags=re.I,
+    )
+    html = re.sub(
+        r'\s*<script\s+type="application/ld\+json">.*?</script>\s*',
+        "\n",
+        html,
+        flags=re.I | re.S,
+    )
+    return html
+
+
 def inject_before_stylesheet(html: str, block: str) -> str:
-    # Avoid double-inject
-    if 'rel="canonical"' in html:
-        return html
+    html = strip_injected_seo(html)
     m = re.search(r'<link\s+rel="stylesheet"', html, flags=re.I)
     if m:
         return html[: m.start()] + block + html[m.start() :]
@@ -249,6 +361,19 @@ def ensure_title_desc(html: str, title: str | None, description: str | None) -> 
     return html
 
 
+def set_html_lang(html: str, lang: str) -> str:
+    dir_attr = ' dir="rtl"' if lang == "ar" else ""
+    if re.search(r"<html\b", html, flags=re.I):
+        return re.sub(
+            r"<html\b[^>]*>",
+            f'<html lang="{lang}"{dir_attr}>',
+            html,
+            count=1,
+            flags=re.I,
+        )
+    return f'<html lang="{lang}"{dir_attr}>\n' + html
+
+
 def set_ds_content(html: str, body: str, *, prerendered: bool = True) -> str:
     attr = ' data-prerendered="1"' if prerendered else ""
     repl = f'<div id="ds-content" class="ds-content"{attr}>\n{body}\n    </div>'
@@ -264,21 +389,58 @@ def set_ds_content(html: str, body: str, *, prerendered: bool = True) -> str:
     return new_html
 
 
-def load_en_datasheet(out: Path, ds_file: str) -> str:
-    path = out / "datasheets" / "en" / ds_file
-    if not path.is_file():
-        path = out / "datasheets" / "ru" / ds_file
-    if not path.is_file():
-        raise FileNotFoundError(ds_file)
-    return read(path)
+def lang_chain(lang: str) -> list[str]:
+    if lang == "en":
+        return ["en", "ru"]
+    if lang == "ru":
+        return ["ru", "en"]
+    return [lang, "en", "ru"]
 
 
-def try_load_en_datasheet(out: Path, ds_file: str) -> str | None:
-    try:
-        return load_en_datasheet(out, ds_file)
-    except FileNotFoundError:
-        print(f"WARN: skip missing datasheet {ds_file}", file=sys.stderr)
-        return None
+def try_load_datasheet(out: Path, ds_file: str, lang: str) -> str | None:
+    for cand in lang_chain(lang):
+        path = out / "datasheets" / cand / ds_file
+        if path.is_file():
+            return read(path)
+    print(f"WARN: skip missing datasheet {ds_file} ({lang})", file=sys.stderr)
+    return None
+
+
+def load_i18n() -> dict:
+    path = ROOT / "site" / "assets" / "i18n-data.js"
+    code = (
+        "const fs=require('fs');const vm=require('vm');"
+        f"const ctx={{window:{{}}}};"
+        f"vm.runInNewContext(fs.readFileSync({json.dumps(str(path))},'utf8'),ctx);"
+        "process.stdout.write(JSON.stringify(ctx.window.ERA_I18N));"
+    )
+    r = subprocess.run(
+        ["node", "-e", code],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
+    if r.returncode != 0:
+        raise RuntimeError(f"load_i18n failed: {r.stderr}")
+    return json.loads(r.stdout)
+
+
+def apply_data_i18n(html: str, d: dict) -> str:
+    """Replace inner HTML of elements that have data-i18n (non-nested tags)."""
+
+    def repl(m: re.Match[str]) -> str:
+        key = m.group(4)
+        if key not in d:
+            return m.group(0)
+        return f"{m.group(1)}{d[key]}{m.group(6)}"
+
+    return re.sub(
+        r"(<(\w+)([^>]*\sdata-i18n=\"([^\"]+)\"[^>]*)>)(.*?)(</\2>)",
+        repl,
+        html,
+        flags=re.S,
+    )
 
 
 def write_robots(out: Path) -> None:
@@ -297,48 +459,69 @@ Sitemap: {CANON}/sitemap.xml
     )
 
 
-def write_sitemap(out: Path, edition_paths: list[str], compare_en: list[str]) -> None:
-    urls: list[tuple[str, str]] = []
-    urls.append((f"{CANON}/", "1.0"))
+def write_sitemap(out: Path, edition_en_rels: list[str], compare_en: list[str]) -> None:
+    """Emit every language version with full xhtml hreflang cluster."""
+    en_rels: list[str] = []
     for p in INDEXABLE_STATIC:
-        if p == "index.html":
-            continue
-        urls.append((f"{CANON}/{p}", "0.9" if p.endswith("control.html") or "communications" in p or p == "office.html" else "0.7"))
-    for ep in edition_paths:
-        urls.append((f"{CANON}/{ep}", "0.8"))
-    for cp in compare_en:
-        urls.append((f"{CANON}/{cp}", "0.6"))
-    # clean URL stubs
+        en_rels.append(p)
+    en_rels.extend(edition_en_rels)
+    en_rels.extend(compare_en)
     for stub in ("control", "communications", "office"):
-        urls.append((f"{CANON}/{stub}/", "0.5"))
+        en_rels.append(f"{stub}/")
 
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+        '        xmlns:xhtml="http://www.w3.org/1999/xhtml">',
     ]
-    seen = set()
-    for loc, pri in urls:
-        if loc in seen:
-            continue
-        seen.add(loc)
-        lines.append("  <url>")
-        lines.append(f"    <loc>{xml_escape(loc)}</loc>")
-        lines.append(f"    <priority>{pri}</priority>")
-        lines.append("  </url>")
+    seen: set[str] = set()
+    for en_rel in en_rels:
+        for lang in LANGS:
+            # clean stubs only for EN
+            if en_rel.endswith("/") and lang != "en":
+                continue
+            loc = page_url(en_rel if en_rel != "index.html" else "index.html", lang)
+            if en_rel.endswith("/"):
+                loc = f"{CANON}/{en_rel}"
+            if loc in seen:
+                continue
+            seen.add(loc)
+            pri = "1.0" if en_rel == "index.html" else "0.8"
+            if en_rel in ("control.html", "communications.html", "office.html"):
+                pri = "0.9"
+            lines.append("  <url>")
+            lines.append(f"    <loc>{xml_escape(loc)}</loc>")
+            for alt in LANGS:
+                if en_rel.endswith("/") and alt != "en":
+                    continue
+                href = (
+                    f"{CANON}/{en_rel}"
+                    if en_rel.endswith("/")
+                    else page_url(en_rel, alt)
+                )
+                lines.append(
+                    f'    <xhtml:link rel="alternate" hreflang="{alt}" '
+                    f'href="{xml_escape(href)}" />'
+                )
+            if not en_rel.endswith("/"):
+                lines.append(
+                    f'    <xhtml:link rel="alternate" hreflang="x-default" '
+                    f'href="{xml_escape(page_url(en_rel, "en"))}" />'
+                )
+            lines.append(f"    <priority>{pri}</priority>")
+            lines.append("  </url>")
     lines.append("</urlset>")
     lines.append("")
     write(out / "sitemap.xml", "\n".join(lines))
 
 
 def copy_favicon_and_og(out: Path) -> None:
-    """Use the official brand PNG only (resize/convert allowed; no redesign)."""
     assets = out / "assets"
     assets.mkdir(parents=True, exist_ok=True)
     logo_png = assets / "era-one-logo.png"
     if not logo_png.is_file():
         print("WARN: site/assets/era-one-logo.png missing", file=sys.stderr)
         return
-    # Favicon + OG = same official artwork (no design changes).
     shutil.copy2(logo_png, assets / "favicon.png")
     shutil.copy2(logo_png, out / "favicon.png")
     shutil.copy2(logo_png, assets / "og-default.png")
@@ -347,8 +530,6 @@ def copy_favicon_and_og(out: Path) -> None:
 def effective_og_image(out: Path) -> str:
     if (out / "assets" / "og-default.png").is_file():
         return f"{CANON}/assets/og-default.png"
-    if (out / "assets" / "era-one-logo.png").is_file():
-        return f"{CANON}/assets/era-one-logo.png"
     return f"{CANON}/assets/era-one-logo.png"
 
 
@@ -366,15 +547,30 @@ def noindex_datasheets(out: Path) -> int:
     return n
 
 
-def enrich_static_page(
+def SoftwareApplication(name: str, description: str, url: str) -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": name,
+        "description": description,
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Windows, Linux, macOS",
+        "url": url,
+        "publisher": {"@type": "Organization", "name": "ERA One"},
+    }
+
+
+def enrich_page(
     out: Path,
-    rel: str,
+    en_rel: str,
+    lang: str,
     *,
     extra_ld: list | None = None,
     noindex: bool = False,
     force_title: str | None = None,
     force_desc: str | None = None,
 ) -> None:
+    rel = page_rel(en_rel, lang)
     path = out / rel
     if not path.is_file():
         return
@@ -385,54 +581,82 @@ def enrich_static_page(
     )
     title = force_title or (title_m.group(1) if title_m else "ERA One")
     desc = force_desc or (desc_m.group(1) if desc_m else "ERA One")
-    # unescape for OG re-escape
     title = html_lib.unescape(title)
     desc = html_lib.unescape(desc)
     if force_title or force_desc:
         html = ensure_title_desc(html, force_title, force_desc)
-    canon = "" if rel == "index.html" else rel
+    html = set_html_lang(html, lang)
     block = seo_head_block(
-        canonical_path=canon,
+        en_rel=en_rel,
+        lang=lang,
         title=title,
         description=desc,
         extra_ld=extra_ld,
         noindex=noindex,
     )
-    # Patch OG image dynamically
     og = effective_og_image(out)
     block = block.replace(OG_IMAGE, og)
     html = inject_before_stylesheet(html, block)
     write(path, html)
 
 
-def prerender_family(out: Path, key: str) -> None:
+def i18n_get(i18n: dict, lang: str, key: str, default: str = "") -> str:
+    d = i18n.get(lang) or {}
+    if key in d:
+        return plain_from_html(d[key], 300) if "<" in str(d[key]) else d[key]
+    en = i18n.get("en") or {}
+    if key in en:
+        v = en[key]
+        return plain_from_html(v, 300) if "<" in str(v) else v
+    return default
+
+
+def prerender_family(out: Path, key: str, lang: str, i18n: dict) -> str | None:
     meta = PRODUCTS[key]
-    page = out / meta["page"]
-    if not page.is_file():
-        print(f"WARN: skip missing family page {meta['page']}", file=sys.stderr)
-        return
-    html = read(page)
-    ds = try_load_en_datasheet(out, meta["familyDs"])
+    en_rel = meta["page"]
+    # Always start from EN source shell in dist (or site) without relying on prior body.
+    src = out / en_rel
+    if lang != "en":
+        # Prefer clean shell from EN root file before/after — re-read source from site/
+        site_src = ROOT / "site" / en_rel
+        if site_src.is_file():
+            html = read(site_src)
+        elif src.is_file():
+            html = read(src)
+        else:
+            print(f"WARN: skip missing family page {en_rel}", file=sys.stderr)
+            return None
+    else:
+        if not src.is_file():
+            print(f"WARN: skip missing family page {en_rel}", file=sys.stderr)
+            return None
+        html = read(src)
+
+    ds = try_load_datasheet(out, meta["familyDs"], lang)
     if ds is None:
-        return
+        return None
     body = demote_h1(extract_bodies(ds))
     html = set_ds_content(html, body)
-    soft = SoftwareApplication(meta["name"], meta["description"])
-    write(page, html)
-    enrich_static_page(out, meta["page"], extra_ld=[soft])
+    dict_lang = i18n.get(lang) or i18n.get("en") or {}
+    html = apply_data_i18n(html, dict_lang)
+    html = set_html_lang(html, lang)
 
+    title = f"{i18n_get(i18n, lang, meta['i18n_h1'], meta['name'])} | ERA One"
+    desc = i18n_get(i18n, lang, meta["i18n_lead"], meta["description"])
+    html = ensure_title_desc(html, title, desc)
 
-def SoftwareApplication(name: str, description: str) -> dict:
-    return {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": name,
-        "description": description,
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Windows, Linux, macOS",
-        "url": CANON,
-        "publisher": {"@type": "Organization", "name": "ERA One"},
-    }
+    rel = page_rel(en_rel, lang)
+    write(out / rel, html)
+    soft = SoftwareApplication(meta["name"], desc, page_url(en_rel, lang))
+    enrich_page(
+        out,
+        en_rel,
+        lang,
+        extra_ld=[soft],
+        force_title=title,
+        force_desc=desc,
+    )
+    return rel
 
 
 def edition_template(
@@ -446,17 +670,23 @@ def edition_template(
     body: str,
     title: str,
     description: str,
+    lang: str,
+    en_rel: str,
 ) -> str:
-    soft = SoftwareApplication(name, description)
+    soft = SoftwareApplication(name, description, page_url(en_rel, lang))
     head = seo_head_block(
-        canonical_path=f"editions/{slug}.html",
+        en_rel=en_rel,
+        lang=lang,
         title=title,
         description=description,
         extra_ld=[soft],
     )
-    # og image patched by caller if needed — use global; main() rewrites file
+    fam_href = family_page if family_page.startswith("/") else f"/{family_page}"
+    if lang != "en":
+        fam_href = f"/{lang}{fam_href}"
+    home = "/index.html" if lang == "en" else f"/{lang}/index.html"
     return f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}"{" dir=\"rtl\"" if lang == "ar" else ""}>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -469,9 +699,9 @@ def edition_template(
 <section class="hero subhero">
   <div class="wrap">
     <nav class="ds-breadcrumb">
-      <a href="/index.html" data-i18n="common.back">← Back to home</a>
+      <a href="{home}" data-i18n="common.back">← Back to home</a>
       <span>/</span>
-      <a href="{html_lib.escape(family_page)}">{html_lib.escape(family_name)}</a>
+      <a href="{html_lib.escape(fam_href)}">{html_lib.escape(family_name)}</a>
       <span>/</span>
       <span>{html_lib.escape(name)}</span>
     </nav>
@@ -501,20 +731,24 @@ def edition_template(
 """
 
 
-def generate_editions(out: Path) -> list[str]:
-    paths: list[str] = []
-    editions_dir = out / "editions"
-    editions_dir.mkdir(exist_ok=True)
+def generate_editions(out: Path, lang: str, i18n: dict) -> list[str]:
+    """Return EN-relative edition paths (editions/slug.html) for sitemap."""
+    en_paths: list[str] = []
     og = effective_og_image(out)
     for key, meta in PRODUCTS.items():
         for name, slug, ds_file in meta["editions"]:
-            ds = try_load_en_datasheet(out, ds_file)
+            ds = try_load_datasheet(out, ds_file, lang)
             if ds is None:
                 continue
             body = extract_bodies(ds)
+            dict_lang = i18n.get(lang) or {}
+            body_wrap = f'<div id="_ed">{body}</div>'
+            body_wrap = apply_data_i18n(body_wrap, dict_lang)
+            body = body_wrap[len('<div id="_ed">') : -len("</div>")]
             h1 = first_h1_text(body) or name
             desc = lead_text(body) or f"{name} — sovereign edition from ERA One."
             title = f"{h1} | ERA One"
+            en_rel = f"editions/{slug}.html"
             html = edition_template(
                 name=name,
                 slug=slug,
@@ -525,17 +759,51 @@ def generate_editions(out: Path) -> list[str]:
                 body=body,
                 title=title,
                 description=desc,
+                lang=lang,
+                en_rel=en_rel,
             )
             html = html.replace(OG_IMAGE, og)
-            # embed ds filename for PDF / lang reload
             html = html.replace(
                 'data-edition-ds=""',
                 f'data-edition-ds="{html_lib.escape(ds_file, quote=True)}"',
             )
-            rel = f"editions/{slug}.html"
-            write(out / rel, html)
-            paths.append(rel)
-    return paths
+            write(out / page_rel(en_rel, lang), html)
+            if lang == "en":
+                en_paths.append(en_rel)
+    return en_paths
+
+
+def localize_static_page(out: Path, en_rel: str, lang: str, i18n: dict) -> None:
+    if lang == "en":
+        return
+    src = out / en_rel
+    if not src.is_file():
+        site_src = ROOT / "site" / en_rel
+        if not site_src.is_file():
+            return
+        html = read(site_src)
+    else:
+        html = read(src)
+    dict_lang = i18n.get(lang) or {}
+    html = apply_data_i18n(html, dict_lang)
+    html = set_html_lang(html, lang)
+    keys = STATIC_I18N_META.get(en_rel)
+    force_title = force_desc = None
+    if keys:
+        h1 = i18n_get(i18n, lang, keys[0])
+        lead = i18n_get(i18n, lang, keys[1])
+        if h1:
+            force_title = f"{h1} | ERA One"
+        if lead:
+            force_desc = lead
+    write(out / page_rel(en_rel, lang), html)
+    enrich_page(
+        out,
+        en_rel,
+        lang,
+        force_title=force_title,
+        force_desc=force_desc,
+    )
 
 
 def write_404(out: Path) -> None:
@@ -579,8 +847,8 @@ def write_clean_stubs(out: Path) -> None:
         stub_dir = out / key
         stub_dir.mkdir(exist_ok=True)
         src = out / meta["page"]
-        # Copy enriched family page; keep canonical on *.html (avoid duplicate signals).
-        shutil.copy2(src, stub_dir / "index.html")
+        if src.is_file():
+            shutil.copy2(src, stub_dir / "index.html")
 
 
 def list_compare_en(out: Path) -> list[str]:
@@ -590,49 +858,161 @@ def list_compare_en(out: Path) -> list[str]:
     return sorted(f"compare/en/{p.name}" for p in d.glob("*.html"))
 
 
+def legal_page_html(slug: str, h1_key: str, lead_key: str, body_en: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ERA One</title>
+<meta name="description" content="" />
+<link rel="stylesheet" href="/assets/site.css" />
+</head>
+<body data-page="{slug}">
+<header class="top" id="site-header"></header>
+<section class="hero subhero">
+  <div class="wrap">
+    <h1 data-i18n="{h1_key}">Title</h1>
+    <p class="lead" data-i18n="{lead_key}">Lead</p>
+  </div>
+</section>
+<section>
+  <div class="wrap">
+    <div class="prose">
+{body_en}
+    </div>
+  </div>
+</section>
+<footer class="ftr" id="site-footer"></footer>
+<script src="/assets/i18n-data.js"></script>
+<script src="/assets/products-catalog.js"></script>
+<script src="/assets/site.js"></script>
+</body>
+</html>
+"""
+
+
+def ensure_legal_source_pages(site_src: Path) -> None:
+    pages = {
+        "privacy.html": (
+            "privacy",
+            "legal.privacy.h1",
+            "legal.privacy.lead",
+            """      <p>ERA One processes personal data submitted via sales inquiries (name, work email, organization, message) solely to respond to your request.</p>
+      <p>We do not sell personal data. Data is retained only as long as needed for the sales process or applicable law.</p>
+      <p>Contact: <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a>. Head office: Geneva, Switzerland.</p>""",
+        ),
+        "impressum.html": (
+            "impressum",
+            "legal.impressum.h1",
+            "legal.impressum.lead",
+            """      <p><strong>ERA One</strong></p>
+      <p>Head office: Geneva, Switzerland</p>
+      <p>Email: <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a></p>
+      <p>Website: <a href="https://www.era-one.solutions">www.era-one.solutions</a></p>""",
+        ),
+        "partners.html": (
+            "partners",
+            "legal.partners.h1",
+            "legal.partners.lead",
+            """      <p>ERA One works with distributors and system integrators for sovereign deployments of Control, Communications and Office.</p>
+      <p>For partnership inquiries write to <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a>.</p>""",
+        ),
+        "careers.html": (
+            "careers",
+            "legal.careers.h1",
+            "legal.careers.lead",
+            """      <p>We hire engineers and operators who build air-gap-ready platforms for regulated environments.</p>
+      <p>Send your profile to <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a> with subject “Careers”.</p>""",
+        ),
+    }
+    for fname, (slug, h1, lead, body) in pages.items():
+        path = site_src / fname
+        if path.is_file():
+            continue
+        write(path, legal_page_html(slug, h1, lead, body))
+
+
 def main() -> int:
     out = Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "dist" / "site")
     if not out.is_dir():
         print(f"ERROR: site dist not found: {out}", file=sys.stderr)
         return 1
 
+    site_src = ROOT / "site"
+    ensure_legal_source_pages(site_src)
+    # Copy any newly created legal pages into dist
+    for fname in ("privacy.html", "impressum.html", "partners.html", "careers.html"):
+        src = site_src / fname
+        dst = out / fname
+        if src.is_file() and not dst.is_file():
+            shutil.copy2(src, dst)
+
+    i18n = load_i18n()
     copy_favicon_and_og(out)
     write_robots(out)
     write_404(out)
 
-    # Prerender families first (mutates ds-content)
+    # EN family prerender
     for key in PRODUCTS:
-        prerender_family(out, key)
+        prerender_family(out, key, "en", i18n)
 
-    edition_paths = generate_editions(out)
+    edition_paths = generate_editions(out, "en", i18n)
 
-    # Home + company pages
     website_ld = {
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "ERA One",
         "url": CANON,
+        "inLanguage": list(LANGS),
         "publisher": {"@type": "Organization", "name": "ERA One"},
     }
-    enrich_static_page(out, "index.html", extra_ld=[website_ld])
+    enrich_page(out, "index.html", "en", extra_ld=[website_ld])
+
     for rel in (
         "about.html",
         "vision.html",
         "contacts.html",
         "downloads.html",
         "compare.html",
+        "privacy.html",
+        "impressum.html",
+        "partners.html",
+        "careers.html",
     ):
-        enrich_static_page(out, rel)
+        enrich_page(out, rel, "en")
 
     for rel in ("login.html", "register.html", "edition.html", "legacy-portal.html"):
-        enrich_static_page(out, rel, noindex=True)
+        enrich_page(out, rel, "en", noindex=True)
+
+    # Locale trees
+    for lang in NON_EN:
+        # locale home
+        localize_static_page(out, "index.html", lang, i18n)
+        for key in PRODUCTS:
+            prerender_family(out, key, lang, i18n)
+        generate_editions(out, lang, i18n)
+        for rel in (
+            "about.html",
+            "vision.html",
+            "contacts.html",
+            "downloads.html",
+            "compare.html",
+            "privacy.html",
+            "impressum.html",
+            "partners.html",
+            "careers.html",
+        ):
+            localize_static_page(out, rel, lang, i18n)
 
     n_ds = noindex_datasheets(out)
     write_clean_stubs(out)
     compare_en = list_compare_en(out)
+    # Enrich compare EN pages with canonical (no full locale matrix)
+    for cp in compare_en:
+        enrich_page(out, cp, "en")
     write_sitemap(out, edition_paths, compare_en)
 
-    # Patch OG image in already-written SEO blocks if png appeared late
     og = effective_og_image(out)
     if og != OG_IMAGE:
         for path in out.rglob("*.html"):
@@ -641,8 +1021,8 @@ def main() -> int:
                 write(path, txt.replace(OG_IMAGE, og))
 
     print(
-        f"OK: SEO enrich {out} — editions={len(edition_paths)} "
-        f"datasheet_noindex={n_ds} compare_en={len(compare_en)}"
+        f"OK: SEO enrich {out} — editions_en={len(edition_paths)} "
+        f"datasheet_noindex={n_ds} langs={','.join(LANGS)}"
     )
     return 0
 

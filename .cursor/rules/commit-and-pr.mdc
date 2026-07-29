@@ -39,6 +39,14 @@ docs(adr): ADR-0007 переведён в статус Implemented
 - go test ./... — PASS; cargo test — PASS
 ```
 
+## Сайт — отдельный коммит (обязательно)
+
+Публичный сайт (`site/`, site-build/SEO-скрипты, `deploy/site/**`,
+site-deploy workflow) **всегда** коммитится отдельно от остального кода.
+Не смешивать с services/crates/docs продукта. Не делать `git add -A` при
+смешанных изменениях. Не использовать `git stash` без явной просьбы
+пользователя. Подробности: `.cursor/rules/site-commit-isolation.mdc`.
+
 ## Запреты
 
 - Не коммитить секреты/ключи (`vendor.key`, `.env`), артефакты сборки, `target/`.
