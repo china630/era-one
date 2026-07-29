@@ -39,13 +39,17 @@ docs(adr): ADR-0007 переведён в статус Implemented
 - go test ./... — PASS; cargo test — PASS
 ```
 
-## Сайт — отдельный коммит (обязательно)
+## Сайт — отдельный коммит и ветки (обязательно)
 
 Публичный сайт (`site/`, site-build/SEO-скрипты, `deploy/site/**`,
 site-deploy workflow) **всегда** коммитится отдельно от остального кода.
-Не смешивать с services/crates/docs продукта. Не делать `git add -A` при
-смешанных изменениях. Не использовать `git stash` без явной просьбы
-пользователя. Подробности: `.cursor/rules/site-commit-isolation.mdc`.
+
+Ветки: `dev` (разработка/staging) · `main` (прод-источник, триггерит
+публикацию) · `site-prod` (только статика для DigitalOcean). Прод сайта
+= push site-коммита в **`main`** → CI обновляет `site-prod`. Не править
+`site-prod` руками. Не `git add -A` при смешанных изменениях. Не
+`git stash` без явной просьбы. Подробности:
+`.cursor/rules/site-commit-isolation.mdc`.
 
 ## Запреты
 
