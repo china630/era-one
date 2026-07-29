@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ERA Documents</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 960px; }
+    header { display: flex; justify-content: space-between; }
+    #banner { background: #fff3cd; padding: .5rem; display: none; }
+    button { margin-right: .5rem; margin-bottom: .5rem; }
+    .doc-block {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: .5rem .75rem;
+      margin: .5rem 0;
+      min-height: 1.5rem;
+    }
+    .doc-block[data-type="heading"] { font-size: 1.25rem; font-weight: 600; }
+    .doc-block[data-type="list_item"] { margin-left: 1.25rem; list-style: disc; }
+    #blocks:empty::before { content: 'Loading…'; color: #888; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ERA Documents</h1>
+    <nav><a href="/drive/">Drive</a> · <a href="/mail/">Mail</a></nav>
+  </header>
+  <div id="banner">Some legacy docx features were dropped on import.</div>
+  <div id="toolbar">
+    <button id="boldBtn" type="button"><b>B</b></button>
+    <button id="italicBtn" type="button"><i>I</i></button>
+    <button id="h1Btn" type="button">H1</button>
+    <button id="listBtn" type="button">List</button>
+    <button id="snapshotBtn" type="button">Snapshot</button>
+    <button id="importBtn" type="button">Import docx</button>
+    <button id="exportBtn" type="button">Export docx</button>
+  </div>
+  <div id="blocks"></div>
+  <input type="file" id="file" accept=".docx" hidden/>
+  <script src="app.js"></script>
+</body>
+</html>

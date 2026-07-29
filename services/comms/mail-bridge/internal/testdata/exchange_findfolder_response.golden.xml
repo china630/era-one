@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <FindFolderResponse xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+      <ResponseMessages>
+        <FindFolderResponseMessage ResponseClass="Success">
+          <RootFolder>
+            <Folders>
+              <Folder><FolderId Id="inbox"/><DisplayName>Inbox</DisplayName></Folder>
+            </Folders>
+          </RootFolder>
+        </FindFolderResponseMessage>
+      </ResponseMessages>
+    </FindFolderResponse>
+  </soap:Body>
+</soap:Envelope>

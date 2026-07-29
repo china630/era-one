@@ -6,7 +6,18 @@ use (
 	./scripts/gen-sigma-corpus
 	./services/ai-core
 	./services/cloud-portal
+	./services/comms/ai
+	./services/comms/auditch
+	./services/comms/calendar
+	./services/comms/chat
+	./services/comms/cmd/loadgen-mailboxes
+	./services/comms/internal/imapclient
+	./services/comms/mail
+	./services/comms/mail-bridge
+	./services/comms/mail-connect
 	./services/comms/mail-moderation
+	./services/comms/migration
+	./services/comms/vcs
 	./services/compliance
 	./services/control-plane
 	./services/ctem
@@ -29,4 +40,9 @@ use (
 	./services/vm
 	./services/waf
 	./services/soar
+	./ui/chat
+	./ui/docs
+	./ui/drive
+	./ui/mail
+	./ui/meet
 )

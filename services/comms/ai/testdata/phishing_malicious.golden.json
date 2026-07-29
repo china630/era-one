@@ -1,0 +1,14 @@
+{
+  "risk_score": 100,
+  "hints": [
+    "urgency:urgent",
+    "urgency:immediately",
+    "urgency:verify your",
+    "urgency:click here",
+    "urgency:suspended",
+    "urgency:password",
+    "reply-to-mismatch",
+    "executive-spoof-domain"
+  ],
+  "verdict": "malicious"
+}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ERA Webmail</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 960px; }
+    header { display: flex; justify-content: space-between; align-items: center; }
+    .banner { background: #fff3cd; padding: .5rem 1rem; border-radius: 4px; }
+    ul { list-style: none; padding: 0; }
+    li { border-bottom: 1px solid #ddd; padding: .75rem 0; cursor: pointer; }
+    #compose { display: none; margin-top: 1rem; }
+    input, textarea, button { display: block; margin: .5rem 0; width: 100%; max-width: 480px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ERA Webmail</h1>
+    <span id="user"></span>
+  </header>
+  <div id="policy" class="banner" hidden></div>
+  <button id="composeBtn">Compose</button>
+  <div id="compose">
+    <input id="to" placeholder="To"/>
+    <input id="subject" placeholder="Subject"/>
+    <textarea id="body" rows="6" placeholder="Message"></textarea>
+    <button id="sendBtn">Send</button>
+  </div>
+  <h2>Inbox</h2>
+  <ul id="inbox"></ul>
+  <div id="messageDetail" hidden>
+    <h3 id="msgSubject"></h3>
+    <pre id="msgBody"></pre>
+  </div>
+  <script src="/mail/static/app.js"></script>
+</body>
+</html>

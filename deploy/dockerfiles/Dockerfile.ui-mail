@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.26.4-alpine AS build
+WORKDIR /src
+COPY deploy/dockerfiles/go.work.ui-mail ./go.work
+COPY gen/go gen/go
+COPY ui/mail ui/mail
+COPY services/platform services/platform
+COPY services/license services/license
+COPY ui/drive ui/drive
+COPY ui/docs ui/docs
+WORKDIR /src/ui/mail/cmd/ui-mail
+RUN go build -o /out/ui-mail .
+
+FROM alpine:3.20
+COPY --from=build /out/ui-mail /usr/local/bin/ui-mail
+EXPOSE 8180
+ENV ERA_UI_MAIL_ADDR=:8180
+ENTRYPOINT ["/usr/local/bin/ui-mail"]

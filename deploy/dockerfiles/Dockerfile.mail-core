@@ -1,0 +1,11 @@
+# syntax=docker/dockerfile:1
+FROM rust:1.86-bookworm AS build
+WORKDIR /src
+COPY services/comms/mail/core services/comms/mail/core
+WORKDIR /src/services/comms/mail/core
+RUN cargo build --release
+
+FROM debian:bookworm-slim
+COPY --from=build /src/services/comms/mail/core/target/release/era-mail-core /usr/local/bin/
+EXPOSE 2525 1143 8151
+ENTRYPOINT ["/usr/local/bin/era-mail-core"]

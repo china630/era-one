@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package era.v1;
+
+option go_package = "era/contracts/gen/era/v1;erav1";
+
+// ERA Office Documents — native wire format (ADR-0026, P1).
+// Extension .erad = wire type erad. ERAT/ERAP reserved for P2/P3.
+
+enum DocumentFormat {
+  DOCUMENT_FORMAT_UNSPECIFIED = 0;
+  DOCUMENT_FORMAT_ERAD = 1;
+  DOCUMENT_FORMAT_ERAT = 2;
+  DOCUMENT_FORMAT_ERAP = 3;
+}
+
+enum BlockType {
+  BLOCK_TYPE_UNSPECIFIED = 0;
+  BLOCK_TYPE_PARAGRAPH = 1;
+  BLOCK_TYPE_HEADING = 2;
+  BLOCK_TYPE_LIST_ITEM = 3;
+}
+
+enum ListType {
+  LIST_TYPE_UNSPECIFIED = 0;
+  LIST_TYPE_BULLET = 1;
+  LIST_TYPE_ORDERED = 2;
+}
+
+message InlineSpan {
+  string text = 1;
+  bool bold = 2;
+  bool italic = 3;
+}
+
+message BlockAttrs {
+  BlockType block_type = 1;
+  uint32 heading_level = 2;
+  ListType list_type = 3;
+}
+
+message Block {
+  string id = 1;
+  BlockAttrs attrs = 2;
+  repeated InlineSpan inlines = 3;
+}
+
+message EradDocument {
+  string id = 1;
+  string tenant_id = 2;
+  string drive_object_id = 3;
+  DocumentFormat format = 4;
+  repeated Block blocks = 5;
+  bool legacy_features_dropped = 6;
+}
+
+enum DocOpType {
+  DOC_OP_TYPE_UNSPECIFIED = 0;
+  DOC_OP_TYPE_INSERT_TEXT = 1;
+  DOC_OP_TYPE_DELETE_RANGE = 2;
+  DOC_OP_TYPE_SET_BLOCK_TYPE = 3;
+  DOC_OP_TYPE_INSERT_BLOCK = 4;
+}
+
+message DocSessionOp {
+  uint64 version = 1;
+  string session_id = 2;
+  string author_id = 3;
+  DocOpType op_type = 4;
+  string block_id = 5;
+  uint32 offset = 6;
+  uint32 length = 7;
+  string text = 8;
+  BlockAttrs attrs = 9;
+  Block block = 10;
+}

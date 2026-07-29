@@ -2,7 +2,7 @@
 # ERA Communications — per-wave stage gate (Refs: Comms-Sprint-Index.md, Comms-Acceptance-System.md)
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('C-1', 'C-1.1', 'C-2', 'C-3', 'C-4', 'C-5', 'C-MIG', 'C-MM', 'C-MM-H', 'C-GA')]
+    [ValidateSet('C-1', 'C-1.1', 'C-2', 'C-3', 'C-4', 'C-5', 'C-MIG', 'C-MM', 'C-GA')]
     [string]$Stage,
 
     [switch]$WriteSignoff,
@@ -123,14 +123,8 @@ function Get-StageChecks {
         }
         'C-MM' {
             return @(
-                @{ Id = "F-MM/mail-moderation"; Cmd = "go test -C services/comms/mail-moderation ./... -count=1"; Required = $true },
-                @{ Id = "CM-MM-12/licensegate"; Cmd = "go test -C services/platform ./licensegate/... -count=1"; Required = $true }
-            )
-        }
-        'C-MM-H' {
-            return @(
-                @{ Id = "F-MM-H/mail-moderation"; Cmd = "go test -C services/comms/mail-moderation ./... -count=1"; Required = $true },
-                @{ Id = "CM-MM-H/licensegate"; Cmd = "go test -C services/platform ./licensegate/... -count=1"; Required = $true }
+                @{ Id = "F-MM/mail-moderation"; Cmd = "go test ./services/comms/mail-moderation/... -count=1"; Required = $true },
+                @{ Id = "F-MM/licensegate"; Cmd = "go test ./services/platform/licensegate/... -count=1"; Required = $true }
             )
         }
         default { return @() }

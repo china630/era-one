@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <CreateItem xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+      <Items>
+        <Message>
+          <Subject>EWS Golden Test</Subject>
+          <Body>Hello from EWS</Body>
+        </Message>
+      </Items>
+    </CreateItem>
+  </soap:Body>
+</soap:Envelope>

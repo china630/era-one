@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006">
+  <Response xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
+    <Account>
+      <AccountType>email</AccountType>
+      <Action>settings</Action>
+      <Protocol>
+        <Type>IMAP</Type>
+        <Server>mail.mail.gov.az</Server>
+        <Port>993</Port>
+        <DomainRequired>off</DomainRequired>
+        <LoginName>alice@mail.gov.az</LoginName>
+        <SPA>off</SPA>
+        <SSL>on</SSL>
+        <Server>mail.mail.gov.az</Server>
+        <Port>587</Port>
+        <DomainRequired>off</DomainRequired>
+        <LoginName>alice@mail.gov.az</LoginName>
+        <SPA>off</SPA>
+        <SSL>on</SSL>
+        <AuthRequired>on</AuthRequired>
+        <UsePOPAuth>on</UsePOPAuth>
+      </Protocol>
+      <Protocol>
+        <Type>EXCH</Type>
+        <Server>mail.mail.gov.az</Server>
+        <EwsUrl>https://mail.mail.gov.az:8150/ews/Exchange.asmx</EwsUrl>
+        <DomainRequired>off</DomainRequired>
+        <LoginName>alice@mail.gov.az</LoginName>
+        <SPA>off</SPA>
+        <SSL>on</SSL>
+        <Server>mail.mail.gov.az</Server>
+        <Url>https://mail.mail.gov.az:8150/caldav/alice@mail.gov.az/</Url>
+        <DomainRequired>off</DomainRequired>
+        <LoginName>alice@mail.gov.az</LoginName>
+      </Protocol>
+    </Account>
+  </Response>
+</Autodiscover>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ERA Drive</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 960px; }
+    header { display: flex; justify-content: space-between; align-items: center; }
+    ul { list-style: none; padding: 0; }
+    li { border-bottom: 1px solid #ddd; padding: .5rem 0; }
+    #upload { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ERA Drive</h1>
+    <nav>
+      <a href="/mail/">Mail</a> ·
+      <a href="/docs">Docs (P1)</a>
+    </nav>
+  </header>
+  <section id="upload">
+    <input type="file" id="file"/>
+    <button id="uploadBtn">Upload</button>
+  </section>
+  <h2>Files</h2>
+  <ul id="files"></ul>
+  <script src="app.js"></script>
+</body>
+</html>

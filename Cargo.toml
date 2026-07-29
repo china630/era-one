@@ -15,4 +15,5 @@ members = [
     "crates/era-collectors",
     "crates/era-license",
     "crates/era-proto",
+    "services/comms/mail/core",
 ]

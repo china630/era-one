@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Autodiscover>
+  <Response>
+    <Account>
+      <Type>CONNECT</Type>
+      <Email>alice@mail.gov.az</Email>
+      <Endpoint>/api/v1/connect/sync</Endpoint>
+    </Account>
+  </Response>
+</Autodiscover>

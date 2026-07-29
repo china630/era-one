@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <DeleteItem DeleteType="HardDelete" xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+      <ItemIds><ItemId Id="msg-1"/></ItemIds>
+    </DeleteItem>
+  </soap:Body>
+</soap:Envelope>

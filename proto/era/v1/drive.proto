@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package era.v1;
+
+option go_package = "era/contracts/gen/era/v1;erav1";
+
+import "google/protobuf/timestamp.proto";
+
+// ERA Drive — metadata contract (ADR-0025, Office P0).
+// Правила эволюции: только ДОБАВЛЕНИЕ полей; номера полей НЕ переиспользуем.
+
+enum DriveContentFormat {
+  DRIVE_CONTENT_FORMAT_UNSPECIFIED = 0;
+  DRIVE_CONTENT_FORMAT_BINARY = 1;
+  DRIVE_CONTENT_FORMAT_ERAD = 2;
+  DRIVE_CONTENT_FORMAT_ERAT = 3;
+  DRIVE_CONTENT_FORMAT_ERAP = 4;
+}
+
+enum DriveACLRole {
+  DRIVE_ACL_ROLE_UNSPECIFIED = 0;
+  DRIVE_ACL_ROLE_OWNER = 1;
+  DRIVE_ACL_ROLE_READ = 2;
+  DRIVE_ACL_ROLE_WRITE = 3;
+}
+
+message DriveACLEntry {
+  // principal: user:<id>, group:<id>, tenant:members
+  string principal = 1;
+  DriveACLRole role = 2;
+}
+
+message DriveACL {
+  string tenant_id = 1;
+  repeated DriveACLEntry entries = 2;
+}
+
+message DriveFolder {
+  string id = 1;
+  string tenant_id = 2;
+  string parent_id = 3;
+  string name = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message DriveVersion {
+  int32 version = 1;
+  string blob_key = 2;
+  int64 size_bytes = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message DriveObject {
+  string id = 1;
+  string tenant_id = 2;
+  string folder_id = 3;
+  string name = 4;
+  int64 size_bytes = 5;
+  string content_type = 6;
+  DriveContentFormat content_format = 7;
+  int32 version = 8;
+  string blob_key = 9;
+  DriveACL acl = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message AttachmentLinkRequest {
+  string tenant_id = 1;
+  string object_id = 2;
+  string workspace_base_url = 3;
+}
+
+message AttachmentLinkResponse {
+  string url = 1;
+}

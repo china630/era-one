@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/responseschema/2006">
+  <Response xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a">
+    <Account>
+      <AccountType>email</AccountType>
+      <Action>settings</Action>
+      <Protocol>
+        <Type>EXCH</Type>
+        <SSL>on</SSL>
+        <EwsUrl>https://mail-bridge.local:8151/ews/Exchange.asmx</EwsUrl>
+      </Protocol>
+    </Account>
+  </Response>
+</Autodiscover>
