@@ -38,6 +38,9 @@ def main() -> None:
         "https://www.era-one.solutions/",
         "control.html",
         "editions/era-core.html",
+        "hreflang",
+        "/ru/control.html",
+        "xmlns:xhtml",
     ):
         if needle not in sm:
             fail(f"sitemap missing {needle}")
@@ -47,6 +50,8 @@ def main() -> None:
         fail("index.html missing canonical")
     if "application/ld+json" not in home or "Organization" not in home:
         fail("index.html missing Organization JSON-LD")
+    if 'hreflang="ru"' not in home:
+        fail("index.html missing hreflang")
     if "<h1" not in home.lower():
         fail("index.html missing H1")
 
@@ -60,6 +65,31 @@ def main() -> None:
     if "ds-loading" in control:
         fail("control.html still has Loading placeholder")
 
+    ru_control = out / "ru" / "control.html"
+    if not ru_control.is_file():
+        fail("ru/control.html missing")
+    ru = ru_control.read_text(encoding="utf-8")
+    if 'data-prerendered="1"' not in ru:
+        fail("ru/control.html not prerendered")
+    if 'lang="ru"' not in ru:
+        fail("ru/control.html missing lang=ru")
+    if 'hreflang="en"' not in ru:
+        fail("ru/control.html missing hreflang")
+    if "ds-loading" in ru:
+        fail("ru/control.html still has Loading placeholder")
+
+    for lang in ("tr", "ar"):
+        p = out / lang / "control.html"
+        if not p.is_file():
+            fail(f"{lang}/control.html missing")
+        txt = p.read_text(encoding="utf-8")
+        if 'data-prerendered="1"' not in txt:
+            fail(f"{lang}/control.html not prerendered")
+
+    ru_ed = out / "ru" / "editions" / "era-core.html"
+    if not ru_ed.is_file():
+        fail("ru/editions/era-core.html missing")
+
     edition = out / "editions" / "era-core.html"
     if not edition.is_file():
         fail("editions/era-core.html missing")
@@ -72,6 +102,10 @@ def main() -> None:
     stub = out / "control" / "index.html"
     if not stub.is_file():
         fail("clean URL stub control/index.html missing")
+
+    for legal in ("privacy.html", "impressum.html", "partners.html", "careers.html"):
+        if not (out / legal).is_file():
+            fail(f"missing {legal}")
 
     sample_ds = out / "datasheets" / "en" / "01-ERA-Core.html"
     if sample_ds.is_file():

@@ -301,6 +301,14 @@ window.ERA_PRICING = {
           "tier": "upsell",
           "note": "Per-mailbox/year или project license — deal-desk"
         },
+        "comms-mail-moderation": {
+          "title": "ERA Mail Moderation",
+          "desc": "Outbound SMTP moderation: hold → manager/curator Approve/Reject (IceWarp/any MTA)",
+          "eu_year": 2,
+          "availability": "roadmap",
+          "tier": "upsell",
+          "note": "Per-user/year или project license — deal-desk; PRD-Mail-Moderation.md"
+        },
         "comms-conference": {
           "title": "ERA Conference",
           "desc": "Видеоконференции on-prem (LiveKit)",
@@ -340,6 +348,17 @@ window.ERA_PRICING = {
             "comms-mail-server"
           ],
           "discount": 0.0
+        },
+        {
+          "key": "comms-partner-hardening",
+          "title": "ERA Comms Partner (Migration + Bridge + Moderation)",
+          "modules": [
+            "comms-migration",
+            "comms-outlook-bridge",
+            "comms-mail-moderation"
+          ],
+          "discount": 0.0,
+          "note": "Deal-desk; Migration one-time + Bridge/Moderation annual"
         }
       ],
       "disclaimer": "Roadmap; индикатив. Не публичная оферта."
