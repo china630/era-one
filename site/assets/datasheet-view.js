@@ -1,4 +1,5 @@
-/* Load datasheet HTML into site shell; lang-aware; PDF opens print page. */
+/* Load datasheet HTML into site shell; lang-aware; PDF opens print page.
+   Respects build-time prerender (data-prerendered) so crawlers see content without JS. */
 (function () {
   var CAT = window.ERA_CATALOG;
   if (!CAT) return;
@@ -23,7 +24,7 @@
   }
 
   function dsUrl(lang, path) {
-    return new URL(CAT.DS + lang + "/" + path, window.location.href).href;
+    return new URL(CAT.DS + lang + "/" + path, window.location.origin).href;
   }
 
   function fetchDatasheet(path) {
@@ -56,6 +57,28 @@
     return out;
   }
 
+  function demoteFirstH1(fragment) {
+    var wrap = document.createElement("div");
+    wrap.innerHTML = fragment;
+    var h1 = wrap.querySelector("h1");
+    if (h1) {
+      var h2 = document.createElement("h2");
+      h2.innerHTML = h1.innerHTML;
+      Array.prototype.forEach.call(h1.attributes, function (a) {
+        h2.setAttribute(a.name, a.value);
+      });
+      h1.parentNode.replaceChild(h2, h1);
+    }
+    return wrap.innerHTML;
+  }
+
+  function isPrerendered(container) {
+    return !!(container && (
+      container.getAttribute("data-prerendered") === "1" ||
+      (container.querySelector && !container.querySelector(".ds-loading") && container.children.length > 0)
+    ));
+  }
+
   function linkEditionCards(container, familyKey) {
     var editions = CAT.PRODUCTS[familyKey].editions;
     container.querySelectorAll(".card").forEach(function (card) {
@@ -78,26 +101,42 @@
     });
   }
 
-  function loadInto(container, path, familyKey) {
+  function applyLoaded(container, html, familyKey, updateMeta) {
+    var body = extractBodies(html);
+    if (familyKey && document.querySelector(".subhero h1")) {
+      body = demoteFirstH1(body);
+    }
+    container.innerHTML = body;
+    container.setAttribute("data-prerendered", "1");
+    if (familyKey) linkEditionCards(container, familyKey);
+    if (updateMeta) {
+      var h1 = container.querySelector("h1, h2");
+      if (h1 && !document.querySelector(".subhero h1")) {
+        var title = h1.textContent.replace(/\s+/g, " ").trim();
+        document.title = title + " | ERA One";
+        var meta = document.querySelector('meta[name="description"]');
+        var lead = container.querySelector(".lead");
+        if (meta && lead) meta.setAttribute("content", lead.textContent.trim().slice(0, 160));
+      }
+    }
+  }
+
+  function loadInto(container, path, familyKey, opts) {
+    opts = opts || {};
     state.path = path;
     state.familyKey = familyKey || null;
     state.container = container;
-    container.innerHTML = '<p class="ds-loading">' + t("ds.loading") + '</p>';
+    if (!(opts.preservePrerender && isPrerendered(container))) {
+      container.innerHTML = '<p class="ds-loading">' + t("ds.loading") + '</p>';
+    }
     return fetchDatasheet(path)
       .then(function (html) {
-        container.innerHTML = extractBodies(html);
-        if (familyKey) linkEditionCards(container, familyKey);
-        var h1 = container.querySelector("h1");
-        if (h1) {
-          var title = h1.textContent.replace(/\s+/g, " ").trim();
-          document.title = title + " | ERA One";
-          var meta = document.querySelector('meta[name="description"]');
-          var lead = container.querySelector(".lead");
-          if (meta && lead) meta.setAttribute("content", lead.textContent.trim().slice(0, 160));
-        }
+        applyLoaded(container, html, familyKey, !opts.preservePrerender);
       })
       .catch(function () {
-        container.innerHTML = '<p class="ds-error">' + t("ds.error") + '</p>';
+        if (!isPrerendered(container) || container.querySelector(".ds-loading")) {
+          container.innerHTML = '<p class="ds-error">' + t("ds.error") + '</p>';
+        }
       });
   }
 
@@ -117,26 +156,34 @@
   }
 
   function initPage() {
+    var editionSlug = document.body.getAttribute("data-edition-slug");
+    if (editionSlug) {
+      var found = CAT.findEdition(editionSlug);
+      var content = document.getElementById("ds-content");
+      var pdfBtn = document.getElementById("ds-pdf-btn");
+      var dsPath = document.body.getAttribute("data-edition-ds") || (found && found.edition.ds);
+      if (!found || !dsPath) {
+        if (content) content.innerHTML = '<p class="ds-error">' + t("ds.notFound") + '</p>';
+        return;
+      }
+      wirePdfBtn(pdfBtn, dsPath);
+      state.path = dsPath;
+      state.familyKey = null;
+      state.container = content;
+      if (!isPrerendered(content)) {
+        loadInto(content, dsPath, null, {});
+      }
+      return;
+    }
+
     var editionRoot = document.getElementById("edition-page");
     if (editionRoot) {
       var slug = new URLSearchParams(location.search).get("id");
-      var found = slug ? CAT.findEdition(slug) : null;
-      var content = document.getElementById("ds-content");
-      var pdfBtn = document.getElementById("ds-pdf-btn");
-      var crumbFam = document.getElementById("ds-crumb-family");
-      var crumbMod = document.getElementById("ds-crumb-module");
-      var sloganEl = document.getElementById("edition-slogan");
-
-      if (!found) {
-        editionRoot.innerHTML = '<div class="wrap"><p class="ds-error">' + t("ds.notFound") + '</p><a href="index.html">' + t("common.back") + '</a></div>';
+      if (slug) {
+        location.replace("/editions/" + encodeURIComponent(slug) + ".html");
         return;
       }
-
-      if (crumbFam) { crumbFam.textContent = found.family.name; crumbFam.href = found.family.page; }
-      if (crumbMod) crumbMod.textContent = found.edition.n;
-      if (sloganEl) sloganEl.textContent = CAT.PRODUCTS[found.familyKey].slogan;
-      wirePdfBtn(pdfBtn, found.edition.ds);
-      loadInto(content, found.edition.ds);
+      editionRoot.innerHTML = '<div class="wrap"><p class="ds-error">' + t("ds.notFound") + '</p><a href="/index.html">' + t("common.back") + '</a></div>';
       return;
     }
 
@@ -147,7 +194,16 @@
       var famPdf = document.getElementById("ds-pdf-btn");
       var modsGrid = document.getElementById("ds-modules");
       wirePdfBtn(famPdf, fam.familyDs);
-      if (dsContent) loadInto(dsContent, fam.familyDs, familyKey);
+      if (dsContent) {
+        state.path = fam.familyDs;
+        state.familyKey = familyKey;
+        state.container = dsContent;
+        if (isPrerendered(dsContent)) {
+          linkEditionCards(dsContent, familyKey);
+        } else {
+          loadInto(dsContent, fam.familyDs, familyKey, {});
+        }
+      }
       if (modsGrid) renderModulesGrid(modsGrid, familyKey);
     }
   }
@@ -155,7 +211,7 @@
   document.addEventListener("DOMContentLoaded", initPage);
   window.addEventListener("era-lang-changed", function () {
     if (state.container && state.path) {
-      loadInto(state.container, state.path, state.familyKey);
+      loadInto(state.container, state.path, state.familyKey, { preservePrerender: false });
     }
   });
 })();

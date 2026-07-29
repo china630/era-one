@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Edition | ERA One</title>
 <meta name="description" content="ERA One product edition." />
-<link rel="stylesheet" href="assets/site.css" />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="stylesheet" href="/assets/site.css" />
 </head>
 <body data-page="products">
 
@@ -15,7 +16,7 @@
 <section class="hero subhero">
   <div class="wrap">
     <nav class="ds-breadcrumb">
-      <a href="index.html" data-i18n="common.back">← Back to home</a>
+      <a href="/index.html" data-i18n="common.back">← Back to home</a>
       <span>/</span>
       <a id="ds-crumb-family" href="#">ERA Control</a>
       <span>/</span>
@@ -42,9 +43,17 @@
 
 <footer class="ftr" id="site-footer"></footer>
 
-<script src="assets/i18n-data.js"></script>
-<script src="assets/products-catalog.js"></script>
-<script src="assets/site.js"></script>
-<script src="assets/datasheet-view.js"></script>
+<script src="/assets/i18n-data.js"></script>
+<script src="/assets/products-catalog.js"></script>
+<script src="/assets/site.js"></script>
+<script src="/assets/datasheet-view.js"></script>
+<script>
+(function () {
+  var slug = new URLSearchParams(location.search).get("id");
+  if (slug) {
+    location.replace("/editions/" + encodeURIComponent(slug) + ".html");
+  }
+})();
+</script>
 </body>
 </html>

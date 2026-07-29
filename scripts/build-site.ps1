@@ -23,5 +23,11 @@ New-Item -ItemType Directory -Path $Out -Force | Out-Null
 Copy-Item -Path (Join-Path $Root "site\*") -Destination $Out -Recurse -Force
 Remove-Item -Recurse -Force (Join-Path $Out "test") -ErrorAction SilentlyContinue
 
+Write-Host "==> SEO enrich (robots, sitemap, prerender, schema)" -ForegroundColor Cyan
+python (Join-Path $Root "scripts\site_seo_enrich.py") $Out
+
+Write-Host "==> SEO artifacts gate" -ForegroundColor Cyan
+python (Join-Path $Root "site\test\check_seo_artifacts.py") $Out
+
 $count = (Get-ChildItem $Out -Recurse -File).Count
 Write-Host "OK: site artifact at $Out ($count files)" -ForegroundColor Green
