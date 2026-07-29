@@ -20,9 +20,15 @@ python3 "$ROOT/site/test/check_datasheet_encoding.py"
 echo "==> copy site/ → $OUT"
 rm -rf "$OUT"
 mkdir -p "$OUT"
-rsync -a --delete \
-  --exclude='test/' \
-  "$ROOT/site/" "$OUT/"
+if command -v rsync >/dev/null 2>&1; then
+  rsync -a --delete \
+    --exclude='test/' \
+    "$ROOT/site/" "$OUT/"
+else
+  # GitHub runners / minimal images may lack rsync
+  cp -a "$ROOT/site/." "$OUT/"
+  rm -rf "$OUT/test"
+fi
 
 echo "==> SEO enrich (robots, sitemap, prerender, schema)"
 python3 "$ROOT/scripts/site_seo_enrich.py" "$OUT"
