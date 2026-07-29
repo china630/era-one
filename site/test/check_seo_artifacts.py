@@ -21,9 +21,13 @@ def main() -> None:
     if not out.is_dir():
         fail(f"dist not found: {out}")
 
-    for name in ("robots.txt", "sitemap.xml", "favicon.svg", "404.html"):
+    for name in ("robots.txt", "sitemap.xml", "favicon.png", "404.html"):
         if not (out / name).is_file():
             fail(f"missing {name}")
+    if not (out / "assets" / "era-one-logo.png").is_file():
+        fail("missing assets/era-one-logo.png")
+    if not (out / "assets" / "og-default.png").is_file():
+        fail("missing assets/og-default.png")
 
     robots = (out / "robots.txt").read_text(encoding="utf-8")
     if "Sitemap:" not in robots or "Disallow: /datasheets/" not in robots:
