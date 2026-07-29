@@ -39,8 +39,8 @@
         '<div class="mods-head"><a href="' + f.page + '"><b>' + f.name + '</b> · <span data-i18n="common.learn">Learn more</span> →</a></div>' +
         '<div class="mods-grid">' + list + '</div>' +
         '<div class="mods-foot">' +
-        '<a href="compare.html?family=' + f.key + '" data-i18n="nav.compare">Compare</a>' +
-        '<a href="downloads.html" data-i18n="nav.downloads">Downloads</a>' +
+        '<a href="/compare.html?family=' + f.key + '" data-i18n="nav.compare">Compare</a>' +
+        '<a href="/downloads.html" data-i18n="nav.downloads">Downloads</a>' +
         '</div></div>';
     }).join("");
     return '<div class="mega"><div class="mega-inner">' +
@@ -51,7 +51,7 @@
   function footerProductCols() {
     if (!CAT) return "";
     return CAT.FAMS.map(function (f) {
-      var links = '<li><a href="compare.html?family=' + f.key + '" data-i18n="nav.compare">Compare</a></li>';
+      var links = '<li><a href="/compare.html?family=' + f.key + '" data-i18n="nav.compare">Compare</a></li>';
       links += CAT.PRODUCTS[f.key].editions.map(function (e) {
         return '<li><a href="' + moduleHref(f.key, e) + '">' + e.n + '</a></li>';
       }).join("");
@@ -72,21 +72,21 @@
       '    <div class="mobile-nav-group">' +
       '      <div class="mobile-nav-lbl" data-i18n="nav.products">Products</div>' +
            famLinks +
-      '      <a class="mobile-nav-link" href="compare.html" data-i18n="nav.compare">Compare</a>' +
-      '      <a class="mobile-nav-link" href="downloads.html" data-i18n="nav.downloads">Downloads</a>' +
+      '      <a class="mobile-nav-link" href="/compare.html" data-i18n="nav.compare">Compare</a>' +
+      '      <a class="mobile-nav-link" href="/downloads.html" data-i18n="nav.downloads">Downloads</a>' +
       '    </div>' +
-      '    <a class="mobile-nav-link mobile-nav-top" href="index.html#why" data-i18n="nav.why">Why ERA One</a>' +
+      '    <a class="mobile-nav-link mobile-nav-top" href="/index.html#why" data-i18n="nav.why">Why ERA One</a>' +
       '    <div class="mobile-nav-group">' +
       '      <div class="mobile-nav-lbl" data-i18n="nav.company">Company</div>' +
-      '      <a class="mobile-nav-link" href="about.html" data-i18n="nav.about">About</a>' +
-      '      <a class="mobile-nav-link" href="vision.html" data-i18n="nav.vision">Vision</a>' +
-      '      <a class="mobile-nav-link" href="contacts.html" data-i18n="nav.contacts">Contacts</a>' +
-      '      <a class="mobile-nav-link" href="contacts.html" data-i18n="nav.partners">Partners</a>' +
-      '      <a class="mobile-nav-link" href="contacts.html" data-i18n="nav.careers">Careers</a>' +
+      '      <a class="mobile-nav-link" href="/about.html" data-i18n="nav.about">About</a>' +
+      '      <a class="mobile-nav-link" href="/vision.html" data-i18n="nav.vision">Vision</a>' +
+      '      <a class="mobile-nav-link" href="/contacts.html" data-i18n="nav.contacts">Contacts</a>' +
+      '      <a class="mobile-nav-link" href="/contacts.html" data-i18n="nav.partners">Partners</a>' +
+      '      <a class="mobile-nav-link" href="/contacts.html" data-i18n="nav.careers">Careers</a>' +
       '    </div>' +
       '    <div class="mobile-nav-actions">' +
-      '      <a class="login-btn" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
-      '      <button type="button" class="cta-btn" data-i18n="nav.demo" onclick="location.href=\'contacts.html\'">Book a demo</button>' +
+      '      <a class="login-btn" href="/login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
+      '      <button type="button" class="cta-btn" data-i18n="nav.demo" onclick="location.href=\'/contacts.html\'">Book a demo</button>' +
       '    </div>' +
       '  </div>' +
       '</nav>';
@@ -95,23 +95,23 @@
   function headerHTML() {
     return '' +
       '<div class="wrap top-bar">' +
-      '  <a class="brand" href="index.html"><img src="assets/era-one-logo.png" alt="ERA One" onerror="this.onerror=null;this.src=\'assets/era-one-logo.svg\'" /></a>' +
+      '  <a class="brand" href="/index.html"><img src="/assets/era-one-logo.svg" alt="ERA One" /></a>' +
       '  <nav class="top-nav" aria-label="Main">' +
       '    <div class="nav-item has-mega" data-menu="products">' +
-      '      <a href="index.html#products" class="nav-link" data-nav="products"><span data-i18n="nav.products">Products</span> <span class="caret">▾</span></a>' +
+      '      <a href="/index.html#products" class="nav-link" data-nav="products"><span data-i18n="nav.products">Products</span> <span class="caret">▾</span></a>' +
       megaHTML() +
       '    </div>' +
-      '    <a href="index.html#why" class="nav-link" data-nav="why" data-i18n="nav.why">Why ERA One</a>' +
+      '    <a href="/index.html#why" class="nav-link" data-nav="why" data-i18n="nav.why">Why ERA One</a>' +
       '    <div class="nav-item has-drop" data-menu="company">' +
-      '      <a href="about.html" class="nav-link" data-nav="company"><span data-i18n="nav.company">Company</span> <span class="caret">▾</span></a>' +
+      '      <a href="/about.html" class="nav-link" data-nav="company"><span data-i18n="nav.company">Company</span> <span class="caret">▾</span></a>' +
       '      <div class="drop">' +
-      '        <a href="about.html" data-i18n="nav.about">About</a>' +
-      '        <a href="vision.html" data-i18n="nav.vision">Vision</a>' +
-      '        <a href="contacts.html" data-i18n="nav.contacts">Contacts</a>' +
-      '        <a href="compare.html" data-i18n="nav.compare">Compare</a>' +
-      '        <a href="downloads.html" data-i18n="nav.downloads">Downloads</a>' +
-      '        <a href="contacts.html" data-i18n="nav.partners">Partners</a>' +
-      '        <a href="contacts.html" data-i18n="nav.careers">Careers</a>' +
+      '        <a href="/about.html" data-i18n="nav.about">About</a>' +
+      '        <a href="/vision.html" data-i18n="nav.vision">Vision</a>' +
+      '        <a href="/contacts.html" data-i18n="nav.contacts">Contacts</a>' +
+      '        <a href="/compare.html" data-i18n="nav.compare">Compare</a>' +
+      '        <a href="/downloads.html" data-i18n="nav.downloads">Downloads</a>' +
+      '        <a href="/contacts.html" data-i18n="nav.partners">Partners</a>' +
+      '        <a href="/contacts.html" data-i18n="nav.careers">Careers</a>' +
       '      </div>' +
       '    </div>' +
       '  </nav>' +
@@ -137,8 +137,8 @@
       '      <button data-lang="ar"><span class="flag">🇸🇦</span> العربية</button>' +
       '    </div>' +
       '  </div>' +
-      '  <a class="login-btn top-login" href="login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
-      '  <button class="cta-btn top-cta" data-i18n="nav.demo" onclick="location.href=\'contacts.html\'">Book a demo</button>' +
+      '  <a class="login-btn top-login" href="/login.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/></svg><span data-i18n="nav.login">Log in</span></a>' +
+      '  <button class="cta-btn top-cta" data-i18n="nav.demo" onclick="location.href=\'/contacts.html\'">Book a demo</button>' +
       '  <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Menu">' +
       '    <span class="menu-toggle-box" aria-hidden="true"><span></span><span></span><span></span></span>' +
       '  </button>' +
@@ -154,18 +154,18 @@
       '    <div>' +
       '      <h4 data-i18n="foot.about">Company</h4>' +
       '      <ul>' +
-      '        <li><a href="about.html" data-i18n="nav.about">About</a></li>' +
-      '        <li><a href="vision.html" data-i18n="nav.vision">Vision</a></li>' +
-      '        <li><a href="contacts.html" data-i18n="nav.contacts">Contacts</a></li>' +
-      '        <li><a href="compare.html?family=control" data-i18n="nav.compare">Compare</a></li>' +
-      '        <li><a href="downloads.html" data-i18n="nav.downloads">Downloads</a></li>' +
-      '        <li><a href="contacts.html" data-i18n="nav.partners">Partners</a></li>' +
-      '        <li><a href="contacts.html" data-i18n="nav.careers">Careers</a></li>' +
+      '        <li><a href="/about.html" data-i18n="nav.about">About</a></li>' +
+      '        <li><a href="/vision.html" data-i18n="nav.vision">Vision</a></li>' +
+      '        <li><a href="/contacts.html" data-i18n="nav.contacts">Contacts</a></li>' +
+      '        <li><a href="/compare.html?family=control" data-i18n="nav.compare">Compare</a></li>' +
+      '        <li><a href="/downloads.html" data-i18n="nav.downloads">Downloads</a></li>' +
+      '        <li><a href="/contacts.html" data-i18n="nav.partners">Partners</a></li>' +
+      '        <li><a href="/contacts.html" data-i18n="nav.careers">Careers</a></li>' +
       '      </ul>' +
       '    </div>' +
       footerProductCols() +
       '    <div class="ftr-brand">' +
-      '      <img src="assets/era-one-logo.png" alt="ERA One" onerror="this.onerror=null;this.src=\'assets/era-one-logo.svg\'" />' +
+      '      <img src="/assets/era-one-logo.svg" alt="ERA One" />' +
       '      <div class="ct">' +
       '        <span data-i18n="foot.tagline">Sovereign IT &amp; security ecosystem for the isolated contour.</span><br />' +
       '        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br />' +
@@ -215,7 +215,7 @@
     }
     html += '<div class="result"><span class="lbl" data-i18n="calc.result">Indicative / year</span><span class="val" id="c_val">—</span></div>';
     html += '<div class="note" data-i18n="calc.note">' + t(dict, "calc.note") + '</div>';
-    html += '<div class="calc-cta"><a class="btn-sm" href="contacts.html" data-i18n="calc.cta">' + t(dict, "calc.cta") + '</a></div>';
+    html += '<div class="calc-cta"><a class="btn-sm" href="/contacts.html" data-i18n="calc.cta">' + t(dict, "calc.cta") + '</a></div>';
     html += '</div>';
     container.innerHTML = html;
     function recalc() {

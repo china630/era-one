@@ -20,6 +20,9 @@ on:
       - "docs/distributor/assets/**"
       - "scripts/build_portal.py"
       - "scripts/build-site.sh"
+      - "scripts/build-site.ps1"
+      - "scripts/site_seo_enrich.py"
+      - "deploy/site/**"
       - ".github/workflows/site-deploy.yml"
   workflow_dispatch:
     inputs:

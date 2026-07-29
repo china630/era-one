@@ -1,107 +1,100 @@
-# ERA One — сайт (статический прототип)
+# ERA One — публичный сайт
 
 Многостраничный статический сайт бренда **ERA One** и продуктовых семейств.
-Собран без сборщика (vanilla HTML/CSS/JS) — работает из файловой системы и в
-air-gap-контуре, без внешних CDN/шрифтов/скриптов.
+Vanilla HTML/CSS/JS — без внешних CDN/шрифтов/скриптов (air-gap friendly).
+
+Канонический хост: **https://www.era-one.solutions**
+
+## Сборка и деплой
+
+```bash
+./scripts/build-site.sh          # → dist/site/
+# или
+./scripts/build-site.ps1
+```
+
+Сборка: pricing SSOT → тесты калькулятора → UTF-8 gate → copy `site/` →
+**`scripts/site_seo_enrich.py`** (robots, sitemap, prerender, schema) →
+`site/test/check_seo_artifacts.py`.
+
+CI: [`.github/workflows/site-deploy.yml`](../.github/workflows/site-deploy.yml)
+
+- push в `main` (пути `site/**`, `scripts/build-site.*`, `scripts/site_seo_enrich.py`, …)
+  → artifact → ветка **`site-prod`** → DigitalOcean App Platform (`region: fra`).
+- Staging: push в `dev` / workflow_dispatch `staging`.
+
+После выката на прод см. **Post-deploy: Google Search Console** ниже.
 
 ## Страницы
 
-| Файл | Назначение |
+| Файл / URL | Назначение |
 |---|---|
-| `index.html` | Главная (hero, 3 продукта, «Why», About/Vision-тизеры) |
-| `control.html` | ERA Control — издания + калькулятор |
-| `communications.html` | ERA Communications (roadmap) — издания + калькулятор |
-| `office.html` | ERA Office (roadmap) — издания + калькулятор |
-| `about.html` | О компании |
-| `vision.html` | Видение |
-| `contacts.html` | Контакты + форма (прототип, не отправляет) |
-| `compare.html` | Head-to-head по семействам (Control / Communications / Office) |
-| `downloads.html` | Trial-загрузки (регистрация с корп. email) |
-| `login.html` | Вход в единый admin-портал (прототип) |
-| `legacy-portal.html` | Прежний портал-калькулятор (ADR-0021), сохранён |
+| `index.html` | Главная |
+| `control.html` · `/control/` | ERA Control + datasheet (prerender) + калькулятор |
+| `communications.html` · `/communications/` | ERA Communications |
+| `office.html` · `/office/` | ERA Office |
+| `editions/<slug>.html` | Модуль (статический prerender EN) |
+| `edition.html?id=` | Редирект на `editions/<slug>.html` (совместимость) |
+| `about.html` / `vision.html` / `contacts.html` | Company |
+| `compare.html` | Head-to-head индекс |
+| `downloads.html` | Trial-загрузки |
+| `login.html` / `register.html` | noindex |
+| `404.html` | error_document на DO |
+| `robots.txt` / `sitemap.xml` | генерируются при сборке |
+
+## SEO (сборка)
+
+Enrich ([`scripts/site_seo_enrich.py`](../scripts/site_seo_enrich.py)) добавляет в `dist/site/`:
+
+- `robots.txt`, `sitemap.xml`, `favicon.svg`, `assets/og-default.png`
+- canonical, Open Graph, Twitter Card, JSON-LD (`Organization`, `WebSite`, `SoftwareApplication`)
+- prerender EN-datasheet в family pages и `editions/*.html`
+- `noindex` на сырых `datasheets/**` (дубли)
+- stubs `/control/`, `/communications/`, `/office/` для ссылок без `.html`
+
+Канон модулей: `/editions/<slug>.html` (см. `assets/products-catalog.js` → `moduleHref`).
 
 ## Навигация
 
-- **Products** — мега-меню: три линейки, модули, ссылки **Compare** и **Downloads** per family.
-- **Company** — About, Vision, Contacts, **Compare** (вкладки по семействам), Downloads, Partners, Careers.
-- **Log in** — кнопка в шапке ведёт на `login.html`.
-- Статусы **GA / Roadmap на сайте не показываются** (управляются в манифестах).
+- **Products** — мега-меню: три линейки, модули, Compare / Downloads.
+- **Company** — About, Vision, Contacts, Compare, Downloads, Partners, Careers.
+- Шапка/футер инжектятся `assets/site.js` (корневые пути `/assets/…`, `/index.html`).
 
-## Страницы продуктов и модулей
+## Datasheets
 
-Контент datasheet **не открывается как отдельный сайт** — он встраивается в оболочку ERA One
-(шапка, футер, меню, i18n):
-
-| URL | Что показывает |
-|---|---|
-| `control.html` | ERA Control — datasheet + **калькулятор (modal)** + H2H |
-| `communications.html` | ERA Communications — datasheet + **калькулятор (modal)** + H2H |
-| `office.html` | ERA Office — datasheet + **калькулятор (modal)** + H2H |
-| `edition.html?id=era-core` | Страница модуля (ERA Core) — datasheet модуля + PDF |
-
-- **Download PDF** открывает печатную версию из `site/datasheets/` (A4, «Сохранить как PDF»).
-- Каталог модулей и slug → datasheet: `assets/products-catalog.js`.
-- Загрузка контента: `assets/datasheet-view.js` (fetch + inject `.body` из HTML).
-
-### Зеркало datasheets
-
-Структура `site/datasheets/{lang}/` — **ru** (канон) и **en** (перевод; TR/AR пока fallback на EN).
-
-```powershell
-$src = "docs/distributor/datasheets"
-$ru  = "site/datasheets/ru"
-$en  = "site/datasheets/en"
-Copy-Item "$src/*.html" $ru -Force
-# EN — отдельные файлы в site/datasheets/en/ (или regenerate)
-Get-ChildItem $ru -Filter *.html | ForEach-Object {
-  (Get-Content $_.FullName -Raw) -replace 'href="../assets/', 'href="../assets/' |
-    Set-Content $_.FullName -NoNewline
-}
-```
-
-Сайт подгружает `datasheets/{язык}/{файл}.html` с fallback: выбранный → EN → RU.
-При смене языка в шапке контент перезагружается (`era-lang-changed`).
-
-### Head-to-head (Compare)
-
-- **Company → Compare** — индекс `compare.html`
-- **ERA Control** — блок «Head-to-head» со ссылкой на сравнения
-- Контент: `site/compare/{lang}/ERA-vs-*.html` (зеркало `docs/distributor/head-to-head/`)
-
-## Общие ассеты
-
-- `assets/site.css` — единая дизайн-система.
-- `assets/i18n-data.js` — словарь локализации (EN/RU/TR/AR, EN — фолбэк).
-- `assets/site.js` — общая шапка/футер (инъекция), переключатель языка,
-  поиск, рендер изданий и калькуляторов из каталога `PRODUCTS`.
-
-Шапка и футер не дублируются в разметке: каждая страница содержит
-`<header id="site-header">` и `<footer id="site-footer">`, которые заполняет
-`site.js`. Активный пункт меню — по атрибуту `data-page` у `<body>`.
-
-## Слоганы
-
-- **ERA One** — `ONE ECOSYSTEM. ONE PERIMETER. ONE VENDOR.`
-- **ERA Control** — `ONE AGENT. ONE PLATFORM. ONE CONTROL.`
-- **ERA Communications** — `ONE IDENTITY. ONE PLATFORM. ONE CONVERSATION.`
-- **ERA Office** — `ONE WORKSPACE. ONE PLATFORM. ONE TEAM.`
+`site/datasheets/{lang}/` — ru / en / tr / ar. В UI смена языка → client `fetch`
+(EN уже в HTML для краулеров). PDF — печатная версия datasheet.
 
 ## Логотип
 
-Страницы ссылаются на `assets/era-one-logo.png`. Пока файла нет, показывается
-векторный плейсхолдер `assets/era-one-logo.svg` (авто-подмена через `onerror`).
-Положите настоящий PNG (для шапки — версию **без** зашитого слогана) по пути
-`assets/era-one-logo.png` — он подхватится автоматически.
-
-## Калькуляторы
-
-У каждого продукта — свой калькулятор (`data-calc` в разметке, логика в
-`site.js`). Ставки в `RATES` — **демо-значения, не оферта**; финальная цена
-фиксируется в КП. Реальные ставки подключим из `ERA-Pricing` / SSOT позже.
+В шапке/футере: `/assets/era-one-logo.svg`. OG: `assets/og-default.png`
+(banner из distributor assets, если доступен при сборке).
 
 ## Локальный просмотр
 
 ```bash
-cd site
-python -m http.server 8080   # http://localhost:8080
+./scripts/build-site.sh
+cd dist/site && python -m http.server 8080
+# http://localhost:8080
 ```
+
+(корневые `/assets/…` требуют HTTP-сервер из корня dist, не `file://`).
+
+## Post-deploy: Google Search Console
+
+После зелёного **Site deploy** на `main`:
+
+1. Smoke: `https://www.era-one.solutions/robots.txt`, `/sitemap.xml`,
+   `/control.html` (View Source: H1 + prerendered body, не только `Loading…`),
+   `/editions/era-core.html`, `/favicon.svg`, `/404` на несуществующий путь.
+2. В DO Domains: предпочтительный **www**; apex → www (301).
+   Служебный `*.ondigitalocean.app` не рекламировать (лучше редирект или noindex).
+3. GSC: подтвердить property `https://www.era-one.solutions`
+   (DNS TXT или файл `google*.html` положить в `site/` → уедет следующим деплоем).
+4. GSC → Sitemaps → отправить `https://www.era-one.solutions/sitemap.xml`.
+5. URL Inspection → **Request indexing** для:
+   `/`, `/control.html`, `/communications.html`, `/office.html`,
+   `/about.html`, `/contacts.html`, `/compare.html`,
+   `/editions/era-core.html` (+ 1–2 ключевых edition).
+
+CI не вызывает Google Indexing API — пункт 5 только вручную.

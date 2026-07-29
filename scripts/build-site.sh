@@ -24,4 +24,10 @@ rsync -a --delete \
   --exclude='test/' \
   "$ROOT/site/" "$OUT/"
 
+echo "==> SEO enrich (robots, sitemap, prerender, schema)"
+python3 "$ROOT/scripts/site_seo_enrich.py" "$OUT"
+
+echo "==> SEO artifacts gate"
+python3 "$ROOT/site/test/check_seo_artifacts.py" "$OUT"
+
 echo "OK: site artifact at $OUT ($(find "$OUT" -type f | wc -l | tr -d ' ') files)"

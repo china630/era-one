@@ -1,6 +1,6 @@
 /* ERA One — product catalog (SSOT for site navigation + datasheet mapping). */
 window.ERA_CATALOG = (function () {
-  var DS = "datasheets/";
+  var DS = "/datasheets/";
 
   var PRODUCTS = {
     control: {
@@ -21,6 +21,8 @@ window.ERA_CATALOG = (function () {
         { n: "ERA Provision", slug: "era-provision", ds: "11-ERA-Provision.html" },
         { n: "ERA PAM", slug: "era-pam", ds: "12-ERA-PAM.html" },
         { n: "ERA Observe", slug: "era-observe", ds: "13-ERA-Observe.html" },
+        { n: "ERA Perimeter", slug: "era-perimeter", ds: "15-ERA-Perimeter.html" },
+        { n: "ERA Resolve", slug: "era-resolve", ds: "16-ERA-Resolve.html" },
         { n: "ERA Sovereign Hybrid", slug: "era-sovereign-hybrid", ds: "14-ERA-Sovereign-Hybrid.html" }
       ]
     },
@@ -53,9 +55,9 @@ window.ERA_CATALOG = (function () {
   };
 
   var FAMS = [
-    { key: "control", name: "ERA Control", page: "control.html", tagKey: "hero.triControl" },
-    { key: "communications", name: "ERA Communications", page: "communications.html", tagKey: "hero.triComms" },
-    { key: "office", name: "ERA Office", page: "office.html", tagKey: "hero.triOffice" }
+    { key: "control", name: "ERA Control", page: "/control.html", tagKey: "hero.triControl" },
+    { key: "communications", name: "ERA Communications", page: "/communications.html", tagKey: "hero.triComms" },
+    { key: "office", name: "ERA Office", page: "/office.html", tagKey: "hero.triOffice" }
   ];
 
   function famOf(key) {
@@ -64,7 +66,7 @@ window.ERA_CATALOG = (function () {
   }
 
   function moduleHref(familyKey, edition) {
-    return "edition.html?id=" + encodeURIComponent(edition.slug);
+    return "/editions/" + encodeURIComponent(edition.slug) + ".html";
   }
 
   function findEdition(slug) {
