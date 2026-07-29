@@ -59,7 +59,7 @@ func TestDevDefaultMatchesCoreUpsell(t *testing.T) {
 			t.Fatalf("dev default missing %s", m)
 		}
 	}
-	for _, m := range []Module{ModuleFederated, ModuleNational} {
+	for _, m := range []Module{ModuleFederated, ModuleNational, ModulePerimeter, ModuleResolve} {
 		if g.Allow(m) {
 			t.Fatalf("dev default must not include %s", m)
 		}
@@ -101,7 +101,13 @@ func TestKnownModulesComplete(t *testing.T) {
 		ModuleVuln: true, ModuleControlAI: true, ModuleResponse: true,
 		ModuleManage: true, ModuleService: true, ModuleProvision: true,
 		ModulePAM: true, ModuleObserve: true,
+		ModulePerimeter: true, ModuleResolve: true,
 		ModuleFederated: true, ModuleNational: true,
+		ModuleCommsMailServer: true, ModuleCommsMailConnect: true, ModuleCommsMigration: true,
+		ModuleCommsOutlookBridge: true, ModuleCommsMailModeration: true,
+		ModuleCommsChat: true, ModuleCommsConference: true, ModuleCommsAI: true,
+		ModulePlatformDrive: true,
+		ModuleOfficeDocuments: true,
 	}
 	for _, m := range KnownModules {
 		if !want[m] {

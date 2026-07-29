@@ -1,0 +1,45 @@
+# Partner / internal field lab overlay — IceWarp + CG endpoints via env
+# Usage:
+#   docker compose -f deploy/docker-compose.comms.yml \
+#     -f deploy/docker-compose.comms.partner.yml \
+#     --env-file deploy/comms-partner.env up -d
+
+services:
+  comms-migrate:
+    command: >
+      sh -c "until pg_isready -h postgres -U era; do sleep 1; done;
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/001_initial.sql;
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/002_migration.sql"
+
+  era-mail-bridge:
+    environment:
+      ERA_BRIDGE_UPSTREAM_ROUTES: ${ERA_BRIDGE_UPSTREAM_ROUTES:-}
+      ERA_BRIDGE_UPSTREAM_ICEWARP_BASE_URL: ${ERA_BRIDGE_UPSTREAM_ICEWARP_BASE_URL:-}
+      ERA_BRIDGE_UPSTREAM_CG_IMAP_HOST: ${ERA_BRIDGE_UPSTREAM_CG_IMAP_HOST:-}
+      ERA_BRIDGE_UPSTREAM_CG_IMAP_PORT: ${ERA_BRIDGE_UPSTREAM_CG_IMAP_PORT:-143}
+      ERA_BRIDGE_UPSTREAM_CG_IMAP_USER: ${ERA_BRIDGE_UPSTREAM_CG_IMAP_USER:-}
+      ERA_BRIDGE_UPSTREAM_CG_IMAP_PASSWORD_REF: ${ERA_BRIDGE_UPSTREAM_CG_IMAP_PASSWORD_REF:-}
+      ERA_BRIDGE_UPSTREAM_CG_SMTP_HOST: ${ERA_BRIDGE_UPSTREAM_CG_SMTP_HOST:-}
+      ERA_BRIDGE_UPSTREAM_CG_SMTP_PORT: ${ERA_BRIDGE_UPSTREAM_CG_SMTP_PORT:-25}
+      ERA_BRIDGE_TENANT_MAP: ${ERA_BRIDGE_TENANT_MAP:-mail.lab.local:icewarp,cg.lab.local:imap_generic}
+
+  era-migration-api:
+    environment:
+      ERA_MIG_POSTGRES_DSN: ${ERA_MIG_POSTGRES_DSN:-postgres://era:era_dev_only@postgres:5432/era?sslmode=disable}
+      ERA_MIG_WORKERS: ${ERA_MIG_WORKERS:-8}
+      ERA_MIG_SOURCE_IMAP_HOST: ${ERA_MIG_SOURCE_IMAP_HOST:-}
+      ERA_MIG_SOURCE_IMAP_PORT: ${ERA_MIG_SOURCE_IMAP_PORT:-143}
+      ERA_MIG_TARGET_IMAP_HOST: ${ERA_MIG_TARGET_IMAP_HOST:-}
+      ERA_MIG_TARGET_IMAP_PORT: ${ERA_MIG_TARGET_IMAP_PORT:-143}
+
+  era-mail-moderation:
+    environment:
+      ERA_MM_PUBLIC_BASE: ${ERA_MM_PUBLIC_BASE:-http://127.0.0.1:8360}
+      ERA_MM_LOCAL_DOMAINS: ${ERA_MM_LOCAL_DOMAINS:-company.local}
+      ERA_MM_UPSTREAM: ${ERA_MM_UPSTREAM:-}
+      ERA_MM_NOTIFY_SMTP: ${ERA_MM_NOTIFY_SMTP:-}
+      ERA_MM_POSTGRES_DSN: ${ERA_MM_POSTGRES_DSN:-postgres://era:era_dev_only@postgres:5432/era?sslmode=disable}
+      ERA_MM_LDAP_JSON: ${ERA_MM_LDAP_JSON:-}
+      ERA_MM_ICEWARP_HOST: ${ERA_MM_ICEWARP_HOST:-}
+      ERA_LICENSE_MODULES: ${ERA_LICENSE_MODULES:-comms-mail-moderation}
+      ERA_CH_ADDR: clickhouse:9000

@@ -5,10 +5,10 @@ schema_version: "1.0"
 id: era-comms
 product: era-communications
 title: ERA Communications
-status: roadmap
+status: implemented
 
 compose:
-  file: deploy/docker-compose.prod.yml
+  file: deploy/docker-compose.comms.yml
   project_name: era-one-comms
   note: Standalone; не требует ERA Core agent.
 
@@ -41,7 +41,11 @@ planned_services:
   - id: comms-mail
     description: Rust core + Go API — SMTP/IMAP/EWS subset/Autodiscover
   - id: comms-mail-connect
-    description: BFF → external IMAP/JMAP (migration tier)
+    description: BFF → external IMAP/JMAP (hybrid tier)
+  - id: comms-migration
+    description: Bulk migration into ERA Mail Server
+  - id: comms-mail-moderation
+    description: Outbound SMTP moderation (hold → Approve/Reject)
   - id: comms-calendar
     description: CalDAV full read/write
   - id: comms-chat

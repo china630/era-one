@@ -14,12 +14,24 @@ const (
 	ModuleProvision Module = "provision"
 	ModulePAM       Module = "pam"
 	ModuleObserve   Module = "observe"
+	ModulePerimeter Module = "perimeter"
+	ModuleResolve   Module = "resolve"
 	ModuleFederated Module = "federated"
 	ModuleNational  Module = "national"
+	ModuleCommsMailServer Module = "comms-mail-server"
+	ModuleCommsMailConnect  Module = "comms-mail-connect"
+	ModuleCommsMigration      Module = "comms-migration"
+	ModuleCommsOutlookBridge  Module = "comms-outlook-bridge"
+	ModuleCommsMailModeration Module = "comms-mail-moderation"
+	ModuleCommsChat        Module = "comms-chat"
+	ModuleCommsConference  Module = "comms-conference"
+	ModuleCommsAI          Module = "comms-ai"
+	ModulePlatformDrive    Module = "platform-drive"
+	ModuleOfficeDocuments  Module = "office-documents"
 )
 
 // KnownModules — все опциональные модули.
-var KnownModules = []Module{ModuleVuln, ModuleControlAI, ModuleResponse, ModuleManage, ModuleService, ModuleProvision, ModulePAM, ModuleObserve, ModuleFederated, ModuleNational}
+var KnownModules = []Module{ModuleVuln, ModuleControlAI, ModuleResponse, ModuleManage, ModuleService, ModuleProvision, ModulePAM, ModuleObserve, ModulePerimeter, ModuleResolve, ModuleFederated, ModuleNational, ModuleCommsMailServer, ModuleCommsMailConnect, ModuleCommsMigration, ModuleCommsOutlookBridge, ModuleCommsMailModeration, ModuleCommsChat, ModuleCommsConference, ModuleCommsAI, ModulePlatformDrive, ModuleOfficeDocuments}
 
 // Gate описывает, какие модули включены в текущей лицензии.
 type Gate struct {
@@ -32,6 +44,14 @@ func DevDefault() *Gate {
 	for _, m := range []Module{ModuleVuln, ModuleControlAI, ModuleResponse, ModuleManage, ModuleService, ModuleProvision, ModulePAM, ModuleObserve} {
 		g.enabled[m] = true
 	}
+	return g
+}
+
+// OfficeDevGate — Office P0 dev profile (ERA_OFFICE_DEV): platform-drive enabled.
+func OfficeDevGate() *Gate {
+	g := DevDefault()
+	g.enabled[ModulePlatformDrive] = true
+	g.enabled[ModuleOfficeDocuments] = true
 	return g
 }
 

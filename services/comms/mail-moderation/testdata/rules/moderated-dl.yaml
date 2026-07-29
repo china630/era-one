@@ -1,0 +1,11 @@
+rules:
+  - id: dl-finance
+    priority: 1
+    stop_processing: true
+    conditions:
+      moderated_recipients: [finance@company.local]
+    moderator:
+      mode: static
+      static: [cfo@company.local]
+    ttl_hours: 48
+    notify_on_hold: true

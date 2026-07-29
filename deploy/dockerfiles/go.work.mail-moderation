@@ -1,0 +1,8 @@
+go 1.26.4
+
+use (
+	./services/comms/mail-moderation
+	./services/platform
+	./services/license
+	./gen/go
+)
