@@ -67,8 +67,8 @@ Enrich ([`scripts/site_seo_enrich.py`](../scripts/site_seo_enrich.py)) доба�
 
 ## Логотип
 
-В шапке/футере: `/assets/era-one-logo.svg`. OG: `assets/og-default.png`
-(banner из distributor assets, если доступен при сборке).
+В шапке/футере: `/assets/era-one-logo.png` (официальный бренд-файл, без правок дизайна).
+Favicon/OG — копии того же PNG.
 
 ## Локальный просмотр
 

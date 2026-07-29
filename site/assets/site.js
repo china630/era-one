@@ -95,7 +95,7 @@
   function headerHTML() {
     return '' +
       '<div class="wrap top-bar">' +
-      '  <a class="brand" href="/index.html"><img src="/assets/era-one-logo.svg" alt="ERA One" /></a>' +
+      '  <a class="brand" href="/index.html"><img src="/assets/era-one-logo.png" alt="ERA One" /></a>' +
       '  <nav class="top-nav" aria-label="Main">' +
       '    <div class="nav-item has-mega" data-menu="products">' +
       '      <a href="/index.html#products" class="nav-link" data-nav="products"><span data-i18n="nav.products">Products</span> <span class="caret">▾</span></a>' +
@@ -165,7 +165,7 @@
       '    </div>' +
       footerProductCols() +
       '    <div class="ftr-brand">' +
-      '      <img src="/assets/era-one-logo.svg" alt="ERA One" />' +
+      '      <img src="/assets/era-one-logo.png" alt="ERA One" />' +
       '      <div class="ct">' +
       '        <span data-i18n="foot.tagline">Sovereign IT &amp; security ecosystem for the isolated contour.</span><br />' +
       '        <a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a><br />' +
