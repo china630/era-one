@@ -105,7 +105,8 @@ jobs:
           (cd services/ingest-gateway && govulncheck ./internal/server/... ./internal/pipeline/...)
 
       - name: cargo deny advisories
-        run: cargo deny check advisories
+        # Linux is case-sensitive; config must be deny.toml (not Deny.toml).
+        run: cargo deny --config deny.toml check advisories
 
   e2e-office-smoke:
     name: e2e (office playwright smoke)

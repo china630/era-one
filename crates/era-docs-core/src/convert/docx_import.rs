@@ -28,6 +28,70 @@ fn local_name(name: &[u8]) -> Vec<u8> {
         .to_vec()
 }
 
+/// Resolve `&…;` from quick-xml 0.41 `Event::GeneralRef` (entities no longer
+/// arrive inside `Event::Text`).
+fn resolve_general_ref(name: &str) -> String {
+    if let Some(c) = quick_xml::events::BytesRef::new(name)
+        .resolve_char_ref()
+        .ok()
+        .flatten()
+    {
+        return c.to_string();
+    }
+    match name {
+        "amp" => "&".into(),
+        "lt" => "<".into(),
+        "gt" => ">".into(),
+        "quot" => "\"".into(),
+        "apos" => "'".into(),
+        _ => String::new(),
+    }
+}
+
+fn push_run_text(
+    block: &mut Block,
+    text: String,
+    bold: bool,
+    italic: bool,
+    underline: bool,
+    strike: bool,
+) {
+    if text.is_empty() {
+        return;
+    }
+    if let Some(last) = block.inlines.last_mut() {
+        if last.bold == bold
+            && last.italic == italic
+            && last.underline == underline
+            && last.strike == strike
+            && last.link_url.is_none()
+            && last.font_family.is_none()
+            && last.font_size_pt.is_none()
+            && last.color.is_none()
+            && last.highlight.is_none()
+            && !last.superscript
+            && !last.subscript
+        {
+            last.text.push_str(&text);
+            return;
+        }
+    }
+    block.inlines.push(InlineSpan {
+        text,
+        bold,
+        italic,
+        underline,
+        strike,
+        link_url: None,
+        font_family: None,
+        font_size_pt: None,
+        color: None,
+        highlight: None,
+        superscript: false,
+        subscript: false,
+    });
+}
+
 fn parse_document_xml(xml: &str) -> Result<EradDocument> {
     let mut reader = Reader::from_str(xml);
     reader.config_mut().trim_text(false);
@@ -156,21 +220,15 @@ fn parse_document_xml(xml: &str) -> Result<EradDocument> {
             }
             Ok(Event::Text(t)) if in_t => {
                 if let Some(block) = current_block.as_mut() {
-                    let text = t.unescape().unwrap_or_default().into_owned();
-                    block.inlines.push(InlineSpan {
-                        text,
-                        bold,
-                        italic,
-                        underline,
-                        strike,
-                        link_url: None,
-                        font_family: None,
-                        font_size_pt: None,
-                        color: None,
-                        highlight: None,
-                        superscript: false,
-                        subscript: false,
-                    });
+                    let text = t.decode().unwrap_or_default().into_owned();
+                    push_run_text(block, text, bold, italic, underline, strike);
+                }
+            }
+            Ok(Event::GeneralRef(r)) if in_t => {
+                if let Some(block) = current_block.as_mut() {
+                    let name = r.decode().unwrap_or_default();
+                    let text = resolve_general_ref(&name);
+                    push_run_text(block, text, bold, italic, underline, strike);
                 }
             }
             Ok(Event::End(e)) => {

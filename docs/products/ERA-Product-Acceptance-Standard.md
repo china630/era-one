@@ -259,7 +259,7 @@ Pilot checklist → подпись; Gap P0 закрыт или `[blocked]` с в
 | Consistency | `scripts/check-acceptance-consistency.ps1` | CI job `acceptance-consistency` |
 | Secrets | `.gitleaks.toml` + CI `secrets` | утечки ключей/ПД |
 | Lint | `.golangci.yml` + clippy (scoped) | CI job `lint` |
-| Vuln | `Deny.toml` + govulncheck | CI job `vuln` |
+| Vuln | `deny.toml` + govulncheck | CI job `vuln` |
 | E2E | `ui/office/e2e` Playwright | CI job `e2e-office-smoke` |
 | Dep graph | `scripts/export-dep-graph.ps1` → `reports/deps/` | blast radius без LLM |
 | Mutation (optional) | `scripts/run-mutation-authz.ps1` | ловля фейковых AuthZ-тестов |
