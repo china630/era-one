@@ -51,7 +51,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.work
-          cache: true
+          cache: false
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -59,16 +59,21 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: golangci-lint (AuthZ / license / ingest hotspots)
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.64.5
-          args: >-
-            ./services/platform/licensegate/...
-            ./services/platform/httpserver/...
-            ./services/comms/internal/httpauth/...
-            ./services/ingest-gateway/internal/server/...
-            ./services/ingest-gateway/internal/pipeline/...
+      # golangci-lint v2 (Go ≥1.26). Per-module: monorepo root has no go.mod.
+      - name: Install golangci-lint v2
+        run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2
+
+      - name: golangci-lint (platform AuthZ / license)
+        working-directory: services/platform
+        run: golangci-lint run --config "${{ github.workspace }}/.golangci.yml" ./licensegate/... ./httpserver/...
+
+      - name: golangci-lint (comms httpauth)
+        working-directory: services/comms/internal/httpauth
+        run: golangci-lint run --config "${{ github.workspace }}/.golangci.yml" ./...
+
+      - name: golangci-lint (ingest hotspots)
+        working-directory: services/ingest-gateway
+        run: golangci-lint run --config "${{ github.workspace }}/.golangci.yml" ./internal/server/... ./internal/pipeline/...
 
       - name: cargo clippy (era-agent-core)
         run: cargo clippy -p era-agent-core --all-targets -- -A warnings
@@ -82,7 +87,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.work
-          cache: true
+          cache: false
 
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
@@ -92,11 +97,12 @@ jobs:
           go install golang.org/x/vuln/cmd/govulncheck@latest
           cargo install cargo-deny --locked || cargo install cargo-deny
 
+      # govulncheck requires a module root (go.work alone is not enough).
       - name: govulncheck (scoped)
         run: |
-          govulncheck ./services/platform/licensegate/...
-          govulncheck ./services/comms/internal/httpauth/...
-          govulncheck ./services/ingest-gateway/internal/server/...
+          (cd services/platform && govulncheck ./licensegate/...)
+          (cd services/comms/internal/httpauth && govulncheck ./...)
+          (cd services/ingest-gateway && govulncheck ./internal/server/... ./internal/pipeline/...)
 
       - name: cargo deny advisories
         run: cargo deny check advisories

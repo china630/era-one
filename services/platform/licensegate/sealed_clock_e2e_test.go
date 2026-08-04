@@ -1,7 +1,6 @@
 package licensegate
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -28,16 +27,10 @@ func TestSealedClockRollbackBlocksLicense(t *testing.T) {
 	}
 	dir := t.TempDir()
 	clockPath := filepath.Join(dir, "sealed.clock")
-	os.Setenv("ERA_LICENSE_TOKEN", token)
-	os.Setenv("ERA_VENDOR_PUB", lic.EncodeKey(pub))
-	os.Setenv("ERA_SEALED_CLOCK_PATH", clockPath)
-	os.Setenv("ERA_SEALED_CLOCK_SECRET", "test-install-secret")
-	defer func() {
-		os.Unsetenv("ERA_LICENSE_TOKEN")
-		os.Unsetenv("ERA_VENDOR_PUB")
-		os.Unsetenv("ERA_SEALED_CLOCK_PATH")
-		os.Unsetenv("ERA_SEALED_CLOCK_SECRET")
-	}()
+	t.Setenv("ERA_LICENSE_TOKEN", token)
+	t.Setenv("ERA_VENDOR_PUB", lic.EncodeKey(pub))
+	t.Setenv("ERA_SEALED_CLOCK_PATH", clockPath)
+	t.Setenv("ERA_SEALED_CLOCK_SECRET", "test-install-secret")
 	if err := ValidateStartup(1); err != nil {
 		t.Fatalf("first check: %v", err)
 	}

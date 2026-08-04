@@ -13,7 +13,7 @@ require (
 	github.com/minio/minio-go/v7 v7.2.1
 	github.com/oklog/ulid v1.3.1
 	golang.org/x/crypto v0.53.0
-	google.golang.org/protobuf v1.36.10
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
@@ -37,7 +37,6 @@ require (
 	github.com/paulmach/orb v0.13.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.27 // indirect
-	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
@@ -50,8 +49,8 @@ require (
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
-	google.golang.org/grpc v1.79.3 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 // indirect
+	google.golang.org/grpc v1.82.1 // indirect
 	gopkg.in/ini.v1 v1.67.2 // indirect
 )
 
@@ -61,7 +60,8 @@ exclude google.golang.org/genproto v0.0.0-20200825200019-8632dd797987
 
 exclude google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc
 
-replace google.golang.org/grpc => google.golang.org/grpc v1.68.0
+// Workspace-wide pin (go.work applies replaces to all modules). Keep ≥ fixed GO-2026-6061.
+replace google.golang.org/grpc => google.golang.org/grpc v1.82.1
 
 replace (
 	era/contracts/gen => ../../../gen/go

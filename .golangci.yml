@@ -1,22 +1,26 @@
 # Scoped lint for CI (ADR-0014 depguard — enable gradually).
+# Format: golangci-lint v2 (Go 1.26+).
+version: "2"
+
 run:
   timeout: 5m
   modules-download-mode: readonly
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - errcheck
     - govet
     - ineffassign
     - staticcheck
     - unused
+  settings:
+    staticcheck:
+      checks:
+        - all
+        - -ST1000
+        - -ST1003
 
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 50
   max-same-issues: 5
-
-linters-settings:
-  staticcheck:
-    checks: ["all", "-ST1000", "-ST1003"]

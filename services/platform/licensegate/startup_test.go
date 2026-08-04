@@ -1,7 +1,6 @@
 package licensegate
 
 import (
-	"os"
 	"testing"
 	"time"
 
@@ -85,10 +84,9 @@ func TestStrictModeEnvSync(t *testing.T) {
 }
 
 func TestGateFromEnvStrictRequiresToken(t *testing.T) {
-	os.Setenv("ERA_LICENSE_STRICT", "1")
-	defer os.Unsetenv("ERA_LICENSE_STRICT")
-	os.Unsetenv("ERA_LICENSE_TOKEN")
-	os.Unsetenv("ERA_LICENSE_PATH")
+	t.Setenv("ERA_LICENSE_STRICT", "1")
+	t.Setenv("ERA_LICENSE_TOKEN", "")
+	t.Setenv("ERA_LICENSE_PATH", "")
 	_, err := GateFromEnv(1)
 	if err == nil {
 		t.Fatal("expected error in strict mode without token")
@@ -112,12 +110,8 @@ func TestGateFromEnvValidToken(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	os.Setenv("ERA_LICENSE_TOKEN", token)
-	os.Setenv("ERA_VENDOR_PUB", lic.EncodeKey(pub))
-	defer func() {
-		os.Unsetenv("ERA_LICENSE_TOKEN")
-		os.Unsetenv("ERA_VENDOR_PUB")
-	}()
+	t.Setenv("ERA_LICENSE_TOKEN", token)
+	t.Setenv("ERA_VENDOR_PUB", lic.EncodeKey(pub))
 	g, err := GateFromEnv(1)
 	if err != nil {
 		t.Fatal(err)
@@ -142,14 +136,9 @@ func TestValidateStartupExpiredStrict(t *testing.T) {
 		GraceDays: 0,
 	}
 	token, _ := lic.Sign(c, priv)
-	os.Setenv("ERA_LICENSE_STRICT", "1")
-	os.Setenv("ERA_LICENSE_TOKEN", token)
-	os.Setenv("ERA_VENDOR_PUB", lic.EncodeKey(pub))
-	defer func() {
-		os.Unsetenv("ERA_LICENSE_STRICT")
-		os.Unsetenv("ERA_LICENSE_TOKEN")
-		os.Unsetenv("ERA_VENDOR_PUB")
-	}()
+	t.Setenv("ERA_LICENSE_STRICT", "1")
+	t.Setenv("ERA_LICENSE_TOKEN", token)
+	t.Setenv("ERA_VENDOR_PUB", lic.EncodeKey(pub))
 	if err := ValidateStartup(1); err == nil {
 		t.Fatal("expected expired license to fail startup")
 	}
