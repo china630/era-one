@@ -1,0 +1,16 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.26.4-alpine AS build
+WORKDIR /src
+COPY gen/go gen/go
+COPY services/platform services/platform
+COPY services/license services/license
+COPY services/comms/internal/httpauth services/comms/internal/httpauth
+COPY services/comms/auditch services/comms/auditch
+COPY services/comms/ai services/comms/ai
+WORKDIR /src/services/comms/ai
+RUN go build -o /out/comms-ai ./cmd/comms-ai
+
+FROM alpine:3.20
+COPY --from=build /out/comms-ai /usr/local/bin/era-comms-ai
+EXPOSE 8096
+ENTRYPOINT ["/usr/local/bin/era-comms-ai"]

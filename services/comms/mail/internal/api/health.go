@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"os"
 )
 
 func (s *Server) readyz(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +34,7 @@ func (s *Server) readyz(w http.ResponseWriter, r *http.Request) {
 			checks["minio"] = "disabled"
 		}
 	}
+	auditRequired := os.Getenv("ERA_MAIL_AUDIT_REQUIRE") == "1"
 	if s.cfg.Audit != nil && s.cfg.Audit.IsConfigured() {
 		if err := s.cfg.Audit.Ping(r.Context()); err != nil {
 			ready = false
@@ -40,6 +42,9 @@ func (s *Server) readyz(w http.ResponseWriter, r *http.Request) {
 		} else {
 			checks["clickhouse"] = "ok"
 		}
+	} else if auditRequired {
+		ready = false
+		checks["clickhouse"] = "required_but_disabled"
 	} else {
 		checks["clickhouse"] = "disabled"
 	}

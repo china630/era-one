@@ -1,0 +1,3 @@
+==> office stage gate O-AI-2 20260730-010704
+[PASS] O-AI-2/license :: go test -C services/platform ./licensegate/... -run OfficeAI -count=1
+STAGE GATE PASS (O-AI-2)

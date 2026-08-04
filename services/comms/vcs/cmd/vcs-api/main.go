@@ -13,7 +13,7 @@ import (
 
 func main() {
 	mux := http.NewServeMux()
-	api.NewServer(store.New(), adapter.Stub{}, audit.NewRecorder()).Register(mux)
+	api.NewServer(store.New(), adapter.FromEnv(), audit.NewRecorder()).Register(mux)
 	log.Print("era-conference listening :8270")
 	if err := httpserver.Listen(":8270", mux); err != nil {
 		log.Fatal(err)

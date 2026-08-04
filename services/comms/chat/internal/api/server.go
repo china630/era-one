@@ -3,10 +3,11 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
+	"os"
 
 	"era/services/comms/chat/internal/audit"
 	"era/services/comms/chat/internal/store"
+	"era/services/comms/internal/httpauth"
 )
 
 type Server struct {
@@ -19,29 +20,31 @@ func NewServer(st *store.Store, aud *audit.Recorder) *Server {
 }
 
 func (s *Server) Register(mux *http.ServeMux) {
+	devKey := "ERA_CHAT_DEV"
+	if os.Getenv("ERA_CHAT_DEV") != "1" && os.Getenv("ERA_MAIL_DEV") == "1" {
+		devKey = "ERA_MAIL_DEV"
+	}
+	auth := httpauth.FromEnv(devKey, "chat.user")
 	mux.HandleFunc("/healthz", s.healthz)
-	mux.HandleFunc("/api/v1/chat/rooms", s.withRBAC(s.createRoom))
-	mux.HandleFunc("/api/v1/chat/messages", s.messages)
+	mux.HandleFunc("/api/v1/chat/rooms", auth.Wrap(s.createRoom))
+	mux.HandleFunc("/api/v1/chat/messages", auth.Wrap(s.messages))
 }
 
 func (s *Server) healthz(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, map[string]string{"status": "ok", "service": "era-chat"})
-}
-
-func (s *Server) withRBAC(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if !authorize(r) {
-			http.Error(w, "forbidden", http.StatusForbidden)
-			return
-		}
-		next(w, r)
+	mode := "memory"
+	if s.Store != nil {
+		mode = s.Store.Backend()
 	}
+	writeJSON(w, map[string]string{"status": "ok", "service": "era-chat", "storage_mode": mode})
 }
 
-func authorize(r *http.Request) bool {
-	tenant := r.Header.Get("X-ERA-Tenant")
-	role := r.Header.Get("X-ERA-Role")
-	return tenant != "" && strings.Contains(role, "chat.user")
+// tenantID uses principal from httpauth.Wrap (JWT claims / DEV / internal).
+// Never prefers spoofable X-ERA-Tenant over JWT when authenticated via JWT.
+func tenantID(r *http.Request) string {
+	if p, ok := httpauth.FromContext(r.Context()); ok && p.TenantID != "" {
+		return p.TenantID
+	}
+	return ""
 }
 
 func (s *Server) createRoom(w http.ResponseWriter, r *http.Request) {
@@ -56,17 +59,17 @@ func (s *Server) createRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	tenant := r.Header.Get("X-ERA-Tenant")
+	tenant := tenantID(r)
+	if tenant == "" {
+		http.Error(w, "tenant required", http.StatusUnauthorized)
+		return
+	}
 	room := s.Store.CreateRoom(tenant, body.Name)
 	writeJSON(w, room)
 }
 
 func (s *Server) messages(w http.ResponseWriter, r *http.Request) {
-	if !authorize(r) {
-		http.Error(w, "forbidden", http.StatusForbidden)
-		return
-	}
-	tenant := r.Header.Get("X-ERA-Tenant")
+	tenant := tenantID(r)
 	switch r.Method {
 	case http.MethodPost:
 		var body struct {
@@ -83,14 +86,12 @@ func (s *Server) messages(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "room not found", http.StatusNotFound)
 			return
 		}
-		s.Auditor.Record(audit.Event{Action: "CHAT_MESSAGE", TenantID: tenant, RoomID: body.RoomID, User: body.Sender})
+		if s.Auditor != nil {
+			s.Auditor.Record(audit.Event{Action: "CHAT_MESSAGE", TenantID: tenant, RoomID: body.RoomID})
+		}
 		writeJSON(w, m)
 	case http.MethodGet:
 		roomID := r.URL.Query().Get("room_id")
-		if roomID == "" {
-			http.Error(w, "room_id required", http.StatusBadRequest)
-			return
-		}
 		writeJSON(w, s.Store.ListMessages(tenant, roomID))
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)

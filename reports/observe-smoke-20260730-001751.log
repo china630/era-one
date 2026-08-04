@@ -1,0 +1,4 @@
+==> Observe smoke
+observe tests: PASS
+observe live: not running (optional: compose --profile observe)
+Observe smoke PASS — log D:\My Projects\era-one\reports\observe-smoke-20260730-001751.log

@@ -38,6 +38,31 @@ func CanWrite(obj Object, p Principal) bool {
 	return false
 }
 
+// IsLocked reports whether the object currently has a lock holder.
+func IsLocked(obj Object) bool {
+	return strings.TrimSpace(obj.LockedBy) != ""
+}
+
+// IsLocker reports whether principal holds the current lock.
+func IsLocker(obj Object, p Principal) bool {
+	return IsLocked(obj) && p.UserID != "" && obj.LockedBy == p.UserID
+}
+
+// IsOwner reports whether principal is the object owner.
+func IsOwner(obj Object, p Principal) bool {
+	return p.UserID != "" && obj.OwnerUserID == p.UserID
+}
+
+// CanMutateWhileLocked allows rename/move/content updates when unlocked or by the locker.
+func CanMutateWhileLocked(obj Object, p Principal) bool {
+	return !IsLocked(obj) || IsLocker(obj, p)
+}
+
+// CanUnlock allows unlock by the locker or the owner.
+func CanUnlock(obj Object, p Principal) bool {
+	return IsLocker(obj, p) || IsOwner(obj, p)
+}
+
 func principalMatches(principal string, p Principal) bool {
 	principal = strings.TrimSpace(principal)
 	if principal == "" {

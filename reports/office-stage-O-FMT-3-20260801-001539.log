@@ -1,0 +1,4 @@
+==> office stage gate O-FMT-3 20260801-001539
+[PASS] O-FMT-3/ui :: go test -C ui/presentations ./... -count=1
+[PASS] O-FMT-3/inventory :: powershell -NoProfile -Command "if (Select-String -Path docs/Office-UI-Feature-Inventory.md -Pattern 'PRE-DUP-SLIDE.*✅' -Quiet) { exit 0 } else { exit 1 }"
+STAGE GATE PASS (O-FMT-3)

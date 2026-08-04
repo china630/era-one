@@ -1,1 +1,1 @@
-{"domain":"enforcement","kind":"plugin_status","plugin":"appcontrol","mode":"monitor","hook":"simulated","detail":""}
+{"domain":"enforcement","kind":"plugin_status","plugin":"appcontrol","mode":"monitor","hook":"simulated","detail":"kernel_hook=unavailable effect=telemetry_only — WHQL minifilter not loaded"}

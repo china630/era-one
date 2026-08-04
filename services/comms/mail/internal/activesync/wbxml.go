@@ -126,23 +126,29 @@ func encodeFolderSyncResponse(newSyncKey string) []byte {
 	b.Write(inlineString(newSyncKey))
 	b.Write(endTag())
 	b.Write(startTag(tagChanges))
+	writeFolderAdd(&b, "1", "Inbox", 2)
+	writeFolderAdd(&b, "2", "Calendar", 8)
+	writeFolderAdd(&b, "3", "Contacts", 9)
+	b.Write(endTag())
+	b.Write(endTag())
+	return b.Bytes()
+}
+
+func writeFolderAdd(b *bytes.Buffer, id, name string, typ int) {
 	b.Write(startTag(tagAdd))
 	b.Write(startTag(tagServerID))
-	b.Write(inlineString("1"))
+	b.Write(inlineString(id))
 	b.Write(endTag())
 	b.Write(startTag(tagParentID))
 	b.Write(inlineString("0"))
 	b.Write(endTag())
 	b.Write(startTag(tagDisplayName))
-	b.Write(inlineString("Inbox"))
+	b.Write(inlineString(name))
 	b.Write(endTag())
 	b.Write(startTag(tagType))
-	b.Write(inlineInt(2))
+	b.Write(inlineInt(typ))
 	b.Write(endTag())
 	b.Write(endTag())
-	b.Write(endTag())
-	b.Write(endTag())
-	return b.Bytes()
 }
 
 func encodeSyncResponse(newSyncKey string, changeCount int) []byte {

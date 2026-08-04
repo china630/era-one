@@ -39,6 +39,16 @@
   const tenant = localStorage.getItem(tenantKey) || claims.tenant_id || 't-demo';
 
   document.getElementById('user').textContent = email;
+  if (window.EraChrome && EraChrome.mountAccount) {
+    EraChrome.mountAccount(document.getElementById('user'), {
+      label: email,
+      showLamp: false,
+      title: email,
+    });
+  }
+  if (window.EraChrome && EraChrome.ensureOfficeTopbarSwitcher) {
+    EraChrome.ensureOfficeTopbarSwitcher();
+  }
 
   loadPolicy(tenant);
 
@@ -235,6 +245,37 @@
     document.getElementById('msgSubject').textContent = msg.subject || '(no subject)';
 
     document.getElementById('msgBody').textContent = msg.body || '(empty)';
+
+    let attachBar = document.getElementById('msgAttachActions');
+    if (!attachBar) {
+      attachBar = document.createElement('div');
+      attachBar.id = 'msgAttachActions';
+      document.getElementById('messageDetail').appendChild(attachBar);
+    }
+    attachBar.innerHTML = '';
+    const atts = msg.attachments || msg.Attachments || [];
+    atts.forEach((a) => {
+      const name = a.filename || a.Filename || a.name || '';
+      const ct = a.content_type || a.ContentType || '';
+      const oid = a.drive_object_id || a.DriveObjectID || a.object_id || '';
+      if (!oid || !(name.toLowerCase().endsWith('.erad') || name.toLowerCase().endsWith('.docx'))) {
+        return;
+      }
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Редактировать в Documents';
+      btn.onclick = async () => {
+        const r = await fetch('/mail/api/documents/edit-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ drive_object_id: oid, filename: name, content_type: ct }),
+        });
+        if (!r.ok) return;
+        const out = await r.json();
+        if (out.url) location.href = out.url;
+      };
+      attachBar.appendChild(btn);
+    });
 
   }
 

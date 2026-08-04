@@ -17,13 +17,16 @@ OOXML (docx/xlsx/pptx). **OnlyOffice, Collabora, LibreOffice headless — out of
 
 | Слой | Реализация |
 |------|------------|
-| **Native truth** | `.era-doc`, `.era-sheet`, `.era-deck` (proto + golden tests) |
-| **Co-editing** | CRDT (Yjs/Automerge **паттерн**; своя интеграция) + Rust sync в `platform/docs-engine` |
+| **Native truth** | `.erad` / `.erat` / `.erap` / `.eraj` (proto enums + golden where applicable) |
+| **Co-editing** | CRDT (Yjs/Automerge **паттерн**; своя интеграция) + Rust sync в `era-docs-core` / `era-docs-engine` |
+
+**Honesty 2026-07-30 (O-H-1):** Documents/Tables sync = **OpLog-authoritative** server append order + WS fan-out (не полный Yjs/Automerge crate). Pattern CRDT retained as design intent; peer delivery proven via `ws_coedit` / `ws_sheet_coedit`.
+
 | **Documents UI** | Block editor (ProseMirror **паттерн**) в ERA Workspace |
 | **Tables** | Rust calc engine (grid, formulas; ironcalc **паттерн**) |
 | **Presentations** | Phase 3 (после Documents + Tables) |
 | **Import/export** | Rust OOXML parsers; **zero GPL** в runtime |
-| **Storage** | Файлы только в **ERA Drive**; engine не хранит authoritative copy |
+| **Storage** | Platform: файлы только в **ERA Drive**; engine не хранит authoritative copy. Trait `StorageBackend` (`era-office-storage`): Drive backend (A/Corp) · `LocalFsBackend` (Solo S3) — см. [Office-Roadmap](../Office-Roadmap.md) S2/B0 |
 
 ---
 

@@ -1,0 +1,4 @@
+==> stage gate C-MM 20260729-143916
+[PASS] F-MM/mail-moderation :: go test ./services/comms/mail-moderation/... -count=1
+[PASS] F-MM/licensegate :: go test ./services/platform/licensegate/... -count=1
+STAGE GATE PASS (C-MM)

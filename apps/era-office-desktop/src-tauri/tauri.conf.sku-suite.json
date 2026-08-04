@@ -1,0 +1,16 @@
+{
+  "productName": "ERA Office",
+  "identifier": "az.era.office.desktop",
+  "app": {
+    "windows": [{ "label": "main", "title": "ERA Office" }]
+  },
+  "bundle": {
+    "shortDescription": "ERA Office Solo suite — Docs, Tables, Presentations, Projects",
+    "fileAssociations": [
+      { "ext": ["erad"], "name": "ERA Document", "mimeType": "application/vnd.era.erad", "role": "Editor" },
+      { "ext": ["erat"], "name": "ERA Table", "mimeType": "application/vnd.era.erat", "role": "Editor" },
+      { "ext": ["erap"], "name": "ERA Presentation", "mimeType": "application/vnd.era.erap", "role": "Editor" },
+      { "ext": ["eraj"], "name": "ERA Project Board", "mimeType": "application/vnd.era.eraj", "role": "Editor" }
+    ]
+  }
+}

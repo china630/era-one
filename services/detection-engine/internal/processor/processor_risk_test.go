@@ -45,7 +45,7 @@ func TestRiskDedupSuppressesRepeatDetection(t *testing.T) {
 		Payload:    &erav1.Envelope_Raw{},
 	}
 	for i := 0; i < 3; i++ {
-		p.emit(context.Background(), env, "era-test-rule", "test rule", "high", "test", "ev-1", obs.Add(time.Duration(i)*time.Second), node)
+		p.emit(context.Background(), env, "era-test-rule", "test rule", "high", "test", "ev-1", obs.Add(time.Duration(i)*time.Second), node, nil)
 	}
 	if got := w.count(); got != 1 {
 		t.Fatalf("dedup: rows=%d want 1", got)
@@ -72,7 +72,7 @@ func TestRiskEscalationOnHighScore(t *testing.T) {
 		{"r-high-3", "high"},
 	}
 	for i, r := range rules {
-		p.emit(context.Background(), env, r.id, "rule", r.sev, "test", "ev", obs.Add(time.Duration(i)*time.Minute), node)
+		p.emit(context.Background(), env, r.id, "rule", r.sev, "test", "ev", obs.Add(time.Duration(i)*time.Minute), node, nil)
 	}
 	if w.count() < 4 {
 		t.Fatalf("expected 4 distinct rules, got %d", w.count())

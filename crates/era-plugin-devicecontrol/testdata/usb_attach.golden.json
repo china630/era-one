@@ -1,0 +1,1 @@
+{"domain":"devicecontrol","kind":"usb_event","action":"attach","device_class":"usb_storage","device_id":"USB\\VID_1234","hook":"simulated","kernel_hook":"unavailable","enforce_mode":"monitor","effect":"telemetry_only","would_block":true,"blocked":false}

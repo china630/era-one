@@ -142,6 +142,12 @@ func (m *Memory) DeliverRaw(email string, raw []byte, fromAddr string) (*Message
 		return nil, fmt.Errorf("mailbox not found")
 	}
 	mb := m.mailboxes[id]
+	if pol, ok := m.policies[mb.TenantID]; ok && pol.MaxAttachmentSizeMB > 0 {
+		max := int64(pol.MaxAttachmentSizeMB) * 1024 * 1024
+		if int64(len(raw)) > max {
+			return nil, fmt.Errorf("message too large")
+		}
+	}
 	if int64(len(raw)) > mb.QuotaBytes-mb.UsedBytes {
 		return nil, fmt.Errorf("quota exceeded")
 	}

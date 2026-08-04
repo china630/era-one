@@ -56,7 +56,8 @@ func (r *Resolver) Resolve(sender string, spec policy.ModeratorSpec) ([]string, 
 	sender = strings.ToLower(strings.TrimSpace(sender))
 	var out []string
 	switch spec.Mode {
-	case policy.ModStatic:
+	case policy.ModStatic, policy.ModAllOf:
+		// all_of: same address list; engine/quorum layer requires unanimous approve.
 		out = append(out, spec.Static...)
 	case policy.ModManager:
 		m, err := r.Dir.Manager(sender)

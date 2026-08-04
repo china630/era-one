@@ -19,7 +19,10 @@ var webFS embed.FS
 
 type ctxKey int
 
-const claimsKey ctxKey = 1
+const (
+	claimsKey ctxKey = 1
+	tokenKey  ctxKey = 2
+)
 
 type DriveClient interface {
 	CreateAttachmentLink(tenantID, objectID string) (string, error)
@@ -27,6 +30,7 @@ type DriveClient interface {
 
 type Server struct {
 	Drive      DriveClient
+	Documents  *DocumentsClient
 	MailAPIURL string
 	JWTSecret  []byte
 }
@@ -34,6 +38,7 @@ type Server struct {
 func NewServer(d DriveClient) *Server {
 	return &Server{
 		Drive:      d,
+		Documents:  NewDocumentsClient(env("ERA_WORKSPACE_BASE_URL", "https://app.customer.local")),
 		MailAPIURL: env("ERA_MAIL_API_URL", "http://127.0.0.1:8150"),
 		JWTSecret:  []byte(env("ERA_IDENTITY_JWT_SECRET", "dev-only-change-in-prod")),
 	}
@@ -47,6 +52,8 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/mail/api/message", s.withJWT(s.proxyMessage))
 	mux.HandleFunc("/mail/api/messages", s.withJWT(s.proxyMessages))
 	mux.HandleFunc("/mail/api/send", s.withJWT(s.proxySend))
+	mux.HandleFunc("/mail/api/drive/attachment-link", s.withJWT(s.handleDriveAttachmentLink))
+	mux.HandleFunc("/mail/api/documents/edit-link", s.withJWT(s.handleDocumentsEditLink))
 	sub, _ := fs.Sub(webFS, "web")
 	mux.Handle("/mail/static/", http.StripPrefix("/mail/static/", http.FileServer(http.FS(sub))))
 	mux.HandleFunc("/mail", s.serveIndex)
@@ -88,13 +95,29 @@ func (s *Server) withJWT(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		next(w, r.WithContext(context.WithValue(r.Context(), claimsKey, claims)))
+		ctx := context.WithValue(r.Context(), claimsKey, claims)
+		ctx = context.WithValue(ctx, tokenKey, tok)
+		next(w, r.WithContext(ctx))
 	}
 }
 
 func claimsFrom(r *http.Request) *TokenClaims {
 	c, _ := r.Context().Value(claimsKey).(*TokenClaims)
 	return c
+}
+
+func bearerFrom(r *http.Request) string {
+	tok, _ := r.Context().Value(tokenKey).(string)
+	return tok
+}
+
+func forwardAuth(req *http.Request, r *http.Request, tenantID string) {
+	if tok := bearerFrom(r); tok != "" {
+		req.Header.Set("Authorization", "Bearer "+tok)
+	}
+	if tenantID != "" {
+		req.Header.Set("X-ERA-Tenant", tenantID)
+	}
 }
 
 func (s *Server) proxyPolicy(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +161,7 @@ func (s *Server) proxyMessages(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	req.Header.Set("X-ERA-Tenant", claims.TenantID)
+	forwardAuth(req, r, claims.TenantID)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
@@ -214,7 +237,7 @@ func (s *Server) proxySend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-ERA-Tenant", claims.TenantID)
+	forwardAuth(req, r, claims.TenantID)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
@@ -243,6 +266,78 @@ func extractBodyFromRaw(raw []byte) string {
 func writeJSON(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(v)
+}
+
+func (s *Server) handleDocumentsEditLink(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if s.Documents == nil {
+		http.Error(w, "documents not configured", http.StatusServiceUnavailable)
+		return
+	}
+	var req struct {
+		DriveObjectID string `json:"drive_object_id"`
+		Filename      string `json:"filename"`
+		ContentType   string `json:"content_type"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if !IsEradOrDocx(req.Filename, req.ContentType) {
+		http.Error(w, "unsupported attachment type", http.StatusForbidden)
+		return
+	}
+	link, err := s.Documents.EditLink(req.DriveObjectID)
+	if err != nil {
+		if strings.Contains(err.Error(), "license") {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	writeJSON(w, map[string]string{"url": link, "label": "Редактировать в Documents"})
+}
+
+// handleDriveAttachmentLink — AC-C5: JWT from session → drive-api; 403 without Drive license.
+func (s *Server) handleDriveAttachmentLink(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	claims := claimsFrom(r)
+	if claims == nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	if s.Drive == nil {
+		http.Error(w, "drive not configured", http.StatusServiceUnavailable)
+		return
+	}
+	var req struct {
+		ObjectID string `json:"object_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.ObjectID == "" {
+		http.Error(w, "object_id required", http.StatusBadRequest)
+		return
+	}
+	if dc, ok := s.Drive.(*HTTPDriveClient); ok {
+		dc.UserJWT = bearerFrom(r)
+	}
+	link, err := s.Drive.CreateAttachmentLink(claims.TenantID, req.ObjectID)
+	if err != nil {
+		msg := err.Error()
+		if strings.Contains(msg, "status 403") || strings.Contains(msg, "forbidden") || strings.Contains(msg, "license") {
+			http.Error(w, "drive: license denied", http.StatusForbidden)
+			return
+		}
+		http.Error(w, msg, http.StatusBadGateway)
+		return
+	}
+	writeJSON(w, map[string]string{"url": link})
 }
 
 func env(k, def string) string {

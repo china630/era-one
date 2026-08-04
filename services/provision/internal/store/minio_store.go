@@ -83,6 +83,26 @@ func (s *MinIOStore) GetImage(id string) (*OSImage, bool) {
 	return s.base.GetImage(id)
 }
 
+func (s *MinIOStore) CreateImage(img *OSImage) error {
+	return s.base.CreateImage(img)
+}
+
+func (s *MinIOStore) DeleteImage(id string) bool {
+	return s.base.DeleteImage(id)
+}
+
 func (s *MinIOStore) PXEConfig() PXEConfig {
 	return s.base.PXEConfig()
+}
+
+func (s *MinIOStore) SetPXEConfig(cfg PXEConfig) {
+	s.base.SetPXEConfig(cfg)
+}
+
+func (s *MinIOStore) RecordEnrollJob(j *EnrollJob) {
+	s.base.RecordEnrollJob(j)
+}
+
+func (s *MinIOStore) ListEnrollJobs() []*EnrollJob {
+	return s.base.ListEnrollJobs()
 }

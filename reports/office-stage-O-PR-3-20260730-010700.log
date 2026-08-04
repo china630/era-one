@@ -1,0 +1,3 @@
+==> office stage gate O-PR-3 20260730-010700
+[PASS] O-PR-3/license :: go test -C services/platform ./licensegate/... -run OfficeProjects -count=1
+STAGE GATE PASS (O-PR-3)

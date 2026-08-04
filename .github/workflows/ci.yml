@@ -14,6 +14,122 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  acceptance-consistency:
+    name: acceptance (consistency v1.2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Acceptance consistency gate
+        shell: pwsh
+        run: ./scripts/check-acceptance-consistency.ps1
+
+  secrets:
+    name: secrets (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Binary install (no gitleaks-action org license required for private repos).
+      - name: Install gitleaks
+        env:
+          GITLEAKS_VERSION: "8.24.3"
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          sudo mv gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+      - name: gitleaks detect
+        run: gitleaks detect --source . --config .gitleaks.toml --verbose --redact
+
+  lint:
+    name: lint (go scoped + rust clippy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.work
+          cache: true
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: golangci-lint (AuthZ / license / ingest hotspots)
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.5
+          args: >-
+            ./services/platform/licensegate/...
+            ./services/platform/httpserver/...
+            ./services/comms/internal/httpauth/...
+            ./services/ingest-gateway/internal/server/...
+            ./services/ingest-gateway/internal/pipeline/...
+
+      - name: cargo clippy (era-agent-core)
+        run: cargo clippy -p era-agent-core --all-targets -- -A warnings
+
+  vuln:
+    name: vuln (govulncheck + cargo-deny)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.work
+          cache: true
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install govulncheck + cargo-deny
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          cargo install cargo-deny --locked || cargo install cargo-deny
+
+      - name: govulncheck (scoped)
+        run: |
+          govulncheck ./services/platform/licensegate/...
+          govulncheck ./services/comms/internal/httpauth/...
+          govulncheck ./services/ingest-gateway/internal/server/...
+
+      - name: cargo deny advisories
+        run: cargo deny check advisories
+
+  e2e-office-smoke:
+    name: e2e (office playwright smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.work
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ui/office/e2e/package-lock.json
+
+      - name: Install Playwright
+        working-directory: ui/office/e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Office docs-smoke (Playwright)
+        working-directory: ui/office/e2e
+        run: npx playwright test docs-smoke.spec.ts
+        env:
+          CI: "1"
+
   site:
     name: site (build + golden)
     runs-on: ubuntu-latest

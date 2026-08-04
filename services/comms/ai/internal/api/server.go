@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"era/services/comms/ai/internal/llm"
 	"era/services/comms/ai/internal/phishing"
 	"era/services/comms/ai/internal/summary"
+	"era/services/comms/internal/httpauth"
 	"era/services/platform/licensegate"
 
 	"github.com/oklog/ulid"
@@ -20,9 +22,9 @@ import (
 const summarySLAMs = 5000
 
 type Server struct {
-	LLM      llm.Client
-	Gate     *licensegate.Gate
-	Auditor  *audit.Recorder
+	LLM     llm.Client
+	Gate    *licensegate.Gate
+	Auditor *audit.Recorder
 }
 
 func NewServer(client llm.Client, gate *licensegate.Gate, aud *audit.Recorder) *Server {
@@ -33,21 +35,37 @@ func NewServer(client llm.Client, gate *licensegate.Gate, aud *audit.Recorder) *
 }
 
 func (s *Server) Register(mux *http.ServeMux) {
+	devKey := "ERA_COMMS_AI_DEV"
+	if os.Getenv("ERA_COMMS_AI_DEV") != "1" && os.Getenv("ERA_MAIL_DEV") == "1" {
+		devKey = "ERA_MAIL_DEV"
+	}
+	auth := httpauth.FromEnv(devKey, "mail.user")
 	mux.HandleFunc("/healthz", s.healthz)
-	mux.HandleFunc("/api/v1/ai/summary", s.withRBAC(s.handleSummary))
-	mux.HandleFunc("/api/v1/ai/phishing", s.withRBAC(s.handlePhishing))
+	mux.HandleFunc("/api/v1/ai/summary", auth.Wrap(s.withLicense(s.handleSummary)))
+	mux.HandleFunc("/api/v1/ai/phishing", auth.Wrap(s.withLicense(s.handlePhishing)))
 }
 
 func (s *Server) healthz(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "service": "era-comms-ai"})
+	model := "heuristic"
+	if s.LLM != nil {
+		model = s.LLM.ModelName()
+	}
+	degraded := model == "heuristic"
+	mode := "ollama"
+	if degraded {
+		mode = "heuristic"
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":   "ok",
+		"service":  "era-comms-ai",
+		"model":    model,
+		"mode":     mode,
+		"degraded": degraded,
+	})
 }
 
-func (s *Server) withRBAC(next http.HandlerFunc) http.HandlerFunc {
+func (s *Server) withLicense(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if !authorize(r) {
-			http.Error(w, "forbidden", http.StatusForbidden)
-			return
-		}
 		if s.Gate != nil && !s.Gate.Allow(licensegate.ModuleCommsAI) {
 			http.Error(w, "module comms-ai not licensed", http.StatusForbidden)
 			return
@@ -56,10 +74,17 @@ func (s *Server) withRBAC(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func authorize(r *http.Request) bool {
-	tenant := r.Header.Get("X-ERA-Tenant")
-	role := r.Header.Get("X-ERA-Role")
-	return tenant != "" && strings.Contains(role, "mail.user")
+// tenantID binds to JWT/internal/DEV principal from httpauth.Wrap.
+// JWT claims win over spoofable X-ERA-Tenant and body tenant_id.
+func tenantID(r *http.Request, bodyTenant string) string {
+	if p, ok := httpauth.FromContext(r.Context()); ok && p.TenantID != "" {
+		if p.Mode == "jwt" || p.Mode == "internal" {
+			return p.TenantID
+		}
+		// DEV: principal already mirrors X-ERA-Tenant (or t-demo default)
+		return p.TenantID
+	}
+	return bodyTenant
 }
 
 type summaryRequest struct {
@@ -89,9 +114,10 @@ func (s *Server) handleSummary(w http.ResponseWriter, r *http.Request) {
 
 	requestID := ulid.MustNew(ulid.Now(), rand.Reader).String()
 	body := concatThread(req.Thread)
+	tid := tenantID(r, req.TenantID)
 	if s.Auditor != nil {
 		s.Auditor.Record(ctx, audit.Event{
-			TenantID:      firstNonEmpty(req.TenantID, r.Header.Get("X-ERA-Tenant")),
+			TenantID:      tid,
 			MailboxID:     req.MailboxID,
 			InferenceType: "summary",
 			Model:         res.Model,
@@ -100,7 +126,14 @@ func (s *Server) handleSummary(w http.ResponseWriter, r *http.Request) {
 			BodyHash:      audit.BodyHash(body),
 		})
 	}
-	writeJSON(w, http.StatusOK, res)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"summary":    res.Summary,
+		"model":      res.Model,
+		"latency_ms": res.LatencyMs,
+		"degraded":   res.Model == "heuristic",
+		"mode":       map[bool]string{true: "heuristic", false: "ollama"}[res.Model == "heuristic"],
+		"tenant_id":  tid,
+	})
 }
 
 type phishingRequest struct {
@@ -126,9 +159,10 @@ func (s *Server) handlePhishing(w http.ResponseWriter, r *http.Request) {
 
 	requestID := ulid.MustNew(ulid.Now(), rand.Reader).String()
 	ctx := r.Context()
+	tid := tenantID(r, req.TenantID)
 	if s.Auditor != nil {
 		s.Auditor.Record(ctx, audit.Event{
-			TenantID:      firstNonEmpty(req.TenantID, r.Header.Get("X-ERA-Tenant")),
+			TenantID:      tid,
 			MailboxID:     req.MailboxID,
 			InferenceType: "phishing",
 			Model:         "rule-based",
@@ -145,13 +179,6 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	_ = json.NewEncoder(w).Encode(v)
-}
-
-func firstNonEmpty(a, b string) string {
-	if a != "" {
-		return a
-	}
-	return b
 }
 
 func concatThread(thread []summary.Message) string {

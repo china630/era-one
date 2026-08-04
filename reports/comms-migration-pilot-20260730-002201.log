@@ -1,0 +1,15 @@
+2026-07-30T00:22:01.8007264+04:00 PILOT ERA_MIG_SOURCE_IMAP_HOST unset — dry-run file jobs (not field cutover)
+2026-07-30T00:22:01.8124883+04:00 PILOT discover CG source
+2026-07-30T00:22:01.9876723+04:00 PILOT discover skip (lab CG unavailable): Response status code does not indicate success: 502 (Bad Gateway).
+2026-07-30T00:22:02.0915777+04:00 PILOT job 1 queued: {"id":"20260729202201-mig-imap","source":"imap","mailbox":"pilot1@mail.gov.az","status":"done","items_total":2,"items_ok":2,"items_fail":0,"created_at":"2026-07-29T20:22:01.999775825Z"}
+
+2026-07-30T00:22:02.1627752+04:00 PILOT job 2 queued: {"id":"20260729202202-mig-imap","source":"imap","mailbox":"pilot2@mail.gov.az","status":"done","items_total":2,"items_ok":2,"items_fail":0,"created_at":"2026-07-29T20:22:02.159023831Z"}
+
+2026-07-30T00:22:02.2270298+04:00 PILOT job 3 queued: {"id":"20260729202202-mig-imap","source":"imap","mailbox":"pilot3@mail.gov.az","status":"done","items_total":2,"items_ok":2,"items_fail":0,"created_at":"2026-07-29T20:22:02.22280692Z"}
+
+2026-07-30T00:22:02.2917814+04:00 PILOT job 4 queued: {"id":"20260729202202-mig-imap","source":"imap","mailbox":"pilot4@mail.gov.az","status":"done","items_total":2,"items_ok":2,"items_fail":0,"created_at":"2026-07-29T20:22:02.285698128Z"}
+
+2026-07-30T00:22:02.3690440+04:00 PILOT job 5 queued: {"id":"20260729202202-mig-imap","source":"imap","mailbox":"pilot5@mail.gov.az","status":"done","items_total":2,"items_ok":2,"items_fail":0,"created_at":"2026-07-29T20:22:02.364330589Z"}
+
+2026-07-30T00:22:02.4447524+04:00 PILOT PILOT queued 5 / 5 jobs — log D:\My Projects\era-one\scripts\..\reports\comms-migration-pilot-20260730-002201.log
+2026-07-30T00:22:02.4493989+04:00 PILOT PILOT LAB DRY-RUN PASS (file jobs; field IMAP still open)

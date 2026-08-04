@@ -1,0 +1,20 @@
+[package]
+name = "era-office-storage"
+version = "0.1.0"
+edition = "2021"
+description = "ERA Office StorageBackend trait + LocalFs (S2/B0; Solo path for S3)"
+publish = false
+
+[lib]
+name = "era_office_storage"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1"
+async-trait = "0.1"
+tokio = { version = "1", features = ["fs", "io-util", "rt", "macros"] }
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { version = "1", features = ["fs", "io-util", "rt", "macros", "rt-multi-thread"] }

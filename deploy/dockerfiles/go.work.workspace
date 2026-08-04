@@ -1,0 +1,14 @@
+go 1.26.4
+
+use (
+	./gen/go
+	./services/license
+	./services/platform
+	./ui/docs
+	./ui/drive
+	./ui/tables
+	./ui/presentations
+	./ui/projects
+	./ui/office-ai
+	./ui/office-shell
+)

@@ -5,20 +5,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 )
 
 // HTTPDriveClient calls drive-api /links/attachment.
 type HTTPDriveClient struct {
-	BaseURL string
-	Client  *http.Client
+	BaseURL      string
+	Client       *http.Client
+	ServiceToken string
+	UserJWT      string // preferred: user Bearer from mail session
 }
 
 // NewHTTPDriveClient creates a client for drive-api.
 func NewHTTPDriveClient(baseURL string) *HTTPDriveClient {
 	return &HTTPDriveClient{
-		BaseURL: strings.TrimRight(baseURL, "/"),
-		Client:  http.DefaultClient,
+		BaseURL:      strings.TrimRight(baseURL, "/"),
+		Client:       http.DefaultClient,
+		ServiceToken: os.Getenv("ERA_DRIVE_SERVICE_TOKEN"),
 	}
 }
 
@@ -36,8 +40,16 @@ func (c *HTTPDriveClient) CreateAttachmentLink(tenantID, objectID string) (strin
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-ERA-Tenant", tenantID)
-	req.Header.Set("X-ERA-User", "mail-bff")
+	switch {
+	case c.UserJWT != "":
+		req.Header.Set("Authorization", "Bearer "+c.UserJWT)
+	case c.ServiceToken != "":
+		req.Header.Set("Authorization", "Bearer "+c.ServiceToken)
+		req.Header.Set("X-ERA-Tenant", tenantID)
+		req.Header.Set("X-ERA-User", "mail-bff")
+	default:
+		return "", fmt.Errorf("drive: JWT or ERA_DRIVE_SERVICE_TOKEN required")
+	}
 	resp, err := c.Client.Do(req)
 	if err != nil {
 		return "", err

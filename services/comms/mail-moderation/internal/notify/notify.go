@@ -138,11 +138,13 @@ func (s *Service) NotifyModerator(holdID, sender, subject string, moderators []s
 			return err
 		}
 		base := strings.TrimRight(s.PublicBase, "/")
-		links = append(links, fmt.Sprintf("Moderator %s:\n  Approve: %s/v1/moderation/action?token=%s\n  Reject:  %s/v1/moderation/action?token=%s&comment=REASON\n",
-			m, base, ap, base, rj))
+		approveURL := fmt.Sprintf("%s/v1/moderation/action?token=%s", base, ap)
+		rejectURL := fmt.Sprintf("%s/v1/moderation/action?token=%s&comment=REASON", base, rj)
+		links = append(links, fmt.Sprintf("Moderator %s:\n  Approve: %s\n  Reject:  %s\n  X-ERA-Moderation-Approve: %s\n  List-Unsubscribe: <%s>\n",
+			m, approveURL, rejectURL, approveURL, rejectURL))
 	}
-	body := fmt.Sprintf("[ERA Mail Moderation]\nSender: %s\nSubject: %s\nHold: %s\n\n%s\n\n--- preview ---\n%s\n",
-		sender, subject, holdID, strings.Join(links, "\n"), preview)
+	body := fmt.Sprintf("X-ERA-Moderation-Hold: %s\nX-ERA-Moderation-Action: approve|reject\n\n[ERA Mail Moderation]\nSender: %s\nSubject: %s\nHold: %s\n\n%s\n\n--- preview ---\n%s\n",
+		holdID, sender, subject, holdID, strings.Join(links, "\n"), preview)
 	from := s.From
 	if from == "" {
 		from = "moderation@localhost"

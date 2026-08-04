@@ -1,0 +1,15 @@
+{
+  "productName": "ERA Documents",
+  "identifier": "az.era.office.documents",
+  "app": {
+    "windows": [{ "label": "main", "title": "ERA Documents" }]
+  },
+  "bundle": {
+    "shortDescription": "ERA Documents Solo — local .erad editor",
+    "fileAssociations": [
+      { "ext": ["erad"], "name": "ERA Document", "mimeType": "application/vnd.era.erad", "role": "Editor" },
+      { "ext": ["docx"], "name": "Word Document", "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "role": "Editor" }
+    ],
+    "icon": ["icons/sku-docs.png", "icons/sku-docs.ico", "icons/icon.png", "icons/icon.ico"]
+  }
+}

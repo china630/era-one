@@ -79,6 +79,19 @@ func (s *postgresStore) ListDeployJobs() []*DeployJob {
 	return out
 }
 
+func (s *postgresStore) GetDeployJob(id string) (*DeployJob, bool) {
+	row := s.db.QueryRow(
+		`SELECT id, tenant_id, node_id, package_ref, ota_token, reboot, status, created_at, updated_at FROM deploy_jobs WHERE id=$1`, id,
+	)
+	var j DeployJob
+	var st string
+	if err := row.Scan(&j.ID, &j.TenantID, &j.NodeID, &j.PackageRef, &j.OTAToken, &j.Reboot, &st, &j.CreatedAt, &j.UpdatedAt); err != nil {
+		return nil, false
+	}
+	j.Status = RolloutStatus(st)
+	return &j, true
+}
+
 func (s *postgresStore) UpdateDeployJob(id string, status RolloutStatus) (*DeployJob, bool) {
 	now := time.Now().UTC()
 	res, err := s.db.Exec(`UPDATE deploy_jobs SET status=$1, updated_at=$2 WHERE id=$3`, string(status), now, id)

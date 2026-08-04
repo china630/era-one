@@ -47,6 +47,16 @@ func (r *Recorder) Count() int {
 	return len(r.events)
 }
 
+// Last returns the most recent event (tests / diagnostics).
+func (r *Recorder) Last() (Event, bool) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if len(r.events) == 0 {
+		return Event{}, false
+	}
+	return r.events[len(r.events)-1], true
+}
+
 func BodyHash(body string) string {
 	sum := sha256.Sum256([]byte(body))
 	return hex.EncodeToString(sum[:8])

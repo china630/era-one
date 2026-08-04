@@ -1,0 +1,167 @@
+==> Comms pilot staging 2026-07-30 00:09:17
+RT-01 compose: SKIP — Docker Desktop daemon not running (npipe dockerDesktopLinuxEngine missing)
+Integration CH/PG: SKIP — no local CH/PG without compose
+STAGING SKIP (infra unavailable)
+Next: start Docker Desktop then: .\scripts\run-comms-pilot-staging.ps1 -UseCompose
+2026-07-30T00:18:03.7593717+04:00 RT-01 healthz/readyz
+2026-07-30T00:18:03.9394760+04:00 RT-01 readyz checks: {"checks":{"clickhouse":"ok","minio":"ok","postgres":"ok","repo":"ok"},"ready":true}
+
+2026-07-30T00:18:03.9418629+04:00 RT-02 mailbox provision (pre-Outlook/EWS)
+2026-07-30T00:18:04.0957801+04:00 RT-02 mailbox already provisioned
+2026-07-30T00:18:04.0985959+04:00 RT-03 Thunderbird SMTP AUTH deliver
+2026-07-30T00:18:04.2818862+04:00 RT-03 Thunderbird IMAP FETCH
+2026-07-30T00:18:04.4558618+04:00 RT-02 Outlook EWS CreateItem smoke
+2026-07-30T00:18:04.5012831+04:00 RT-04 CalDAV PUT
+2026-07-30T00:18:04.5471414+04:00 RT-04b CardDAV PUT
+2026-07-30T00:18:04.5755529+04:00 RT-05 webmail OIDC machine-flow
+2026-07-30T00:18:04.7286041+04:00 RT-05 OIDC send+list PASS
+2026-07-30T00:18:04.7324664+04:00 RT-06 ActiveSync Provision
+2026-07-30T00:18:04.7395111+04:00 RT-06 wait for async SMTP audit webhook
+2026-07-30T00:18:06.7601022+04:00 RT-06 ClickHouse audit count
+2026-07-30T00:18:06.7954822+04:00 RT-06 CH audit rows: 0
+2026-07-30T00:18:06.8009606+04:00 RT-06 fallback: POST audit webhook directly
+2026-07-30T00:18:32.3107827+04:00 RT-01 healthz/readyz
+2026-07-30T00:18:32.5195713+04:00 RT-01 readyz checks: {"checks":{"clickhouse":"ok","minio":"ok","postgres":"ok","repo":"ok"},"ready":true}
+
+2026-07-30T00:18:32.5224453+04:00 RT-02 mailbox provision (pre-Outlook/EWS)
+2026-07-30T00:18:32.6291443+04:00 RT-02 mailbox already provisioned
+2026-07-30T00:18:32.6314939+04:00 RT-03 Thunderbird SMTP AUTH deliver
+2026-07-30T00:18:32.7451581+04:00 RT-03 Thunderbird IMAP FETCH
+2026-07-30T00:18:32.9026898+04:00 RT-02 Outlook EWS CreateItem smoke
+2026-07-30T00:18:32.9315340+04:00 RT-04 CalDAV PUT
+2026-07-30T00:18:32.9514868+04:00 RT-04b CardDAV PUT
+2026-07-30T00:18:32.9639750+04:00 RT-05 webmail OIDC machine-flow
+2026-07-30T00:18:33.0722549+04:00 RT-05 OIDC send+list PASS
+2026-07-30T00:18:33.0740741+04:00 RT-06 ActiveSync Provision
+2026-07-30T00:18:33.0796466+04:00 RT-06 wait for async SMTP audit webhook
+2026-07-30T00:18:35.0886427+04:00 RT-06 ClickHouse audit count
+2026-07-30T00:18:35.1090343+04:00 RT-06 CH audit rows: 0
+2026-07-30T00:18:35.1128267+04:00 RT-06 fallback: POST audit webhook directly
+2026-07-30T00:18:36.1519373+04:00 RT-06 CH audit rows after fallback: 1
+2026-07-30T00:18:36.1550044+04:00 RT-07 policy deny oversized
+2026-07-30T00:18:36.7783959+04:00 RT-07 policy deny PASS (413)
+2026-07-30T00:18:36.7805470+04:00 RT-08 autodiscover TLS SSL on
+2026-07-30T00:19:07.8484744+04:00 RT-01 healthz/readyz
+2026-07-30T00:19:08.0316258+04:00 RT-01 readyz checks: {"checks":{"clickhouse":"ok","minio":"ok","postgres":"ok","repo":"ok"},"ready":true}
+
+2026-07-30T00:19:08.0349377+04:00 RT-02 mailbox provision (pre-Outlook/EWS)
+2026-07-30T00:19:08.2156272+04:00 RT-02 mailbox already provisioned
+2026-07-30T00:19:08.2174968+04:00 RT-03 Thunderbird SMTP AUTH deliver
+2026-07-30T00:19:08.3528365+04:00 RT-03 Thunderbird IMAP FETCH
+2026-07-30T00:19:08.5291549+04:00 RT-02 Outlook EWS CreateItem smoke
+2026-07-30T00:19:08.5612176+04:00 RT-04 CalDAV PUT
+2026-07-30T00:19:08.5803508+04:00 RT-04b CardDAV PUT
+2026-07-30T00:19:08.5956552+04:00 RT-05 webmail OIDC machine-flow
+2026-07-30T00:19:08.6734861+04:00 RT-05 OIDC send+list PASS
+2026-07-30T00:19:08.6752950+04:00 RT-06 ActiveSync Provision
+2026-07-30T00:19:08.6811938+04:00 RT-06 wait for async SMTP audit webhook
+2026-07-30T00:19:10.6930784+04:00 RT-06 ClickHouse audit count
+2026-07-30T00:19:10.7745639+04:00 RT-06 CH audit rows: 1
+2026-07-30T00:19:10.7795318+04:00 RT-07 policy deny oversized
+2026-07-30T00:19:11.4492789+04:00 RT-07 policy deny PASS (413)
+2026-07-30T00:19:11.4532653+04:00 RT-08 autodiscover TLS honesty
+2026-07-30T00:19:11.4633639+04:00 RT-08 autodiscover SSL off PASS (lab honesty — ERA_MAIL_TLS unset; set ERA_MAIL_TLS=1 for SSL on)
+2026-07-30T00:19:11.4667953+04:00 STAGING PASS - see D:\My Projects\era-one\scripts\..\reports\comms-pilot-staging.log
+2026-07-30T00:56:34.4170091+04:00 RT-01 healthz/readyz
+2026-07-30T00:56:35.4722265+04:00 RT-01 readyz checks: {"checks":{"clickhouse":"ok","minio":"ok","postgres":"ok","repo":"ok"},"ready":true}
+
+2026-07-30T00:56:35.4762306+04:00 RT-02 mailbox provision (pre-Outlook/EWS)
+2026-07-30T00:56:35.7446983+04:00 RT-02 mailbox already provisioned
+2026-07-30T00:56:35.7475263+04:00 RT-03 Thunderbird SMTP AUTH deliver
+2026-07-30T00:56:36.1652050+04:00 RT-03 Thunderbird IMAP FETCH
+2026-07-30T00:56:36.3736591+04:00 RT-02 Outlook EWS CreateItem smoke
+2026-07-30T00:56:36.4040658+04:00 RT-04 CalDAV PUT
+2026-07-30T00:56:36.4620010+04:00 RT-04b CardDAV PUT
+2026-07-30T00:56:36.4812879+04:00 RT-05 webmail OIDC machine-flow
+2026-07-30T00:56:36.8664912+04:00 RT-05 OIDC send+list PASS
+2026-07-30T00:56:36.8691270+04:00 RT-06 ActiveSync Provision
+2026-07-30T00:56:36.8780821+04:00 RT-06 wait for async SMTP audit webhook
+2026-07-30T00:56:38.8984776+04:00 RT-06 ClickHouse audit count
+2026-07-30T00:56:38.9380454+04:00 RT-06 CH audit rows: 11
+2026-07-30T00:56:38.9423904+04:00 RT-07 policy deny oversized
+2026-07-30T00:56:40.2504455+04:00 RT-07 policy deny PASS (413)
+2026-07-30T00:56:40.2530785+04:00 RT-08 autodiscover TLS honesty
+2026-07-30T00:56:40.2632019+04:00 RT-08 autodiscover SSL off PASS (lab honesty — ERA_MAIL_TLS unset; set ERA_MAIL_TLS=1 for SSL on)
+2026-07-30T00:56:40.2665633+04:00 STAGING PASS - see D:\My Projects\era-one\scripts\..\reports\comms-pilot-staging.log
+2026-07-30T01:04:40.6824313+04:00 RT-01 healthz/readyz
+2026-07-30T01:04:40.7808056+04:00 RT-01 readyz checks: {"checks":{"clickhouse":"ok","minio":"ok","postgres":"ok","repo":"ok"},"ready":true}
+
+2026-07-30T01:04:40.7834060+04:00 RT-02 mailbox provision (pre-Outlook/EWS)
+2026-07-30T01:04:40.9033920+04:00 RT-02 mailbox already provisioned
+2026-07-30T01:04:40.9053844+04:00 RT-03 Thunderbird SMTP AUTH deliver
+2026-07-30T01:04:41.0913457+04:00 RT-03 Thunderbird IMAP FETCH
+2026-07-30T01:04:41.2232231+04:00 RT-02 Outlook EWS CreateItem smoke
+2026-07-30T01:04:41.2501610+04:00 RT-04 CalDAV PUT
+2026-07-30T01:04:41.2800403+04:00 RT-04b CardDAV PUT
+2026-07-30T01:04:41.2925670+04:00 RT-05 webmail OIDC machine-flow
+2026-07-30T01:04:41.7211849+04:00 RT-05 OIDC send+list PASS
+2026-07-30T01:04:41.7237500+04:00 RT-06 ActiveSync Provision
+2026-07-30T01:04:41.7328443+04:00 RT-06 wait for async SMTP audit webhook
+2026-07-30T01:04:43.7459101+04:00 RT-06 ClickHouse audit count
+2026-07-30T01:04:43.7897652+04:00 RT-06 CH audit rows: 135
+2026-07-30T01:04:43.7951122+04:00 RT-07 policy deny oversized
+2026-07-30T01:04:44.5749079+04:00 RT-07 policy deny PASS (413)
+2026-07-30T01:04:44.5784984+04:00 RT-08 autodiscover TLS honesty
+2026-07-30T01:04:44.5853183+04:00 RT-08 autodiscover SSL off PASS (lab honesty — ERA_MAIL_TLS unset; set ERA_MAIL_TLS=1 for SSL on)
+2026-07-30T01:04:44.5875474+04:00 STAGING PASS - see D:\My Projects\era-one\scripts\..\reports\comms-pilot-staging.log
+2026-07-30T01:05:24.9747474+04:00 RT-01 healthz/readyz
+2026-07-30T01:05:25.1929335+04:00 RT-01 readyz checks: {"checks":{"clickhouse":"ok","minio":"ok","postgres":"ok","repo":"ok"},"ready":true}
+
+2026-07-30T01:05:25.1955401+04:00 RT-02 mailbox provision (pre-Outlook/EWS)
+2026-07-30T01:05:25.3086371+04:00 RT-02 mailbox already provisioned
+2026-07-30T01:05:25.3120471+04:00 RT-03 Thunderbird SMTP AUTH deliver
+2026-07-30T01:05:25.4384786+04:00 RT-03 Thunderbird IMAP FETCH
+2026-07-30T01:05:25.5954296+04:00 RT-02 Outlook EWS CreateItem smoke
+2026-07-30T01:05:25.6394608+04:00 RT-04 CalDAV PUT
+2026-07-30T01:05:25.6733931+04:00 RT-04b CardDAV PUT
+2026-07-30T01:05:25.7569135+04:00 RT-05 webmail OIDC machine-flow
+2026-07-30T01:05:26.0102907+04:00 RT-05 OIDC send+list PASS
+2026-07-30T01:05:26.0135868+04:00 RT-06 ActiveSync Provision
+2026-07-30T01:05:26.0215249+04:00 RT-06 wait for async SMTP audit webhook
+2026-07-30T01:05:28.0320113+04:00 RT-06 ClickHouse audit count
+2026-07-30T01:05:28.1383882+04:00 RT-06 CH audit rows: 138
+2026-07-30T01:05:28.1433551+04:00 RT-07 policy deny oversized
+2026-07-30T01:05:29.0564331+04:00 RT-07 policy deny PASS (413)
+2026-07-30T01:05:29.0606808+04:00 RT-08 autodiscover TLS honesty
+2026-07-30T01:09:00.7357847+04:00 RT-01 healthz/readyz
+2026-07-30T01:09:00.8764923+04:00 RT-01 readyz checks: {"checks":{"clickhouse":"ok","minio":"ok","postgres":"ok","repo":"ok"},"ready":true}
+
+2026-07-30T01:09:00.8804571+04:00 RT-02 mailbox provision (pre-Outlook/EWS)
+2026-07-30T01:09:01.0350751+04:00 RT-02 mailbox already provisioned
+2026-07-30T01:09:01.0371046+04:00 RT-03 Thunderbird SMTP AUTH deliver
+2026-07-30T01:09:01.2024610+04:00 RT-03 Thunderbird IMAP FETCH
+2026-07-30T01:09:01.3549959+04:00 RT-02 Outlook EWS CreateItem smoke
+2026-07-30T01:09:01.3927398+04:00 RT-04 CalDAV PUT
+2026-07-30T01:09:01.4210168+04:00 RT-04b CardDAV PUT
+2026-07-30T01:09:01.4388067+04:00 RT-05 webmail OIDC machine-flow
+2026-07-30T01:09:01.6623953+04:00 RT-05 OIDC send+list PASS
+2026-07-30T01:09:01.6651126+04:00 RT-06 ActiveSync Provision
+2026-07-30T01:09:01.6718532+04:00 RT-06 wait for async SMTP audit webhook
+2026-07-30T01:09:03.6816681+04:00 RT-06 ClickHouse audit count
+2026-07-30T01:09:03.7075059+04:00 RT-06 CH audit rows: 141
+2026-07-30T01:09:03.7112241+04:00 RT-07 policy deny oversized
+2026-07-30T01:09:04.2766677+04:00 RT-07 policy deny PASS (413)
+2026-07-30T01:09:04.2806142+04:00 RT-08 autodiscover TLS honesty
+2026-07-30T01:09:04.2874103+04:00 RT-08 autodiscover SSL on PASS (ProdProfile)
+2026-07-30T01:09:04.2900563+04:00 STAGING PASS - see D:\My Projects\era-one\scripts\..\reports\comms-pilot-staging.log
+2026-07-30T02:25:22.1267123+04:00 RT-01 healthz/readyz
+2026-07-30T02:25:22.1639581+04:00 RT-01 readyz checks: {"checks":{"clickhouse":"ok","minio":"ok","postgres":"ok","repo":"ok"},"ready":true}
+
+2026-07-30T02:25:22.1662243+04:00 RT-02 mailbox provision (pre-Outlook/EWS)
+2026-07-30T02:25:22.2791011+04:00 RT-02 mailbox already provisioned
+2026-07-30T02:25:22.2814897+04:00 RT-03 Thunderbird SMTP AUTH deliver
+2026-07-30T02:25:22.4174889+04:00 RT-03 Thunderbird IMAP FETCH
+2026-07-30T02:25:22.5680762+04:00 RT-02 Outlook EWS CreateItem smoke
+2026-07-30T02:25:22.5942096+04:00 RT-04 CalDAV PUT
+2026-07-30T02:25:22.6209138+04:00 RT-04b CardDAV PUT
+2026-07-30T02:25:22.6382835+04:00 RT-05 webmail OIDC machine-flow
+2026-07-30T02:25:22.9396539+04:00 RT-05 OIDC send+list PASS
+2026-07-30T02:25:22.9418197+04:00 RT-06 ActiveSync Provision
+2026-07-30T02:25:22.9491430+04:00 RT-06 wait for async SMTP audit webhook
+2026-07-30T02:25:24.9728890+04:00 RT-06 ClickHouse audit count
+2026-07-30T02:25:25.0873133+04:00 RT-06 CH audit rows: 145
+2026-07-30T02:25:25.0906086+04:00 RT-07 policy deny oversized
+2026-07-30T02:25:25.5707631+04:00 RT-07 policy deny PASS (413)
+2026-07-30T02:25:25.5731882+04:00 RT-08 autodiscover TLS honesty
+2026-07-30T02:25:25.5811349+04:00 RT-08 autodiscover SSL off PASS (lab honesty — ERA_MAIL_TLS unset; set ERA_MAIL_TLS=1 for SSL on)
+2026-07-30T02:25:25.5835493+04:00 STAGING PASS - see D:\My Projects\era-one\scripts\..\reports\comms-pilot-staging.log

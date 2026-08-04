@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"era/services/comms/mail-bridge/internal/upstream/synthetic"
 )
 
 // Route describes upstream for an email domain or mailbox.
@@ -35,7 +37,11 @@ func NewRouter(defaultB Backend) *Router {
 }
 
 // LoadFromEnv reads ERA_BRIDGE_UPSTREAM_JSON and ERA_BRIDGE_TENANT_MAP.
+// ERA_BRIDGE_SYNTHETIC=1 or ERA_BRIDGE_UPSTREAM=synthetic replaces default with lab echo.
 func LoadFromEnv(defaultB Backend) (*Router, error) {
+	if os.Getenv("ERA_BRIDGE_SYNTHETIC") == "1" || strings.EqualFold(os.Getenv("ERA_BRIDGE_UPSTREAM"), "synthetic") {
+		defaultB = synthetic.Backend{}
+	}
 	r := NewRouter(defaultB)
 	for domain, be := range LoadTenantMap(defaultB) {
 		r.backends[domain] = be

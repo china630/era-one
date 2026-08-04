@@ -9,49 +9,55 @@ product: era-office
 editions:
   era-documents:
     title: ERA Documents
-    status: roadmap
-    license_module: { name: office-documents, exists: false }
-    description: Текстовые документы, co-editing (.era-doc + docx I/O).
-    services: [platform-docs-engine]
+    # Honesty 2026-07-30: O-0…O-5 gates PASS; O-GA honesty closeout; field RT-O09 open → not ga
+    status: mvp
+    license_module: { name: office-documents, exists: true }
+    description: Текстовые документы, co-editing (.erad + docx I/O).
+    services: [platform-docs-engine, docs-engine]
     requires_shared: [era-drive]
     pricing_ref: office-documents
+    proof: "O-GA gate — scripts/run-office-stage-gate.ps1 -Stage O-GA"
 
   era-tables:
     title: ERA Tables
-    status: roadmap
-    license_module: { name: office-tables, exists: false }
-    description: Таблицы, формулы (.era-sheet + xlsx I/O).
-    services: [platform-docs-engine]
+    # Honesty 2026-07-30: O-T scaffold/mvp gates; field Pilot-ready open → not ga
+    status: mvp
+    license_module: { name: office-tables, exists: true }
+    description: Таблицы, формулы (.erat + xlsx I/O).
+    services: [platform-tables-engine, tables-engine]
     requires_shared: [era-drive]
     pricing_ref: office-tables
+    proof: "O-T-TE gate — scripts/run-office-stage-gate.ps1 -Stage O-T-TE"
 
   era-presentations:
     title: ERA Presentations
-    status: roadmap
-    license_module: { name: office-presentations, exists: false }
-    description: Презентации on-prem (.era-deck).
-    services: [platform-docs-engine]
+    status: mvp
+    license_module: { name: office-presentations, exists: true }
+    description: Презентации on-prem (.erap).
+    services: [platform-presentations-engine, presentations-engine]
     requires_shared: [era-drive]
     pricing_ref: office-presentations
+    proof: "O-P-4 gate"
 
   era-projects:
     title: ERA Projects
-    status: roadmap
-    license_module: { name: office-projects, exists: false }
-    description: Управление проектами (post-MVP).
+    status: mvp
+    license_module: { name: office-projects, exists: true }
+    description: Управление проектами (kanban scaffold).
     services: [docs-projects]
     requires_shared: [era-drive]
     pricing_ref: office-projects
+    proof: "O-PR-3 gate"
 
   era-office-ai:
     title: ERA Office AI
-    status: roadmap
-    license_module: { name: office-ai, exists: false }
+    status: mvp
+    license_module: { name: office-ai, exists: true }
     description: Air-Gap LLM для документов. ≠ Control/Comms AI.
     services: [platform-docs-ai]
     requires_shared: [era-drive]
     pricing_ref: office-ai
-
+    proof: "O-AI-3 gate"
 bundles:
   office-mvp:
     title: ERA Office MVP

@@ -58,6 +58,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.syncContacts(w, mailbox)
 	case strings.Contains(action, "CreateContact") || strings.Contains(raw, "CreateContact"):
 		h.createContact(w, raw, mailbox)
+	case strings.Contains(action, "SyncNotes") || strings.Contains(raw, "SyncNotes"):
+		h.syncNotes(w, mailbox)
+	case strings.Contains(action, "SyncTasks") || strings.Contains(raw, "SyncTasks"):
+		h.syncTasks(w, mailbox)
 	case strings.Contains(action, "Subscribe") || strings.Contains(raw, "Subscribe"):
 		h.subscribeStub(w)
 	default:
@@ -68,7 +72,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func detectAction(raw string) string {
 	for _, op := range []string{
 		"FindFolder", "GetFolder", "CreateItem", "UpdateItem", "DeleteItem",
-		"GetItem", "SyncFolderItems", "SyncContacts", "CreateContact", "Subscribe",
+		"GetItem", "SyncFolderItems", "SyncContacts", "CreateContact",
+		"SyncNotes", "SyncTasks", "Subscribe",
 	} {
 		if strings.Contains(raw, op) {
 			return op
@@ -101,18 +106,59 @@ func (h *Handler) createItem(w http.ResponseWriter, raw, mailbox string) {
 	if subject == "" {
 		subject = "EWS Message"
 	}
+	if strings.Contains(raw, "<Note") || strings.Contains(raw, "<t:Note") {
+		subject = "[Note] " + subject
+	} else if strings.Contains(raw, "<Task") || strings.Contains(raw, "<t:Task") {
+		subject = "[Task] " + subject
+	}
 	msg, err := h.Repo.AddEWSMessage(mailbox, subject, body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	id := formatMsgID(msg.ID)
+	itemTag := "Message"
+	if strings.HasPrefix(subject, "[Note]") {
+		itemTag = "Message"
+	} else if strings.HasPrefix(subject, "[Task]") {
+		itemTag = "Task"
+	}
 	writeSOAP(w, `<CreateItemResponse xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
       <ResponseMessages>
         <CreateItemResponseMessage ResponseClass="Success">
-          <Items><Message><ItemId Id="`+id+`"/></Message></Items>
+          <Items><`+itemTag+`><ItemId Id="`+id+`"/></`+itemTag+`></Items>
         </CreateItemResponseMessage>
       </ResponseMessages>`)
+}
+
+func (h *Handler) syncNotes(w http.ResponseWriter, mailbox string) {
+	msgs, _ := h.Repo.ListMessages(mailbox)
+	b := strings.Builder{}
+	b.WriteString(`<SyncNotesResponse xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+      <ResponseMessages><SyncNotesResponseMessage ResponseClass="Success"><Notes>`)
+	for _, msg := range msgs {
+		if !strings.HasPrefix(msg.Subject, "[Note]") {
+			continue
+		}
+		b.WriteString(`<Note><ItemId Id="` + formatMsgID(msg.ID) + `"/><Subject>` + xmlEscape(msg.Subject) + `</Subject></Note>`)
+	}
+	b.WriteString(`</Notes></SyncNotesResponseMessage></ResponseMessages>`)
+	writeSOAP(w, b.String())
+}
+
+func (h *Handler) syncTasks(w http.ResponseWriter, mailbox string) {
+	msgs, _ := h.Repo.ListMessages(mailbox)
+	b := strings.Builder{}
+	b.WriteString(`<SyncTasksResponse xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+      <ResponseMessages><SyncTasksResponseMessage ResponseClass="Success"><Tasks>`)
+	for _, msg := range msgs {
+		if !strings.HasPrefix(msg.Subject, "[Task]") {
+			continue
+		}
+		b.WriteString(`<Task><ItemId Id="` + formatMsgID(msg.ID) + `"/><Subject>` + xmlEscape(msg.Subject) + `</Subject></Task>`)
+	}
+	b.WriteString(`</Tasks></SyncTasksResponseMessage></ResponseMessages>`)
+	writeSOAP(w, b.String())
 }
 
 func (h *Handler) updateItem(w http.ResponseWriter, raw, mailbox string) {

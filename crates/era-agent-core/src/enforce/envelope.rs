@@ -31,11 +31,12 @@ pub fn enforcement_detection_envelope(
     env.severity = Severity::High as i32;
     env.detection = Some(Detection {
         rule_id: rule_id.clone(),
-        rule_name: summary.clone(),
+        rule_name: format!("{summary} [effect=telemetry_only]"),
         severity: Severity::High as i32,
         engine: engine.clone(),
         confidence: 1.0,
     });
-    env.pii_sanitized = true;
+    // Flag only after sanitize path (orchestrator); do not claim redaction here.
+    env.pii_sanitized = false;
     Some(env)
 }

@@ -1,0 +1,15 @@
+{
+  "productName": "ERA Tables",
+  "identifier": "az.era.office.tables",
+  "app": {
+    "windows": [{ "label": "main", "title": "ERA Tables" }]
+  },
+  "bundle": {
+    "shortDescription": "ERA Tables Solo — local .erat spreadsheet",
+    "fileAssociations": [
+      { "ext": ["erat"], "name": "ERA Table", "mimeType": "application/vnd.era.erat", "role": "Editor" },
+      { "ext": ["xlsx"], "name": "Excel Workbook", "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "role": "Editor" }
+    ],
+    "icon": ["icons/sku-tables.png", "icons/sku-tables.ico", "icons/icon.png", "icons/icon.ico"]
+  }
+}

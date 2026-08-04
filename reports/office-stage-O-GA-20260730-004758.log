@@ -1,0 +1,60 @@
+==> office stage gate O-GA 20260730-004758
+[PASS] O-GA/file :: docs/products/Office-Acceptance-System.md
+[PASS] O-GA/file :: docs/Office-Evidence-Rules.md
+[PASS] O-GA/file :: docs/Office-MVP-Spec.md
+[PASS] O-GA/file :: docs/Office-Sprint-Index.md
+[PASS] O-GA/file :: docs/Office-Implementation-Matrix.md
+[PASS] O-GA/file :: docs/Office-Pilot-Gap-List.md
+[PASS] O-GA/file :: docs/Office-Pilot-Readiness-Checklist.md
+[PASS] O-GA/file :: docs/Office-Stage-O0-Spec.md
+[PASS] O-GA/file :: docs/Office-Stage-O1-Spec.md
+[PASS] O-GA/file :: docs/Office-Stage-O2-Spec.md
+[PASS] O-GA/file :: docs/Office-Stage-O3-Spec.md
+[PASS] O-GA/file :: docs/Office-Stage-O4-Spec.md
+[PASS] O-GA/file :: docs/Office-Stage-O5-Spec.md
+[PASS] O-GA/file :: docs/Office-Stage-OGA-Spec.md
+[PASS] O-GA/file :: scripts/run-office-stage-gate.ps1
+[PASS] O-GA/file :: proto/era/v1/drive.proto
+[PASS] O-GA/file :: proto/era/v1/office.proto
+[PASS] O-GA/evidence :: docs/Office-Evidence-Rules.md matches Нет лога
+[PASS] O-GA/matrix :: docs/Office-Implementation-Matrix.md matches AC-O3
+[PASS] O-GA/mvp-O-0 :: docs/Office-MVP-Spec.md matches \*\*O-0\*\*.*\[x\]
+[PASS] O-GA/index-O-0 :: docs/Office-Sprint-Index.md matches \*\*O-0\*\*.*\[x\]
+[PASS] O-GA/mvp-O-1 :: docs/Office-MVP-Spec.md matches \*\*O-1\*\*.*\[x\]
+[PASS] O-GA/index-O-1 :: docs/Office-Sprint-Index.md matches \*\*O-1\*\*.*\[x\]
+[PASS] O-GA/mvp-O-2 :: docs/Office-MVP-Spec.md matches \*\*O-2\*\*.*\[x\]
+[PASS] O-GA/index-O-2 :: docs/Office-Sprint-Index.md matches \*\*O-2\*\*.*\[x\]
+[PASS] O-GA/mvp-O-3 :: docs/Office-MVP-Spec.md matches \*\*O-3\*\*.*\[x\]
+[PASS] O-GA/index-O-3 :: docs/Office-Sprint-Index.md matches \*\*O-3\*\*.*\[x\]
+[PASS] O-GA/mvp-O-4 :: docs/Office-MVP-Spec.md matches \*\*O-4\*\*.*\[x\]
+[PASS] O-GA/index-O-4 :: docs/Office-Sprint-Index.md matches \*\*O-4\*\*.*\[x\]
+[PASS] O-GA/mvp-O-5 :: docs/Office-MVP-Spec.md matches \*\*O-5\*\*.*\[x\]
+[PASS] O-GA/index-O-5 :: docs/Office-Sprint-Index.md matches \*\*O-5\*\*.*\[x\]
+[PASS] O-0/drive-service :: powershell -NoProfile -Command "if (Select-String -Path proto/era/v1/drive.proto -Pattern 'service DriveService' -Quiet) { exit 0 } else { exit 1 }"
+[PASS] O-0/gen-proto-list :: powershell -NoProfile -Command "if ((Select-String -Path scripts/gen-proto.ps1 -Pattern 'era/v1/drive.proto' -Quiet) -and (Select-String -Path scripts/gen-proto.ps1 -Pattern 'era/v1/office.proto' -Quiet)) { exit 0 } else { exit 1 }"
+[PASS] O-0/golden :: go test -C gen/go ./era/v1/ -run "DriveService|DriveObjectWire|EradDocumentWire" -count=1
+[PASS] O-1/migration :: cmd /c "if exist deploy\postgres\migrations\platform\001_drive.sql (exit /b 0) else (exit /b 1)"
+[PASS] O-1/drive-api :: cmd /c "if exist services\platform\cmd\drive-api\main.go (exit /b 0) else (exit /b 1)"
+[PASS] O-1/drive-tests :: go test -C services/platform ./drive/... -count=1
+[PASS] O-1/license :: go test -C services/platform ./licensegate/... -run "PlatformDrive|OfficeDocuments|OfficeDev" -count=1
+[PASS] O-1/mail-drive :: go test -C ui/mail ./... -run Drive -count=1
+[PASS] O-1/compose :: docker compose -f deploy/docker-compose.office.yml config
+[PASS] O-2/identity-cmd :: cmd /c "if exist services\platform\cmd\identity-api\main.go (exit /b 0) else (exit /b 1)"
+[PASS] O-2/oidc-dockerfile :: cmd /c "if exist deploy\dockerfiles\Dockerfile.identity-api (exit /b 0) else (exit /b 1)"
+[PASS] O-2/oidc-tests :: go test -C services/platform ./internal/oidc/... -count=1
+[PASS] O-2/workspace :: go test -C services/platform ./workspace/... ./cmd/workspace/... -count=1
+[PASS] O-2/ui-drive :: go test -C ui/drive ./... -count=1
+[PASS] O-2/compose :: docker compose -f deploy/docker-compose.office.yml config
+[PASS] O-3/dockerfile :: cmd /c "if exist deploy\dockerfiles\Dockerfile.docs-engine (exit /b 0) else (exit /b 1)"
+[PASS] O-3/drive-bind :: cargo test -p era-docs-engine drive_bind --quiet
+[PASS] O-3/proto-roundtrip :: cargo test -p era-docs-engine --test proto_roundtrip --quiet
+[PASS] O-3/ui-docs :: go test -C ui/docs ./... -count=1
+[PASS] O-3/compose-docs :: docker compose -f deploy/docker-compose.office.yml --profile docs config
+[PASS] O-4/ws-coedit :: cargo test -p era-docs-engine --test ws_coedit --quiet
+[PASS] O-4/sync :: cargo test -p era-docs-engine sync --quiet
+[PASS] O-4/ui-docs :: go test -C ui/docs ./... -count=1
+[PASS] O-5/golden-docx :: cargo test -p era-docs-engine --test golden_docx --quiet
+[PASS] O-5/golden-corpus :: cargo test -p era-docs-engine --test golden_docx_corpus --quiet
+[PASS] O-5/fuzz-smoke :: cargo test -p era-docs-engine fuzz_docx_smoke --quiet
+[PASS] O-5/sbom :: pwsh -NoProfile -File ./scripts/office-sbom-gate.ps1
+STAGE GATE PASS (O-GA)

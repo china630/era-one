@@ -1,0 +1,17 @@
+{
+  "tftp_root": "/var/lib/era-provision/tftp",
+  "default_image": "img-linux-22",
+  "boot_menu": [
+    {
+      "label": "Ubuntu 22.04",
+      "image_id": "img-linux-22",
+      "kernel": "vmlinuz",
+      "initrd": "initrd.img"
+    },
+    {
+      "label": "Windows 2022",
+      "image_id": "img-win-2022",
+      "kernel": "bootmgfw.efi"
+    }
+  ]
+}

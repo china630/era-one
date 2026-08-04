@@ -44,11 +44,16 @@ func OpenPostgres(dsn string) (*Postgres, error) {
 	return &Postgres{db: db, blobs: blobs}, nil
 }
 
-// OpenFromEnv opens Postgres when ERA_COMMS_DATABASE_URL set, else memory.
+// OpenFromEnv opens Postgres when ERA_COMMS_DATABASE_URL is set.
+// Memory is only allowed when ERA_MAIL_STORE=memory (G1-1 honesty).
 func OpenFromEnv() (Backend, error) {
+	storeMode := strings.ToLower(strings.TrimSpace(os.Getenv("ERA_MAIL_STORE")))
 	dsn := strings.TrimSpace(os.Getenv("ERA_COMMS_DATABASE_URL"))
-	if dsn == "" {
+	if storeMode == "memory" {
 		return NewMemory(), nil
+	}
+	if dsn == "" {
+		return nil, fmt.Errorf("ERA_COMMS_DATABASE_URL required (set ERA_MAIL_STORE=memory for in-memory lab)")
 	}
 	return OpenPostgres(dsn)
 }

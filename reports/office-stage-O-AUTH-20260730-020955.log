@@ -1,0 +1,6 @@
+==> office stage gate O-AUTH 20260730-020955
+[PASS] O-AUTH/drive-spoof :: go test -C services/platform ./drive/api/... -run "Spoof|JWTRequired|ServiceToken|LicenseDenied" -count=1
+[PASS] O-AUTH/docs-auth :: cargo test -p era-docs-engine create_without --quiet
+[PASS] O-AUTH/tables-auth :: cargo test -p era-tables-engine tables_create_without --quiet
+[PASS] O-AUTH/workspace :: go test -C services/platform ./workspace/... -run APIAuth -count=1
+STAGE GATE PASS (O-AUTH)

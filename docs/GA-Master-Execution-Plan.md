@@ -2,7 +2,7 @@
 
 **Цель:** последовательная реализация **Wave GA-1 → GA-2 → GA-3** до готового продукта (все издания ADR-0005).
 
-**Трекинг:** [`Production-GA-Spec.md`](Production-GA-Spec.md) · [`Development-Plan.md`](Development-Plan.md)
+**Трекинг:** [`Production-GA-Spec.md`](Production-GA-Spec.md) · [`Control-Sprint-Index.md`](Control-Sprint-Index.md) · [`Control-Acceptance-System.md`](products/Control-Acceptance-System.md) · [`Development-Plan.md`](Development-Plan.md)
 
 ---
 

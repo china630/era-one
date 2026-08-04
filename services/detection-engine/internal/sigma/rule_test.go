@@ -41,9 +41,37 @@ func TestLoadDir(t *testing.T) {
 	}
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
+func TestTechniquesFromTags(t *testing.T) {
+	r := &Rule{Tags: []string{"attack.t1099", "attack.T1059.001", "os.windows"}}
+	got := r.Techniques()
+	want := []string{"T1099", "T1059.001"}
+	if len(got) != len(want) {
+		t.Fatalf("got %v want %v", got, want)
 	}
-	return b
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("got %v want %v", got, want)
+		}
+	}
+}
+
+func TestMitreEmitGolden(t *testing.T) {
+	r := &Rule{
+		ID:    "era-timetest-timestomp",
+		Title: "Timestomp",
+		Level: "medium",
+		Tags:  []string{"attack.T1099"},
+		Logsource: map[string]string{"category": "process"},
+		Detection: map[string]any{
+			"selection": map[string]any{"CommandLine|contains": "timestomp"},
+			"condition": "selection",
+		},
+	}
+	tech := r.Techniques()
+	if len(tech) != 1 || tech[0] != "T1099" {
+		t.Fatalf("%v", tech)
+	}
+	if !r.Match("process", `timestomp.exe -r`) {
+		t.Fatal("expected match")
+	}
 }

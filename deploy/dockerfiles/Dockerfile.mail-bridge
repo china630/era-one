@@ -3,6 +3,7 @@ FROM golang:1.26.4-alpine AS build
 WORKDIR /src
 COPY deploy/dockerfiles/go.work.mail-bridge ./go.work
 COPY gen/go gen/go
+COPY services/comms/internal/imapclient services/comms/internal/imapclient
 COPY services/comms/mail services/comms/mail
 COPY services/comms/calendar services/comms/calendar
 COPY services/comms/mail-bridge services/comms/mail-bridge

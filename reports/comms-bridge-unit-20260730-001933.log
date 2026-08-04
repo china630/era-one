@@ -1,0 +1,9 @@
+?   	era/services/comms/mail-bridge/cmd/mail-bridge-api	[no test files]
+ok  	era/services/comms/mail-bridge/internal/api	0.064s
+?   	era/services/comms/mail-bridge/internal/audit	[no test files]
+ok  	era/services/comms/mail-bridge/internal/autodiscover	0.045s
+?   	era/services/comms/mail-bridge/internal/proxy	[no test files]
+?   	era/services/comms/mail-bridge/internal/upstream	[no test files]
+ok  	era/services/comms/mail-bridge/internal/upstream/exchange	0.058s
+ok  	era/services/comms/mail-bridge/internal/upstream/icewarp	0.067s
+ok  	era/services/comms/mail-bridge/internal/upstream/imap_generic	0.261s

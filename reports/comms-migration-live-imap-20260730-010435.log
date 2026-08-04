@@ -1,0 +1,10 @@
+2026-07-30T01:04:36.0921287+04:00 MIG-LIVE job 1: {"id":"20260729210436-mig-imap","source":"imap","mailbox":"lab1@mail.gov.az","status":"queued","items_total":0,"items_ok":0,"items_fail":0,"created_at":"2026-07-29T21:04:36.040904683Z"}
+
+2026-07-30T01:04:36.1162699+04:00 MIG-LIVE job 2: {"id":"20260729210436-mig-imap","source":"imap","mailbox":"lab2@mail.gov.az","status":"queued","items_total":0,"items_ok":0,"items_fail":0,"created_at":"2026-07-29T21:04:36.106281816Z"}
+
+2026-07-30T01:04:36.1372886+04:00 MIG-LIVE archive D:\My Projects\era-one\scripts\..\services\comms\migration\testdata\lab-fixture.mbox: {"id":"20260729210436-mig-imap","source":"imap","mailbox":"archive-lab@mail.gov.az","status":"done","items_total":1,"items_ok":1,"items_fail":0,"created_at":"2026-07-29T21:04:36.126564568Z"}
+
+2026-07-30T01:04:36.1531358+04:00 MIG-LIVE archive D:\My Projects\era-one\scripts\..\services\comms\migration\internal\importers\archive\testdata\lab-fixture.pst: {"id":"20260729210436-mig-imap","source":"imap","mailbox":"archive-lab@mail.gov.az","status":"done","items_total":2,"items_ok":2,"items_fail":0,"created_at":"2026-07-29T21:04:36.140823715Z"}
+
+2026-07-30T01:04:38.3424367+04:00 MIG-LIVE CH assert skip: Response status code does not indicate success: 404 (Not Found).
+2026-07-30T01:04:38.3496448+04:00 MIG-LIVE PILOT LIVE IMAP LAB PASS — see D:\My Projects\era-one\scripts\..\reports\comms-migration-live-imap-20260730-010435.log

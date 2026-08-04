@@ -89,6 +89,24 @@ func (s *sqliteStore) ListDeployJobs() []*DeployJob {
 	return out
 }
 
+func (s *sqliteStore) GetDeployJob(id string) (*DeployJob, bool) {
+	row := s.db.QueryRow(
+		`SELECT id, tenant_id, node_id, package_ref, ota_token, reboot, status, created_at, updated_at FROM deploy_jobs WHERE id=?`, id,
+	)
+	var j DeployJob
+	var st string
+	var reboot int
+	var cts, uts string
+	if err := row.Scan(&j.ID, &j.TenantID, &j.NodeID, &j.PackageRef, &j.OTAToken, &reboot, &st, &cts, &uts); err != nil {
+		return nil, false
+	}
+	j.Reboot = reboot == 1
+	j.Status = RolloutStatus(st)
+	j.CreatedAt, _ = time.Parse(time.RFC3339Nano, cts)
+	j.UpdatedAt, _ = time.Parse(time.RFC3339Nano, uts)
+	return &j, true
+}
+
 func (s *sqliteStore) UpdateDeployJob(id string, status RolloutStatus) (*DeployJob, bool) {
 	uts := time.Now().UTC().Format(time.RFC3339Nano)
 	res, err := s.db.Exec(`UPDATE deploy_jobs SET status=?, updated_at=? WHERE id=?`, string(status), uts, id)

@@ -15,12 +15,14 @@ import (
 	"era/services/comms/ai/internal/llm"
 	"era/services/comms/ai/internal/phishing"
 	"era/services/comms/ai/internal/summary"
+	"era/services/comms/internal/httpauth"
 	"era/services/platform/licensegate"
 )
 
 var updateGolden = flag.Bool("update", false, "update golden files")
 
 func aiMux() *http.ServeMux {
+	_ = os.Setenv("ERA_COMMS_AI_DEV", "1")
 	gate := licensegate.FromModules([]licensegate.Module{licensegate.ModuleCommsAI})
 	aud := audit.NewRecorder(nil)
 	s := NewServer(llm.Heuristic{}, gate, aud)
@@ -35,6 +37,7 @@ func withMailHeaders(req *http.Request) {
 }
 
 func TestF_C31_MailSummaryOnPrem(t *testing.T) {
+	t.Setenv("ERA_COMMS_AI_DEV", "1")
 	mux := aiMux()
 	body := map[string]any{
 		"tenant_id":  "t-demo",
@@ -94,6 +97,7 @@ func TestF_C32_PhishingGolden(t *testing.T) {
 }
 
 func TestF_C32_PhishingAPIAudit(t *testing.T) {
+	t.Setenv("ERA_COMMS_AI_DEV", "1")
 	aud := audit.NewRecorder(nil)
 	gate := licensegate.FromModules([]licensegate.Module{licensegate.ModuleCommsAI})
 	s := NewServer(llm.Heuristic{}, gate, aud)
@@ -160,12 +164,62 @@ func TestF_C34_ResourceBudget(t *testing.T) {
 }
 
 func TestCommsAIRBAC(t *testing.T) {
-	mux := aiMux()
+	t.Setenv("ERA_COMMS_AI_DEV", "")
+	t.Setenv("ERA_MAIL_DEV", "")
+	t.Setenv("ERA_IDENTITY_JWT_SECRET", "test-secret-32bytes-minimum!!")
+	gate := licensegate.FromModules([]licensegate.Module{licensegate.ModuleCommsAI})
+	s := NewServer(llm.Heuristic{}, gate, audit.NewRecorder(nil))
+	mux := http.NewServeMux()
+	s.Register(mux)
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/ai/summary", bytes.NewReader([]byte(`{}`)))
 	mux.ServeHTTP(rec, req)
-	if rec.Code != http.StatusForbidden {
-		t.Fatalf("expected forbidden, got %d", rec.Code)
+	if rec.Code != http.StatusUnauthorized && rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 401/403, got %d", rec.Code)
+	}
+}
+
+func TestCommsAIJWTTenantBinding(t *testing.T) {
+	secret := []byte("test-secret-32bytes-minimum!!")
+	t.Setenv("ERA_COMMS_AI_DEV", "")
+	t.Setenv("ERA_MAIL_DEV", "")
+	t.Setenv("ERA_IDENTITY_JWT_SECRET", string(secret))
+	tok, err := httpauth.MintDevJWT(secret, "tenant-a", "alice", "mail.user")
+	if err != nil {
+		t.Fatal(err)
+	}
+	aud := audit.NewRecorder(nil)
+	gate := licensegate.FromModules([]licensegate.Module{licensegate.ModuleCommsAI})
+	s := NewServer(llm.Heuristic{}, gate, aud)
+	mux := http.NewServeMux()
+	s.Register(mux)
+
+	body := map[string]any{
+		"tenant_id":  "tenant-b",
+		"mailbox_id": "mb-1",
+		"thread": []summary.Message{
+			{From: "a@demo.local", Subject: "t", Body: "body"},
+		},
+	}
+	b, _ := json.Marshal(body)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/ai/summary", bytes.NewReader(b))
+	req.Header.Set("Authorization", "Bearer "+tok)
+	req.Header.Set("X-ERA-Tenant", "tenant-b")
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d body=%s", rec.Code, rec.Body.String())
+	}
+	var res map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &res); err != nil {
+		t.Fatal(err)
+	}
+	if res["tenant_id"] != "tenant-a" {
+		t.Fatalf("response tenant_id=%v want tenant-a", res["tenant_id"])
+	}
+	ev, ok := aud.Last()
+	if !ok || ev.TenantID != "tenant-a" {
+		t.Fatalf("audit tenant=%q want tenant-a", ev.TenantID)
 	}
 }
 

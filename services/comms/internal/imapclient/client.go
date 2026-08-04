@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"strings"
 	"time"
 )
@@ -48,7 +49,8 @@ func Dial(cfg Config) (*Client, error) {
 		err  error
 	)
 	if cfg.TLS {
-		conn, err = tls.Dial("tcp", addr, &tls.Config{InsecureSkipVerify: true}) //nolint:gosec // lab testbed
+		insecure := os.Getenv("ERA_IMAP_INSECURE") == "1"
+		conn, err = tls.Dial("tcp", addr, &tls.Config{InsecureSkipVerify: insecure}) //nolint:gosec // ERA_IMAP_INSECURE=1 lab only
 	} else {
 		conn, err = net.Dial("tcp", addr)
 	}

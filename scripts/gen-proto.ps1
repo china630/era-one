@@ -48,7 +48,10 @@ $goOut = Join-Path $Root "gen\go"
 
 $protos = @(
     "era/v1/envelope.proto",
-    "era/v1/ingest.proto"
+    "era/v1/ingest.proto",
+    "era/v1/comms.proto",
+    "era/v1/drive.proto",
+    "era/v1/office.proto"
 )
 
 Write-Host "    protoc include: $protoInclude"

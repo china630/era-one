@@ -1,6 +1,6 @@
 //go:build integration
 
-package audit
+package auditapi_test
 
 import (
 	"context"
@@ -14,8 +14,16 @@ import (
 	"testing"
 	"time"
 
+	"era/services/comms/mail/internal/audit"
 	"era/services/comms/mail/internal/auditapi"
 )
+
+func chAddr() string {
+	if a := os.Getenv("ERA_CH_ADDR"); a != "" {
+		return a
+	}
+	return "127.0.0.1:19000"
+}
 
 func repoRoot(t *testing.T) string {
 	t.Helper()
@@ -23,13 +31,36 @@ func repoRoot(t *testing.T) string {
 	if !ok {
 		t.Fatal("runtime.Caller failed")
 	}
-	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", "..", "..", "..", ".."))
-	return root
+	return filepath.Clean(filepath.Join(filepath.Dir(file), "..", "..", "..", "..", ".."))
+}
+
+func applyCommsDDL(t *testing.T, w *audit.Writer) {
+	t.Helper()
+	root := repoRoot(t)
+	raw, err := os.ReadFile(filepath.Join(root, "deploy", "clickhouse", "004_comms_mail_audit.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	for _, stmt := range strings.Split(string(raw), ";") {
+		stmt = strings.TrimSpace(stmt)
+		if stmt == "" || strings.HasPrefix(stmt, "--") {
+			continue
+		}
+		if err := w.ApplyMailAuditDDL(ctx); err != nil {
+			// Prefer writer helper; fall through if DDL file path used elsewhere
+			_ = err
+		}
+		break
+	}
+	if err := w.ApplyMailAuditDDL(ctx); err != nil {
+		t.Fatalf("ddl: %v", err)
+	}
 }
 
 // TestAuditPathSMTPToClickHouse — F-C4: SMTP → audit_hook → auditapi → CH row.
 func TestAuditPathSMTPToClickHouse(t *testing.T) {
-	w, err := New(chAddr())
+	w, err := audit.New(chAddr())
 	if err != nil {
 		t.Skipf("clickhouse unavailable: %v", err)
 	}
@@ -73,7 +104,7 @@ func TestAuditPathSMTPToClickHouse(t *testing.T) {
 
 // TestAuditPathWebhookToClickHouse — auditapi POST → CH (handler path).
 func TestAuditPathWebhookToClickHouse(t *testing.T) {
-	w, err := New(chAddr())
+	w, err := audit.New(chAddr())
 	if err != nil {
 		t.Skipf("clickhouse unavailable: %v", err)
 	}
@@ -85,7 +116,7 @@ func TestAuditPathWebhookToClickHouse(t *testing.T) {
 
 	client := srv.Client()
 	req, err := http.NewRequest(http.MethodPost, srv.URL+"/internal/v1/audit",
-		strings.NewReader(`{"tenant_id":"tenant-e2e","mailbox":"bob@mail.gov.az","action":"send","mail_from":"alice@mail.gov.az"}`))
+		strings.NewReader(`{"tenant_id":"tenant-e2e","mailbox":"bob@mail.gov.az","action":"send","mail_from":"alice@mail.gov.az","src_ip":"127.0.0.1"}`))
 	if err != nil {
 		t.Fatal(err)
 	}

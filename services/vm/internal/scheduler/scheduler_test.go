@@ -20,4 +20,13 @@ func TestCreateAndList(t *testing.T) {
 	if got.LastStatus != "ok" {
 		t.Fatal("mark run failed")
 	}
+
+	en := false
+	upd, ok := s.Update(j.ID, UpdateFields{Name: "daily", Enabled: &en})
+	if !ok || upd.Name != "daily" || upd.Enabled {
+		t.Fatalf("update failed: %+v", upd)
+	}
+	if !s.Delete(j.ID) || len(s.List()) != 0 {
+		t.Fatal("delete failed")
+	}
 }

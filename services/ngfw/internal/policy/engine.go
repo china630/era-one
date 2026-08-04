@@ -1,10 +1,12 @@
-// Package policy — NGFW/eBPF-подобный движок сетевых политик (Cilium-паттерн, F3-2).
 package policy
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"strings"
+	"sync"
 )
 
 type Action string
@@ -24,13 +26,15 @@ type Rule struct {
 }
 
 type Decision struct {
-	Allowed bool
-	RuleID  string
-	Reason  string
+	Allowed bool   `json:"allowed"`
+	RuleID  string `json:"rule_id"`
+	Reason  string `json:"reason"`
 }
 
 type Engine struct {
+	mu   sync.RWMutex
 	Rules []Rule
+	path string
 }
 
 func Default() *Engine {
@@ -43,6 +47,8 @@ func Default() *Engine {
 }
 
 func (e *Engine) Evaluate(srcIP, dstIP, protocol string, dstPort uint32) Decision {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
 	for _, pass := range []Action{ActionDeny, ActionAllow} {
 		for _, rule := range e.Rules {
 			if rule.Action != pass {
@@ -61,6 +67,74 @@ func (e *Engine) Evaluate(srcIP, dstIP, protocol string, dstPort uint32) Decisio
 	}
 	return Decision{Allowed: true, RuleID: "default-allow", Reason: "implicit allow"}
 }
+
+func (e *Engine) List() []Rule {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	out := make([]Rule, len(e.Rules))
+	copy(out, e.Rules)
+	return out
+}
+
+func (e *Engine) Get(id string) (Rule, bool) {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	for _, r := range e.Rules {
+		if r.ID == id {
+			return r, true
+		}
+	}
+	return Rule{}, false
+}
+
+// GetByIndex returns a rule by zero-based index.
+func (e *Engine) GetByIndex(i int) (Rule, bool) {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	if i < 0 || i >= len(e.Rules) {
+		return Rule{}, false
+	}
+	return e.Rules[i], true
+}
+
+func (e *Engine) Replace(rules []Rule) error {
+	e.mu.Lock()
+	e.Rules = append([]Rule(nil), rules...)
+	path := e.path
+	e.mu.Unlock()
+	if path != "" {
+		return e.Save(path)
+	}
+	return nil
+}
+
+func (e *Engine) Save(path string) error {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	data, err := json.MarshalIndent(e.Rules, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0o600)
+}
+
+func (e *Engine) Load(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var rules []Rule
+	if err := json.Unmarshal(data, &rules); err != nil {
+		return err
+	}
+	e.mu.Lock()
+	e.Rules = rules
+	e.path = path
+	e.mu.Unlock()
+	return nil
+}
+
+func (e *Engine) SetPath(path string) { e.path = path }
 
 func ruleMatches(rule Rule, srcIP, dstIP, protocol string, dstPort uint32) bool {
 	if rule.Protocol != "" && !strings.EqualFold(rule.Protocol, protocol) {

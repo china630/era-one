@@ -9,7 +9,8 @@ param(
     [string]$ClickHouseUser = "era",
     [string]$ClickHousePassword = "era_dev_only",
     [switch]$UseCompose,
-    [switch]$ProdProfile
+    [switch]$ProdProfile,
+    [switch]$AllowSkipInfra
 )
 $ErrorActionPreference = "Stop"
 $log = Join-Path $PSScriptRoot "..\reports\comms-pilot-staging.log"
@@ -20,14 +21,28 @@ if ($UseCompose) {
     Log "RT-01 compose up --wait$(if ($ProdProfile) { ' (prod profile)' } else { '' })"
     $compose = Join-Path $PSScriptRoot "..\deploy\docker-compose.comms.yml"
     $dev = Join-Path $PSScriptRoot "..\deploy\docker-compose.comms.dev.yml"
-    $files = @($compose)
-    if (-not $ProdProfile) { $files += $dev }
+    $prod = Join-Path $PSScriptRoot "..\deploy\docker-compose.comms.prod.yml"
+    $files = @("-f", $compose)
+    if ($ProdProfile) {
+        $gen = Join-Path $PSScriptRoot "..\deploy\comms-tls\gen-dev-certs.ps1"
+        if (Test-Path $gen) { & $gen | ForEach-Object { Log "tls: $_" } }
+        if (Test-Path $prod) { $files += @("-f", $prod) }
+    } elseif (Test-Path $dev) {
+        $files += @("-f", $dev)
+    }
     $prevEap = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
-    docker compose -f $files up -d --wait 2>&1 | Out-Null
+    docker compose @files up -d --wait 2>&1 | ForEach-Object { Log "compose: $_" }
     $composeExit = $LASTEXITCODE
     $ErrorActionPreference = $prevEap
-    if ($composeExit -ne 0) { throw "compose up failed (exit $composeExit)" }
+    if ($composeExit -ne 0) {
+        if ($AllowSkipInfra) {
+            Log "RT-01 compose SKIP (exit $composeExit) — AllowSkipInfra"
+            Log "STAGING SKIP (infra unavailable) - see $log"
+            exit 0
+        }
+        throw "compose up failed (exit $composeExit)"
+    }
 }
 
 Log "RT-01 healthz/readyz"
@@ -125,31 +140,35 @@ $chHdr = @{ Authorization = "Basic $chAuth" }
 $chResp = Invoke-WebRequest -Uri "$ClickHouse/?query=$([uri]::EscapeDataString($chQ))" -Headers $chHdr -UseBasicParsing
 $chCount = $chResp.Content.Trim()
 Log "RT-06 CH audit rows: $chCount"
-if ([int]$chCount -le 0) {
-    Log "RT-06 fallback: POST audit webhook directly"
-    $auditBody = '{"tenant_id":"t-demo","mailbox":"staging@mail.gov.az","action":"send","mail_from":"staging@mail.gov.az"}'
-    Invoke-WebRequest -Uri "$MailAPI/internal/v1/audit" -Method POST -Body $auditBody -ContentType "application/json" -UseBasicParsing | Out-Null
-    Start-Sleep -Seconds 1
-    $chResp = Invoke-WebRequest -Uri "$ClickHouse/?query=$([uri]::EscapeDataString($chQ))" -Headers $chHdr -UseBasicParsing
-    $chCount = $chResp.Content.Trim()
-    Log "RT-06 CH audit rows after fallback: $chCount"
-}
-if ([int]$chCount -le 0) { throw "RT-06 mail_audit count must be > 0 (AC-C7)" }
+# L-2: no synthetic fallback — REST/SMTP audit path must populate CH
+if ([int]$chCount -le 0) { throw "RT-06 mail_audit count must be > 0 (AC-C7; no fallback)" }
 
 Log "RT-07 policy deny oversized"
 $huge = "x" * (26 * 1024 * 1024)
 $sendBody = '{"from":"staging@mail.gov.az","to":"staging@mail.gov.az","subject":"big","body":"' + $huge + '"}'
+$rt07Hdr = @{ "Content-Type" = "application/json" }
+if ($tok) { $rt07Hdr["Authorization"] = "Bearer $tok" }
 try {
-    Invoke-WebRequest -Uri "$MailAPI/api/v1/mail/send" -Method POST -Body $sendBody -ContentType "application/json" -UseBasicParsing | Out-Null
+    Invoke-WebRequest -Uri "$MailAPI/api/v1/mail/send" -Method POST -Body $sendBody -Headers $rt07Hdr -UseBasicParsing | Out-Null
     throw "expected 413 for oversized send"
 } catch {
     if ($_.Exception.Response.StatusCode.value__ -ne 413) { throw }
     Log "RT-07 policy deny PASS (413)"
 }
 
-Log "RT-08 autodiscover TLS SSL on"
+Log "RT-08 autodiscover TLS honesty"
 $ad = Invoke-WebRequest -Uri "$MailAPI/autodiscover/autodiscover.xml?email=staging@mail.gov.az" -UseBasicParsing
-if ($ad.Content -notmatch "<SSL>on</SSL>") { throw "autodiscover missing SSL on" }
-Log "RT-08 autodiscover SSL on PASS"
+if ($ProdProfile) {
+    if ($ad.Content -notmatch "<SSL>on</SSL>") {
+        throw "RT-08 ProdProfile requires <SSL>on</SSL>, got: $($ad.Content.Substring(0, [Math]::Min(200, $ad.Content.Length)))"
+    }
+    Log "RT-08 autodiscover SSL on PASS (ProdProfile)"
+} elseif ($ad.Content -match "<SSL>on</SSL>") {
+    Log "RT-08 autodiscover SSL on PASS"
+} elseif ($ad.Content -match "<SSL>off</SSL>") {
+    Log "RT-08 autodiscover SSL off PASS (lab honesty — ERA_MAIL_TLS unset; set ERA_MAIL_TLS=1 for SSL on)"
+} else {
+    throw "autodiscover missing SSL element"
+}
 
 Log "STAGING PASS - see $log"

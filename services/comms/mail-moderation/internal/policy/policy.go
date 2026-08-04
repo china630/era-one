@@ -27,6 +27,7 @@ const (
 	ModStatic      ModeratorMode = "static"
 	ModLDAPAttr    ModeratorMode = "ldap_attr"
 	ModCuratorMap  ModeratorMode = "curator_map"
+	ModAllOf       ModeratorMode = "all_of" // P2-02: quorum — every listed moderator must approve
 )
 
 // Conditions — условия срабатывания правила.
@@ -47,6 +48,10 @@ type Conditions struct {
 	ExcludeSystem   bool     `yaml:"exclude_system"` // NDR / mailer-daemon
 	// ModeratedRecipients — P1: hold if any envelope recipient matches (DL / mailbox).
 	ModeratedRecipients []string `yaml:"moderated_recipients"`
+	// DLPTrigger — P2-01: hold when body/subject matches sensitive patterns (Perimeter handoff).
+	DLPTrigger []string `yaml:"dlp_trigger"`
+	// NLPSuspicious — P2-05: when true, require classify.Suspicious hit.
+	NLPSuspicious *bool `yaml:"nlp_suspicious"`
 }
 
 // ModeratorSpec — резолв модератора для правила.
@@ -68,6 +73,8 @@ type Rule struct {
 	NotifyOnHold     *bool         `yaml:"notify_on_hold"`
 	NotifyOnApprove  *bool         `yaml:"notify_on_approve"`
 	AutoApproveOnTTL bool          `yaml:"auto_approve_on_ttl"`
+	Level            int           `yaml:"level"`       // P2-03: 1=L1, 2=L2
+	EscalateTo       string        `yaml:"escalate_to"` // next rule id after L1 approve path
 }
 
 // Document — YAML-файл набора правил.
@@ -176,6 +183,18 @@ func matchConditions(c Conditions, msg Message, ctx EvalContext) bool {
 	}
 	if len(c.ModeratedRecipients) > 0 {
 		if !matchRecipients(msg.To, c.ModeratedRecipients, nil) {
+			return false
+		}
+	}
+	if len(c.DLPTrigger) > 0 {
+		blob := msg.Subject + "\n" + msg.Body
+		if !matchKeywords(blob, c.DLPTrigger, nil) {
+			return false
+		}
+	}
+	if c.NLPSuspicious != nil && *c.NLPSuspicious {
+		blob := msg.Subject + "\n" + msg.Body
+		if !defaultSuspicious(blob) {
 			return false
 		}
 	}
@@ -318,4 +337,14 @@ func ValidateDocument(doc Document) error {
 		seen[r.ID] = struct{}{}
 	}
 	return nil
+}
+
+func defaultSuspicious(blob string) bool {
+	lower := strings.ToLower(blob)
+	for _, k := range []string{"urgent wire", "gift card", "password reset", "click here now", "bitcoin"} {
+		if strings.Contains(lower, k) {
+			return true
+		}
+	}
+	return false
 }

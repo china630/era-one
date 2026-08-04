@@ -1,0 +1,7 @@
+==> office stage gate O-3 20260730-002541
+[PASS] O-3/dockerfile :: cmd /c "if exist deploy\dockerfiles\Dockerfile.docs-engine (exit /b 0) else (exit /b 1)"
+[PASS] O-3/drive-bind :: cargo test -p era-docs-engine drive_bind --quiet
+[PASS] O-3/proto-roundtrip :: cargo test -p era-docs-engine --test proto_roundtrip --quiet
+[PASS] O-3/ui-docs :: go test -C ui/docs ./... -count=1
+[PASS] O-3/compose-docs :: docker compose -f deploy/docker-compose.office.yml --profile docs config
+STAGE GATE PASS (O-3)

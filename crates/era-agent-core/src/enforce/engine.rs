@@ -1,9 +1,10 @@
 //! Offline policy matching (ADR-0012 §3).
 
+use crate::enforce::kernel::{probe_kernel_hook, KernelHookStatus};
 use crate::enforce::policy::{
-    AppRule, DeviceRule, EnforcementMode, EnforcementPolicy, FailMode, RuleAction,
-    VirtualPatchRule,
+    AppRule, EnforcementMode, EnforcementPolicy, FailMode, RuleAction, VirtualPatchRule,
 };
+use crate::enforce::user_land::enforce_live_enabled;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExecRequest {
@@ -28,6 +29,23 @@ pub enum Decision {
         engine: String,
         summary: String,
     },
+}
+
+/// Outcome of applying monitor/enforce for a deny (lab decision + telemetry).
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct BlockResult {
+    /// Process/device may proceed (monitor or VP monitor-only).
+    pub allowed: bool,
+    /// Policy matched deny (detection should fire).
+    pub would_block: bool,
+    /// Decision flag for enforce mode (telemetry; not OS kill unless LIVE).
+    pub blocked: bool,
+    /// `telemetry_only` by default; `user_land_block` when ERA_ENFORCE_LIVE=1 + enforce deny (non-VP).
+    /// Kernel WHQL remains separate (⏸).
+    pub effect: String,
+    pub enforce_mode: String,
+    pub kernel_hook: String,
+    pub hook_message: String,
 }
 
 pub struct EnforceEngine {
@@ -84,14 +102,62 @@ impl EnforceEngine {
         Decision::Allow
     }
 
-    /// Применяет режим monitor/enforce и fail-open. Возвращает (разрешён_запуск, блокировать_в_enforce).
+    /// Применяет режим monitor/enforce и fail-open. Возвращает (разрешён_запуск, would_block).
     pub fn apply_exec(&self, decision: &Decision) -> (bool, bool) {
+        let br = self.apply_block(decision);
+        (br.allowed, br.would_block)
+    }
+
+    /// Lab enforce: decision + detection.
+    /// Default: `effect=telemetry_only`, `allowed=true` (honesty — no fake OS kill).
+    /// When `ERA_ENFORCE_LIVE=1` + Enforce + non-VP deny: `allowed=false`, `effect=user_land_block`
+    /// (user-land gate; kernel WHQL still ⏸).
+    pub fn apply_block(&self, decision: &Decision) -> BlockResult {
+        let hook = probe_kernel_hook();
+        let mode = match self.policy.mode {
+            EnforcementMode::Monitor => "monitor",
+            EnforcementMode::Enforce => "enforce",
+        };
         match decision {
-            Decision::Allow => (true, false),
-            Decision::Deny { .. } => match self.policy.mode {
-                EnforcementMode::Monitor => (true, true),
-                EnforcementMode::Enforce => (false, true),
+            Decision::Allow => BlockResult {
+                allowed: true,
+                would_block: false,
+                blocked: false,
+                effect: "telemetry_only".into(),
+                enforce_mode: mode.into(),
+                kernel_hook: hook.as_str().into(),
+                hook_message: hook.whql_message().into(),
             },
+            Decision::Deny { engine, .. } => {
+                let is_vp = engine == "era-virtual-patch";
+                let enforce_active = self.policy.mode == EnforcementMode::Enforce && !is_vp;
+                let live_block = enforce_active && enforce_live_enabled();
+                let effect = if live_block {
+                    "user_land_block"
+                } else {
+                    "telemetry_only"
+                };
+                BlockResult {
+                    // LIVE gate: deny process proceed; otherwise telemetry-only honesty.
+                    allowed: !live_block,
+                    would_block: true,
+                    blocked: enforce_active,
+                    effect: effect.into(),
+                    enforce_mode: mode.into(),
+                    kernel_hook: if is_vp {
+                        KernelHookStatus::Unavailable.as_str().into()
+                    } else {
+                        hook.as_str().into()
+                    },
+                    hook_message: if is_vp {
+                        "virtual_patch monitor-only until kernel WHQL".into()
+                    } else if live_block {
+                        format!("{} (effect=user_land_block)", hook.whql_message())
+                    } else {
+                        format!("{} (effect=telemetry_only)", hook.whql_message())
+                    },
+                }
+            }
         }
     }
 
@@ -240,5 +306,70 @@ mod tests {
             parent_path: String::new(),
         };
         let _ = eng.evaluate_exec(&req);
+    }
+
+    #[test]
+    fn lab_enforce_blocks_app_not_virtual_patch() {
+        let _g = crate::enforce::user_land::live_env_lock();
+        std::env::remove_var("ERA_ENFORCE_LIVE");
+        let mut policy = sample_policy();
+        policy.mode = EnforcementMode::Enforce;
+        let eng = EnforceEngine::new(policy);
+        let malware = eng.evaluate_exec(&ExecRequest {
+            image_path: r"C:\Temp\malware.exe".into(),
+            command_line: String::new(),
+            hash_sha256: String::new(),
+            signer: String::new(),
+            parent_path: String::new(),
+        });
+        let br = eng.apply_block(&malware);
+        assert!(br.allowed, "process still proceeds (telemetry_only)");
+        assert!(br.blocked && br.would_block);
+        assert_eq!(br.effect, "telemetry_only");
+        assert_eq!(br.kernel_hook, "unavailable");
+        assert!(br.hook_message.contains("WHQL"));
+
+        let vp = eng.evaluate_exec(&ExecRequest {
+            image_path: r"C:\App\vulnerable.dll".into(),
+            command_line: String::new(),
+            hash_sha256: String::new(),
+            signer: String::new(),
+            parent_path: String::new(),
+        });
+        let vp_br = eng.apply_block(&vp);
+        assert!(vp_br.allowed && vp_br.would_block && !vp_br.blocked);
+        assert_eq!(vp_br.effect, "telemetry_only");
+        assert!(vp_br.hook_message.contains("virtual_patch"));
+    }
+
+    #[test]
+    fn live_enforce_user_land_block_non_vp() {
+        let _g = crate::enforce::user_land::live_env_lock();
+        std::env::set_var("ERA_ENFORCE_LIVE", "1");
+        let mut policy = sample_policy();
+        policy.mode = EnforcementMode::Enforce;
+        let eng = EnforceEngine::new(policy);
+        let malware = eng.evaluate_exec(&ExecRequest {
+            image_path: r"C:\Temp\malware.exe".into(),
+            command_line: String::new(),
+            hash_sha256: String::new(),
+            signer: String::new(),
+            parent_path: String::new(),
+        });
+        let br = eng.apply_block(&malware);
+        assert!(!br.allowed);
+        assert!(br.blocked && br.would_block);
+        assert_eq!(br.effect, "user_land_block");
+        let vp = eng.evaluate_exec(&ExecRequest {
+            image_path: r"C:\App\vulnerable.dll".into(),
+            command_line: String::new(),
+            hash_sha256: String::new(),
+            signer: String::new(),
+            parent_path: String::new(),
+        });
+        let vp_br = eng.apply_block(&vp);
+        assert!(vp_br.allowed && !vp_br.blocked);
+        assert_eq!(vp_br.effect, "telemetry_only");
+        std::env::remove_var("ERA_ENFORCE_LIVE");
     }
 }

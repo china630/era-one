@@ -14,16 +14,17 @@ type Writer struct {
 }
 
 type DetectionRow struct {
-	DetectionID string
-	EventID     string
-	ObservedAt  time.Time
-	TenantID    string
-	NodeID      string
-	RuleID      string
-	RuleName    string
-	Severity    string
-	Engine      string
-	Confidence  float32
+	DetectionID     string
+	EventID         string
+	ObservedAt      time.Time
+	TenantID        string
+	NodeID          string
+	RuleID          string
+	RuleName        string
+	Severity        string
+	Engine          string
+	Confidence      float32
+	MitreTechniques []string
 }
 
 func New(addr, user, password string) (*Writer, error) {
@@ -43,14 +44,18 @@ func New(addr, user, password string) (*Writer, error) {
 func (w *Writer) InsertDetection(ctx context.Context, d DetectionRow) error {
 	batch, err := w.conn.PrepareBatch(ctx, `INSERT INTO era_xdr.detections (
 		detection_id, event_id, observed_at, tenant_id, node_id,
-		rule_id, rule_name, severity, engine, confidence, status
+		rule_id, rule_name, severity, engine, confidence, status, mitre_techniques
 	)`)
 	if err != nil {
 		return err
 	}
 	sev := mapSeverity(d.Severity)
+	tech := d.MitreTechniques
+	if tech == nil {
+		tech = []string{}
+	}
 	if err := batch.Append(d.DetectionID, d.EventID, d.ObservedAt, d.TenantID, d.NodeID,
-		d.RuleID, d.RuleName, sev, d.Engine, d.Confidence, "new"); err != nil {
+		d.RuleID, d.RuleName, sev, d.Engine, d.Confidence, "new", tech); err != nil {
 		return err
 	}
 	return batch.Send()

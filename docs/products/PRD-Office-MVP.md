@@ -55,7 +55,7 @@ SaaS и без сторонних office-лицензий.
 
 | ID | Критерий | Доказательство |
 |----|----------|----------------|
-| AC-O1 | Два пользователя co-edit одного `.era-doc` в контуре | e2e / integration test |
+| AC-O1 | ≥2 WS clients; server OpLog append order + peer fan-out (не OT/CRDT; ADR-0026 O-H-1) | `ws_coedit` + JWT |
 | AC-O2 | Import типового docx из `testdata/` → native → export → golden match | golden test |
 | AC-O3 | Файл authoritative только в Drive; engine не хранит копию | unit + ADR review |
 | AC-O4 | Workspace: login → Drive → open doc | manual / e2e stub |

@@ -155,7 +155,20 @@ func (v *Vault) RotatePassword(id, newPassword string) error {
 		return err
 	}
 	s.Ciphertext = ct
+	v.flushPersist()
 	return nil
+}
+
+// Delete удаляет секрет по id.
+func (v *Vault) Delete(id string) bool {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if _, ok := v.secrets[id]; !ok {
+		return false
+	}
+	delete(v.secrets, id)
+	v.flushPersist()
+	return true
 }
 
 func (v *Vault) encrypt(plaintext []byte) ([]byte, error) {

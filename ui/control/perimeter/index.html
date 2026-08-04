@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — Perimeter</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>Perimeter</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-banner">NGFW apply_backend=noop without ERA_NGFW_APPLY=1. Not ASIC hardware.</div>
+<div class="era-card"><h2>WAF rules</h2>
+<button class="era-btn secondary" id="wr">GET rules</button>
+<button class="era-btn" id="wa">Add lab rule</button>
+<pre id="w" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>NGFW</h2>
+<button class="era-btn secondary" id="np">Policies</button>
+<button class="era-btn secondary" id="nh">Health</button>
+<pre id="n" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("perimeter");
+document.getElementById("wr").onclick=function(){EraControl.x("waf","/api/v1/waf/rules").then(function(r){document.getElementById("w").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("wa").onclick=function(){EraControl.x("waf","/api/v1/waf/rules",{method:"POST",body:JSON.stringify({id:"lab-1",pattern:"../",action:"block"})}).then(function(r){document.getElementById("w").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("np").onclick=function(){EraControl.x("ngfw","/api/v1/ngfw/policies").then(function(r){document.getElementById("n").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("nh").onclick=function(){EraControl.x("ngfw","/healthz").then(function(r){document.getElementById("n").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("wr").click();
+</script></body></html>

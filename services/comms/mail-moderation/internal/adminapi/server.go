@@ -6,9 +6,11 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 
+	"era/services/comms/internal/httpauth"
 	"era/services/comms/mail-moderation/internal/engine"
 	"era/services/comms/mail-moderation/internal/hold"
 	"era/services/comms/mail-moderation/internal/notify"
@@ -72,24 +74,34 @@ func New(eng *engine.Engine, tokens *notify.Tokens) *Server {
 	return s
 }
 
+func (s *Server) adminAuth() httpauth.Config {
+	// Lab: ERA_MM_DEV or ERA_MAIL_DEV; prod: JWT/internal + mm.admin (fail-closed).
+	if os.Getenv("ERA_MM_DEV") != "1" && os.Getenv("ERA_MAIL_DEV") == "1" {
+		return httpauth.FromEnv("ERA_MAIL_DEV", "mm.admin")
+	}
+	return httpauth.FromEnv("ERA_MM_DEV", "mm.admin")
+}
+
 func (s *Server) Register(mux *http.ServeMux) {
+	auth := s.adminAuth()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 	})
-	mux.HandleFunc("/v1/moderation/rules", s.handleRules)
-	mux.HandleFunc("/v1/moderation/rules/import", s.handleImport)
-	mux.HandleFunc("/v1/moderation/rules/export", s.handleExport)
-	mux.HandleFunc("/v1/moderation/templates", s.handleTemplates)
+	// Admin surface — httpauth required (mm.admin). Token action links stay public.
+	mux.HandleFunc("/v1/moderation/rules", auth.Wrap(s.handleRules))
+	mux.HandleFunc("/v1/moderation/rules/import", auth.Wrap(s.handleImport))
+	mux.HandleFunc("/v1/moderation/rules/export", auth.Wrap(s.handleExport))
+	mux.HandleFunc("/v1/moderation/templates", auth.Wrap(s.handleTemplates))
 	mux.HandleFunc("/v1/moderation/action", s.handleAction)
-	mux.HandleFunc("/v1/moderation/holds", s.handleHoldsList)
-	mux.HandleFunc("/v1/moderation/holds/", s.handleForceRelease)
-	mux.HandleFunc("/v1/moderation/hr/novices", s.handleHRNovices)
-	mux.HandleFunc("/v1/moderation/simulate", s.handleSimulate)
-	mux.HandleFunc("/ui/", s.handleUI)
-	mux.HandleFunc("/ui", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/v1/moderation/holds", auth.Wrap(s.handleHoldsList))
+	mux.HandleFunc("/v1/moderation/holds/", auth.Wrap(s.handleForceRelease))
+	mux.HandleFunc("/v1/moderation/hr/novices", auth.Wrap(s.handleHRNovices))
+	mux.HandleFunc("/v1/moderation/simulate", auth.Wrap(s.handleSimulate))
+	mux.HandleFunc("/ui/", auth.Wrap(s.handleUI))
+	mux.HandleFunc("/ui", auth.Wrap(func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/ui/", http.StatusFound)
-	})
+	}))
 }
 
 func (s *Server) syncEngine() {
@@ -200,6 +212,11 @@ func (s *Server) handleForceRelease(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method", 405)
 		return
 	}
+	// AuthZ + mm.admin enforced by Register Wrap (RequiredRole).
+	mod := "admin"
+	if p, ok := httpauth.FromContext(r.Context()); ok && p.UserID != "" {
+		mod = p.UserID
+	}
 	id := strings.TrimPrefix(r.URL.Path, "/v1/moderation/holds/")
 	if id == "" || id == r.URL.Path {
 		http.Error(w, "id", 400)
@@ -209,7 +226,7 @@ func (s *Server) handleForceRelease(w http.ResponseWriter, r *http.Request) {
 	if action == "" {
 		action = "approve"
 	}
-	if err := s.Engine.ApplyAction(id, "admin", action, r.URL.Query().Get("comment")); err != nil {
+	if err := s.Engine.ApplyAction(id, mod, action, r.URL.Query().Get("comment")); err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}
@@ -309,7 +326,7 @@ func (s *Server) handleUI(w http.ResponseWriter, r *http.Request) {
 
 var uiTmpl = template.Must(template.New("ui").Parse(`<!doctype html>
 <html><head><meta charset="utf-8"><title>ERA Mail Moderation</title>
-<style>body{font-family:system-ui;margin:2rem;max-width:40rem}code{background:#f4f4f4;padding:.1rem .3rem}</style>
+<style>body{font-family:system-ui;margin:2rem;max-width:42rem}code{background:#f4f4f4;padding:.1rem .3rem}pre{background:#f8f8f8;padding:.75rem;overflow:auto}</style>
 </head><body>
 <h1>ERA Mail Moderation</h1>
 <p>Rules loaded: <b>{{.Rules}}</b> · Pending holds: <b>{{.Pending}}</b></p>
@@ -319,8 +336,15 @@ var uiTmpl = template.Must(template.New("ui").Parse(`<!doctype html>
 <li><code>GET /v1/moderation/rules/export</code></li>
 <li><code>POST /v1/moderation/simulate</code> (JSON Message)</li>
 <li><code>GET /v1/moderation/holds</code></li>
+<li><code>POST /v1/moderation/holds/{id}?action=approve|reject|escalate</code> — force-release / escalate (mm.admin JWT)</li>
 <li><code>POST /v1/moderation/hr/novices</code> {"sender","curator"}</li>
 </ul>
+<h2>Lab: force-release / escalate</h2>
+<pre>curl -X POST -H "Authorization: Bearer $MM_ADMIN_JWT" \
+  "$MM_API/v1/moderation/holds/$HOLD_ID?action=approve"
+curl -X POST -H "Authorization: Bearer $MM_ADMIN_JWT" \
+  "$MM_API/v1/moderation/holds/$HOLD_ID?action=escalate&amp;comment=L2"</pre>
+<p>IceWarp milter field path remains paused (partner). Native SMTP/milter lab only.</p>
 </body></html>`))
 
 func writeJSON(w http.ResponseWriter, v any) {

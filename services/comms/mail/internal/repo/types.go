@@ -53,4 +53,6 @@ type InlinePolicy struct {
 	QuotaMBPerUser           uint32
 	RetentionDays            uint32
 	MaxAttachmentsPerMessage uint32
+	MaxRecipients            int
+	AttachmentExtDeny        []string
 }

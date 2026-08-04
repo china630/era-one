@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — Observe</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>Observe</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-banner">metrics_source may be sim when SNMP env unset — honest lab.</div>
+<div class="era-card"><h2>Devices / Alerts</h2>
+<button class="era-btn secondary" id="dev">Devices</button>
+<button class="era-btn secondary" id="al">Alerts</button>
+<pre id="out" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>Topology</h2>
+<button class="era-btn secondary" id="topo">Load</button>
+<pre id="t" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("observe");
+document.getElementById("dev").onclick=function(){EraControl.x("observe","/api/v1/devices").then(function(r){document.getElementById("out").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("al").onclick=function(){EraControl.x("observe","/api/v1/alerts").then(function(r){document.getElementById("out").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("topo").onclick=function(){EraControl.x("observe","/api/v1/topology").then(function(r){document.getElementById("t").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("dev").click();
+</script></body></html>

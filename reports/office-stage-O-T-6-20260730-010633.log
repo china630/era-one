@@ -1,0 +1,4 @@
+==> office stage gate O-T-6 20260730-010633
+[PASS] O-T-6/license :: go test -C services/platform ./licensegate/... -run "OfficeTables|OfficeDev" -count=1
+[PASS] O-T-6/sbom :: pwsh -NoProfile -File ./scripts/office-sbom-gate.ps1
+STAGE GATE PASS (O-T-6)

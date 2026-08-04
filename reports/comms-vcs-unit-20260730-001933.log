@@ -1,0 +1,5 @@
+?   	era/services/comms/vcs/cmd/vcs-api	[no test files]
+ok  	era/services/comms/vcs/internal/adapter	0.042s
+ok  	era/services/comms/vcs/internal/api	0.042s
+?   	era/services/comms/vcs/internal/audit	[no test files]
+?   	era/services/comms/vcs/internal/store	[no test files]

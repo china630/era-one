@@ -2,7 +2,10 @@
 
 Спецификация vault, checkout и session-proxy.
 
-**Связано:** [ADR-0013](adr/0013-era-pam-edition.md) · лицензия `pam`.
+**Связано:** [ADR-0013](adr/0013-era-pam-edition.md) · лицензия `pam` ·
+[PAM-RDP-Security-Review-Checklist.md](PAM-RDP-Security-Review-Checklist.md).
+
+**Статус кода:** vault/checkout/SSH ✅ · RDP TCP relay MVP ✅ · HSM prod / graphical RDP ⏸ external.
 
 ## Компоненты
 
@@ -11,6 +14,8 @@
 | PAM API | `services/pam` | `:8130` |
 | Session recording | `services/dlp` (переиспользуется) | `:8095` |
 | Custody audit | `services/platform/custody` | hash-chain |
+| SSH proxy | `internal/proxy.SSHProxy` | local TCP + command log |
+| RDP proxy | `internal/proxy.RDPProxy` | local TCP binary relay → :3389 |
 
 ## Криптоинварианты
 
@@ -30,8 +35,9 @@
 | POST | `/api/v1/checkout` | запрос креденшела |
 | POST | `/api/v1/checkout/{id}/approve` | approval |
 | POST | `/api/v1/checkout/{id}/reveal` | one-shot password |
-| POST | `/api/v1/proxy/ssh/start` | session + credential inject |
+| POST | `/api/v1/proxy/ssh/start` | session + TCP proxy + credential inject meta |
 | POST | `/api/v1/proxy/ssh/command` | command log + detection |
+| POST | `/api/v1/proxy/rdp/start` | session + TCP proxy (`mode=tcp_relay`, `proxy_addr`) |
 | GET | `/api/v1/custody/head` | chain head |
 
 ## Compose
@@ -44,14 +50,14 @@ Kafka topic: `xdr.privileged`
 
 ## Тесты
 
-- `go test ./services/pam/...` — shamir golden, vault at-rest, no-secret-leak, custody
+- `go test ./services/pam/...` — shamir golden, vault, SSH/RDP proxy relay, custody
 - `go test ./services/platform/custody/...`
 
 ## Гейты
 
 | Гейт | Статус |
 |---|---|
-| Крипто-аудит vault/HSM | [gate: external] |
-| Security-review RDP-прокси | [gate: external] |
-
-Код этапа: SSH command recording + simulated inject; боевой RDP за гейтом.
+| SSH TCP proxy + command log | ✅ |
+| RDP TCP proxy MVP (binary relay) | ✅ |
+| Credential inject (server-side broker) + metadata recording | Phase 2 code ✅ — **code-ready**; Guacamole video / pen-test GA after security-review ⏸ |
+| Крипто-аудит vault/HSM prod | [gate: external] — **code-ready** KMS abstraction; GA after HSM review ⏸ |

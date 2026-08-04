@@ -15,6 +15,7 @@ enum DriveContentFormat {
   DRIVE_CONTENT_FORMAT_ERAD = 2;
   DRIVE_CONTENT_FORMAT_ERAT = 3;
   DRIVE_CONTENT_FORMAT_ERAP = 4;
+  DRIVE_CONTENT_FORMAT_ERAJ = 5; // ERA Projects board (.eraj)
 }
 
 enum DriveACLRole {
@@ -72,4 +73,82 @@ message AttachmentLinkRequest {
 
 message AttachmentLinkResponse {
   string url = 1;
+}
+
+// --- Request / response messages (HTTP REST maps 1:1; gRPC optional) ---
+
+message CreateFolderRequest {
+  string tenant_id = 1;
+  string parent_id = 2;
+  string name = 3;
+  string owner_user_id = 4;
+}
+
+message CreateFolderResponse {
+  DriveFolder folder = 1;
+}
+
+message ListChildrenRequest {
+  string tenant_id = 1;
+  string folder_id = 2; // empty = root
+}
+
+message ListChildrenResponse {
+  repeated DriveFolder folders = 1;
+  repeated DriveObject objects = 2;
+}
+
+message CreateObjectRequest {
+  string tenant_id = 1;
+  string folder_id = 2;
+  string name = 3;
+  string content_type = 4;
+  DriveContentFormat content_format = 5;
+  string owner_user_id = 6;
+  bytes data = 7;
+}
+
+message CreateObjectResponse {
+  DriveObject object = 1;
+}
+
+message GetObjectRequest {
+  string tenant_id = 1;
+  string object_id = 2;
+  bool include_data = 3;
+}
+
+message GetObjectResponse {
+  DriveObject object = 1;
+  bytes data = 2;
+}
+
+message ListVersionsRequest {
+  string tenant_id = 1;
+  string object_id = 2;
+}
+
+message ListVersionsResponse {
+  repeated DriveVersion versions = 1;
+}
+
+message UpdateACLRequest {
+  string tenant_id = 1;
+  string object_id = 2;
+  DriveACL acl = 3;
+}
+
+message UpdateACLResponse {
+  DriveACL acl = 1;
+}
+
+// DriveService — contract-first API (ADR-0025). Transport: HTTP JSON in MVP; gRPC stubs generated.
+service DriveService {
+  rpc CreateFolder(CreateFolderRequest) returns (CreateFolderResponse);
+  rpc ListChildren(ListChildrenRequest) returns (ListChildrenResponse);
+  rpc CreateObject(CreateObjectRequest) returns (CreateObjectResponse);
+  rpc GetObject(GetObjectRequest) returns (GetObjectResponse);
+  rpc ListVersions(ListVersionsRequest) returns (ListVersionsResponse);
+  rpc UpdateACL(UpdateACLRequest) returns (UpdateACLResponse);
+  rpc CreateAttachmentLink(AttachmentLinkRequest) returns (AttachmentLinkResponse);
 }

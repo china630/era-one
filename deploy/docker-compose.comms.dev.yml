@@ -1,0 +1,80 @@
+# Dev overlay for ERA Comms pilot staging
+# Usage: docker compose -f deploy/docker-compose.comms.yml -f deploy/docker-compose.comms.dev.yml up -d
+
+services:
+  # L-1 lab IMAP (hostname dovecot-lab for Migration/Connect scripts)
+  dovecot-lab:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.lab-imap
+    ports:
+      - "1144:143"
+
+  identity-api:
+    environment:
+      ERA_IDENTITY_DEV: "1"
+      ERA_LICENSE_DEV: "1"
+
+  era-mail-api:
+    environment:
+      ERA_LICENSE_DEV: "1"
+      ERA_MAIL_DEV: "1"
+      ERA_INTERNAL_TOKEN: lab-internal-token
+
+  ui-mail:
+    environment:
+      ERA_IDENTITY_DEV: "1"
+
+  era-mail-moderation:
+    environment:
+      ERA_LICENSE_DEV: "1"
+      ERA_MM_DEV: "1"
+      ERA_MM_POSTGRES_DSN: postgres://era:era_dev_only@postgres:5432/era?sslmode=disable
+
+  era-mail-bridge:
+    environment:
+      ERA_BRIDGE_DEV: "1"
+      ERA_BRIDGE_SYNTHETIC: "1"
+
+  era-migration-api:
+    environment:
+      ERA_MIG_SOURCE_IMAP_HOST: dovecot-lab
+      ERA_MAIL_API_URL: http://era-mail-api:8150
+      CG_LAB_PASSWORD: lab
+      ERA_MAIL_DEV: "1"
+      ERA_MIG_DEV: "1"
+      ERA_INTERNAL_TOKEN: lab-internal-token
+    depends_on:
+      - dovecot-lab
+
+  # L-3 Chat with PG DSN (005_chat.sql via comms-migrate)
+  era-chat:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.chat
+    environment:
+      ERA_CHAT_DATABASE_URL: postgres://era:era_dev_only@postgres:5432/era?sslmode=disable
+      ERA_COMMS_DATABASE_URL: postgres://era:era_dev_only@postgres:5432/era?sslmode=disable
+    ports:
+      - "8260:8260"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      comms-migrate:
+        condition: service_completed_successfully
+
+  # B-CONN Connect lab Autodiscover → dovecot-lab
+  era-mail-connect:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.mail-connect
+    environment:
+      ERA_CONNECT_IMAP_HOST: dovecot-lab
+      ERA_CONNECT_SECRET_LAB1: lab
+      ERA_MAIL_DEV: "1"
+      ERA_CONNECT_DEV: "1"
+    ports:
+      - "8250:8250"
+    depends_on:
+      - dovecot-lab
+

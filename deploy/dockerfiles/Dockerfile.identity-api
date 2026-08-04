@@ -1,0 +1,16 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.26.4-alpine AS build
+WORKDIR /src
+COPY deploy/dockerfiles/go.work.identity-api ./go.work
+COPY gen/go gen/go
+COPY services/platform services/platform
+COPY services/license services/license
+COPY ui/drive ui/drive
+COPY ui/docs ui/docs
+WORKDIR /src/services/platform
+RUN go build -o /out/identity-api ./cmd/identity-api
+
+FROM alpine:3.20
+COPY --from=build /out/identity-api /usr/local/bin/identity-api
+EXPOSE 8160
+ENTRYPOINT ["/usr/local/bin/identity-api"]

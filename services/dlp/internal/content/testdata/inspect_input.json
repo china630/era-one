@@ -1,0 +1,5 @@
+{
+  "path": "uploads/payroll.csv",
+  "mime": "text/csv",
+  "content": "name,ssn\nalice,123-45-6789\nbob,api_key=sk-live-abc"
+}

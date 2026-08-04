@@ -3,7 +3,9 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
+	"era/services/comms/internal/httpauth"
 	"era/services/comms/mail-connect/internal/audit"
 	"era/services/comms/mail-connect/internal/autodiscover"
 	syncstore "era/services/comms/mail-connect/internal/sync"
@@ -19,9 +21,15 @@ func NewServer(store *syncstore.Store, auditor *audit.Recorder) *Server {
 }
 
 func (s *Server) Register(mux *http.ServeMux) {
+	// Lab: ERA_CONNECT_DEV or ERA_MAIL_DEV; prod: JWT Bearer required
+	devKey := "ERA_CONNECT_DEV"
+	if os.Getenv("ERA_CONNECT_DEV") != "1" && os.Getenv("ERA_MAIL_DEV") == "1" {
+		devKey = "ERA_MAIL_DEV"
+	}
+	auth := httpauth.FromEnv(devKey, "")
 	mux.HandleFunc("/healthz", s.healthz)
-	mux.HandleFunc("/api/v1/connect/mailboxes", s.registerMailbox)
-	mux.HandleFunc("/api/v1/connect/sync", s.syncMailbox)
+	mux.HandleFunc("/api/v1/connect/mailboxes", auth.Wrap(s.registerMailbox))
+	mux.HandleFunc("/api/v1/connect/sync", auth.Wrap(s.syncMailbox))
 	mux.HandleFunc("/api/v1/connect/autodiscover.xml", s.connectAutodiscover)
 }
 

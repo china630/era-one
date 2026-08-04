@@ -1,0 +1,27 @@
+/* Control line — dark ops. Legacy aliases for control.css rules. */
+:root, [data-line="control"] {
+  --era-bg: #0f1419;
+  --era-surface: #1a2332;
+  --era-ink: #e6edf3;
+  --era-muted: #8b949e;
+  --era-line: #30363d;
+  --era-accent: #58a6ff;
+  --era-accent-soft: #388bfd33;
+  --era-ok: #3fb950;
+  --era-warn: #d29922;
+  --era-err: #f85149;
+  --era-font: system-ui, sans-serif;
+  --era-radius: 6px;
+  --era-nav-w: 220px;
+  --era-topbar-h: 3rem;
+  --bg: var(--era-bg);
+  --card: var(--era-surface);
+  --text: var(--era-ink);
+  --muted: var(--era-muted);
+  --border: var(--era-line);
+  --accent: var(--era-accent);
+  --ok: var(--era-ok);
+  --warn: var(--era-warn);
+  --bad: var(--era-err);
+  --nav-w: var(--era-nav-w);
+}

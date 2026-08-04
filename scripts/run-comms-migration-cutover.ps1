@@ -15,15 +15,23 @@ if ($UseCompose) {
 }
 
 Log "Step 1: final delta migration jobs (mode=delta)"
-$deltaBody = @{
-    source = "communigate"
-    mailbox = "pilot@mail.lab.local"
-    target = "icewarp"
-    mode = "delta"
-    folder = "INBOX"
-    source_imap = @{ host = "cg.lab.local"; port = 143; user = "pilot@cg.lab.local"; password_ref = "env:CG_LAB_PASSWORD" }
-    target_imap = @{ host = "icewarp.lab.local"; port = 143; user = "pilot@mail.lab.local"; password_ref = "env:ICEWARP_LAB_PASSWORD" }
-} | ConvertTo-Json -Depth 5
+if ([string]::IsNullOrWhiteSpace($env:ERA_MIG_SOURCE_IMAP_HOST)) {
+    $deltaBody = @{
+        source       = "imap"
+        mailbox      = "pilot@mail.gov.az"
+        archive_file = "delta.pst"
+        mode         = "delta"
+    } | ConvertTo-Json -Depth 5
+} else {
+    $deltaBody = @{
+        source      = "communigate"
+        mailbox     = "pilot@mail.gov.az"
+        target      = "era-mail-server"
+        mode        = "delta"
+        folder      = "INBOX"
+        source_imap = @{ host = $env:ERA_MIG_SOURCE_IMAP_HOST; port = 143; user = "pilot@cg.lab.local"; password_ref = "env:CG_LAB_PASSWORD" }
+    } | ConvertTo-Json -Depth 5
+}
 try {
     $r = Invoke-WebRequest -Uri "$MigrationAPI/api/v1/migration/jobs" -Method POST -Body $deltaBody -ContentType "application/json" -UseBasicParsing
     Log "delta job: $($r.Content)"
@@ -36,7 +44,7 @@ $rerun = Invoke-WebRequest -Uri "$MigrationAPI/api/v1/migration/rerun" -Method P
 Log "rerun: $($rerun.Content)"
 
 Log "Step 3: switch Autodiscover to Bridge (manual MX/AD — see Comms-Cutover-Rehearsal-Runbook.md)"
-$ad = Invoke-WebRequest -Uri "$MailBridge/autodiscover/autodiscover.xml?email=pilot@mail.lab.local" -UseBasicParsing
+$ad = Invoke-WebRequest -Uri "$MailBridge/autodiscover/autodiscover.xml?email=pilot@mail.gov.az" -UseBasicParsing
 Log "bridge autodiscover EwsUrl present: $($ad.Content -match '/ews/Exchange.asmx')"
 
 Log "Step 4: Outlook VM send/receive smoke - MANUAL (partner site RT-11)"

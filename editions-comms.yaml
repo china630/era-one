@@ -21,16 +21,19 @@ editions:
 
   era-mail-client:
     title: ERA Mail Client
+    # Summer S4-1: webmail is MVP surface; desktop exists:false until skeleton — see PRD-Mail-Client-Desktop.md
     status: roadmap
     license_module: { name: comms-mail-client, exists: false }
-    description: Webmail + desktop/mobile, Zero-Touch Autodiscover.
+    description: >
+      Webmail (ui/mail) for MVP. Desktop/mobile native client roadmap
+      (PRD-Mail-Client-Desktop); not ga.
     services: [comms-mail-client]
     included_with: [era-mail-server]
 
   era-mail-connect:
     title: ERA Mail Connect
-    status: roadmap
-    # Module code restored + C-1.1 gate PASS; edition stays roadmap until hybrid field
+    # 2026-07-30: real IMAP + vault ref unit PASS; field RT-10 open → mvp not ga
+    status: mvp
     license_module: { name: comms-mail-connect, exists: true }
     description: >
       Hybrid tier: Mail Client + BFF к внешнему IMAP/JMAP/EWS.
@@ -82,7 +85,8 @@ editions:
 
   era-conference:
     title: ERA Conference
-    status: roadmap
+    # L-5/R-2: meet join UI + LiveKit stub smoke → mvp (not ga; field open)
+    status: mvp
     license_module: { name: comms-conference, exists: true }
     description: Видеоконференции on-prem (LiveKit, 1000+ участников).
     services: [comms-conference]
@@ -90,7 +94,8 @@ editions:
 
   era-chat:
     title: ERA Chat
-    status: roadmap
+    # L-3/R-1: PG runtime via ERA_CHAT_DATABASE_URL → mvp (not ga)
+    status: mvp
     license_module: { name: comms-chat, exists: true }
     description: Корпоративный мессенджер; интеграция с ERA Conference и почтой.
     services: [comms-chat]
@@ -98,7 +103,8 @@ editions:
 
   era-comms-ai:
     title: ERA Comms AI
-    status: roadmap
+    # L-4/R-3: Ollama compose overlay → mvp when Available() true; Heuristic CI fallback
+    status: mvp
     license_module: { name: comms-ai, exists: true }
     description: >
       Air-Gap LLM — аудит почты, саммари переписки и встреч.

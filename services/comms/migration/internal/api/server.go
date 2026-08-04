@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"era/services/comms/internal/httpauth"
 	"era/services/comms/migration/internal/audit"
 	"era/services/comms/migration/internal/connectors/source/communigate"
 	"era/services/comms/migration/internal/foldermap"
@@ -34,11 +35,15 @@ func NewServer(j jobs.Repository, a audit.Recorder) *Server {
 }
 
 func (s *Server) Register(mux *http.ServeMux) {
+	auth := httpauth.FromEnv("ERA_MIG_DEV", "")
+	if os.Getenv("ERA_MIG_DEV") != "1" && os.Getenv("ERA_MAIL_DEV") == "1" {
+		auth = httpauth.FromEnv("ERA_MAIL_DEV", "")
+	}
 	mux.HandleFunc("/healthz", s.healthz)
-	mux.HandleFunc("/api/v1/migration/jobs", s.jobsHandler)
-	mux.HandleFunc("/api/v1/migration/discover", s.discover)
-	mux.HandleFunc("/api/v1/migration/resume", s.resume)
-	mux.HandleFunc("/api/v1/migration/rerun", s.rerun)
+	mux.HandleFunc("/api/v1/migration/jobs", auth.Wrap(s.jobsHandler))
+	mux.HandleFunc("/api/v1/migration/discover", auth.Wrap(s.discover))
+	mux.HandleFunc("/api/v1/migration/resume", auth.Wrap(s.resume))
+	mux.HandleFunc("/api/v1/migration/rerun", auth.Wrap(s.rerun))
 }
 
 func (s *Server) healthz(w http.ResponseWriter, _ *http.Request) {
@@ -103,27 +108,67 @@ func (s *Server) jobsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		s.Audit.Record(audit.Event{JobID: j.ID, Action: "MIGRATION_JOB_CREATED"})
+		s.Audit.Record(audit.Event{JobID: j.ID, Action: "MIGRATION_JOB_CREATED", Mailbox: req.Mailbox})
 		writeJSON(w, j)
 		return
 	}
 
 	j := s.Runner.ImportFileJob(req.Source, req.Mailbox, req.IMAPFile, req.ArchiveFile)
 	total := j.ItemsTotal
-	total += ews.ImportCalendar([]ews.CalendarItem{{ID: "ev-1", Subject: "Migrated"}})
+	calN := ews.ImportCalendar([]ews.CalendarItem{{ID: "ev-1", Subject: "Migrated"}})
+	// Calendar stub does NOT inflate ItemsOK (honesty G0-7 / AC-MIG)
+	var delivered int
+	mode := "file"
 	if req.ArchiveFile != "" {
 		if strings.HasSuffix(strings.ToLower(req.ArchiveFile), ".mbox") {
 			msgs, err := archive.ImportMBOX(req.ArchiveFile)
 			if err == nil {
 				total += len(msgs)
+				if tw, err := s.buildTarget(req); err == nil {
+					for _, m := range msgs {
+						if err := tw.Write(m); err == nil {
+							delivered++
+						}
+					}
+					_ = tw.Close()
+				}
+			}
+		} else if strings.HasSuffix(strings.ToLower(req.ArchiveFile), ".pst") {
+			msgs, err := archive.ImportPST(req.ArchiveFile)
+			if err == nil {
+				total += len(msgs)
+				if tw, err := s.buildTarget(req); err == nil {
+					for _, m := range msgs {
+						if err := tw.Write(m); err == nil {
+							delivered++
+						}
+					}
+					_ = tw.Close()
+				}
+			} else if archive.ImportSmoke(req.ArchiveFile) {
+				mode = "stub"
 			}
 		} else if archive.ImportSmoke(req.ArchiveFile) {
-			total++
+			mode = "stub"
 		}
 	}
 	j.ItemsTotal = total
-	j.ItemsOK = total
-	writeJSON(w, j)
+	if delivered > 0 {
+		j.ItemsOK = delivered
+	} else if mode == "stub" {
+		j.ItemsOK = 0
+	} else {
+		j.ItemsOK = total // file-line importer counts
+	}
+	s.Audit.Record(audit.Event{JobID: j.ID, Action: "MIGRATION_JOB_CREATED", Mailbox: req.Mailbox, Detail: fmt.Sprintf("mode=%s calendar_stub=%d", mode, calN)})
+	if delivered > 0 {
+		s.Audit.Record(audit.Event{JobID: j.ID, Action: "MIGRATION_ARCHIVE_DELIVERED", Mailbox: req.Mailbox, Detail: fmt.Sprintf("delivered=%d", delivered)})
+	}
+	writeJSON(w, map[string]any{
+		"id": j.ID, "source": j.Source, "mailbox": j.Mailbox, "status": j.Status,
+		"items_total": j.ItemsTotal, "items_ok": j.ItemsOK, "items_fail": j.ItemsFail,
+		"created_at": j.CreatedAt, "mode": mode, "calendar_stub_count": calN,
+	})
 }
 
 func (s *Server) buildTarget(req createJobReq) (target.Writer, error) {

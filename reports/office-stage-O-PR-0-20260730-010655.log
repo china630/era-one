@@ -1,0 +1,3 @@
+==> office stage gate O-PR-0 20260730-010655
+[PASS] O-PR-0/prd :: cmd /c "if exist docs\products\PRD-Office-Projects.md (exit /b 0) else (exit /b 1)"
+STAGE GATE PASS (O-PR-0)

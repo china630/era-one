@@ -7,27 +7,34 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
-	"era/services/platform/privilegedsession"
+	"era/services/pam/internal/broker"
 	"era/services/pam/internal/checkout"
 	"era/services/pam/internal/proxy"
+	"era/services/pam/internal/recording"
+	"era/services/pam/internal/sessionpolicy"
 	"era/services/pam/internal/shamir"
 	"era/services/pam/internal/vault"
 	"era/services/platform/custody"
 	"era/services/platform/licensegate"
 	"era/services/platform/metrics"
+	"era/services/platform/privilegedsession"
 )
 
 type Server struct {
-	Vault    *vault.Vault
-	Checkout *checkout.Store
-	Sessions *privilegedsession.Store
-	SSHProxy *proxy.SSHProxy
-	Custody  *custody.Chain
-	Gate     *licensegate.Gate
-	KMSName  string
-	// initShares — dev-only Shamir shares for first unseal (не логировать).
+	Vault      *vault.Vault
+	Checkout   *checkout.Store
+	Sessions   *privilegedsession.Store
+	SSHProxy   *proxy.SSHProxy
+	RDPProxy   *proxy.RDPProxy
+	Broker     *broker.Store
+	Recording  *recording.Store
+	Tracker    *sessionpolicy.Tracker
+	Custody    *custody.Chain
+	Gate       *licensegate.Gate
+	KMSName    string
 	initShares [][]byte
 }
 
@@ -35,8 +42,14 @@ func New(v *vault.Vault, ch *checkout.Store, sess *privilegedsession.Store, gate
 	s := &Server{
 		Vault: v, Checkout: ch, Sessions: sess,
 		SSHProxy: proxy.NewSSHProxy(sess),
+		RDPProxy: proxy.NewRDPProxy(sess),
+		Broker:   broker.NewStore(),
+		Recording: recording.NewStore(os.TempDir() + "/era-pam-rec"),
 		Custody: custody.NewChain(), Gate: gate, KMSName: kmsName,
 	}
+	s.Tracker = sessionpolicy.NewTracker(sessionpolicy.FromEnv(), func(id, reason string) {
+		s.expireSession(id, reason)
+	})
 	s.bootstrapDevShares()
 	return s
 }
@@ -72,13 +85,38 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("/api/v1/vault/unseal", s.handleUnseal)
 	mux.HandleFunc("/api/v1/vault/seal", s.handleSeal)
 	mux.HandleFunc("/api/v1/secrets", s.handleSecrets)
+	mux.HandleFunc("/api/v1/secrets/", s.handleSecretByID)
+	mux.HandleFunc("/api/v1/sessions", s.handleSessions)
+	mux.HandleFunc("/api/v1/sessions/", s.handleSessionByID)
 	mux.HandleFunc("/api/v1/checkout", s.handleCheckout)
 	mux.HandleFunc("/api/v1/checkout/", s.handleCheckoutSub)
 	mux.HandleFunc("/api/v1/proxy/ssh/start", s.handleSSHStart)
 	mux.HandleFunc("/api/v1/proxy/ssh/command", s.handleSSHCommand)
 	mux.HandleFunc("/api/v1/proxy/rdp/start", s.handleRDPStart)
+	mux.HandleFunc("/api/v1/proxy/rdp/event", s.handleRDPEvent)
+	mux.HandleFunc("/api/v1/proxy/rdp/end", s.handleRDPEnd)
 	mux.HandleFunc("/api/v1/custody/head", s.handleCustodyHead)
 	return mux
+}
+
+func (s *Server) expireSession(sessionID, reason string) {
+	if s.RDPProxy != nil {
+		_ = s.RDPProxy.Stop(sessionID)
+	}
+	if s.SSHProxy != nil {
+		_ = s.SSHProxy.Stop(sessionID)
+	}
+	if s.Sessions != nil {
+		_, _ = s.Sessions.End(sessionID)
+	}
+	if s.Recording != nil {
+		s.Recording.Add(sessionID, "timeout", reason)
+		if art, err := s.Recording.Finalize(sessionID); err == nil {
+			s.auditCustody("proxy.rdp.timeout", sessionID, reason, art.SHA256)
+		}
+	} else {
+		s.auditCustody("proxy.rdp.timeout", sessionID, reason, "")
+	}
 }
 
 func (s *Server) requirePAM(w http.ResponseWriter) bool {
@@ -209,6 +247,114 @@ func (s *Server) handleSecrets(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (s *Server) handleSecretByID(w http.ResponseWriter, r *http.Request) {
+	if !s.requirePAM(w) {
+		return
+	}
+	path := strings.TrimPrefix(r.URL.Path, "/api/v1/secrets/")
+	parts := strings.Split(strings.Trim(path, "/"), "/")
+	if len(parts) == 0 || parts[0] == "" {
+		http.NotFound(w, r)
+		return
+	}
+	id := parts[0]
+	if len(parts) == 2 && parts[1] == "rotate" {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		if s.Vault.Sealed() {
+			http.Error(w, "vault sealed", http.StatusServiceUnavailable)
+			return
+		}
+		var req struct {
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Password == "" {
+			http.Error(w, "password required", http.StatusBadRequest)
+			return
+		}
+		if err := s.Vault.RotatePassword(id, req.Password); err != nil {
+			if err.Error() == "not found" {
+				http.NotFound(w, r)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		meta, _ := s.Vault.GetMeta(id)
+		s.auditCustody("secret.rotate", id, s.actor(r), meta.TenantID)
+		writeJSON(w, http.StatusOK, map[string]any{"rotated": true, "secret": meta})
+		return
+	}
+	if len(parts) != 1 {
+		http.NotFound(w, r)
+		return
+	}
+	switch r.Method {
+	case http.MethodDelete:
+		if !s.Vault.Delete(id) {
+			http.NotFound(w, r)
+			return
+		}
+		s.auditCustody("secret.delete", id, s.actor(r), "")
+		writeJSON(w, http.StatusOK, map[string]any{"deleted": id})
+	case http.MethodGet:
+		meta, ok := s.Vault.GetMeta(id)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		writeJSON(w, http.StatusOK, meta)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (s *Server) handleSessions(w http.ResponseWriter, r *http.Request) {
+	if !s.requirePAM(w) {
+		return
+	}
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	sessions := []*privilegedsession.Record{}
+	if s.Sessions != nil {
+		sessions = s.Sessions.List()
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"sessions": sessions, "count": len(sessions)})
+}
+
+func (s *Server) handleSessionByID(w http.ResponseWriter, r *http.Request) {
+	if !s.requirePAM(w) {
+		return
+	}
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/sessions/"), "/")
+	if id == "" || s.Sessions == nil {
+		http.NotFound(w, r)
+		return
+	}
+	rec, ok := s.Sessions.Get(id)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+	out := map[string]any{"session": rec}
+	if s.Recording != nil {
+		if art, ok := s.Recording.Artifact(id); ok {
+			out["recording"] = art
+		} else if ev := s.Recording.Events(id); len(ev) > 0 {
+			out["recording_events"] = len(ev)
+		}
+	}
+	writeJSON(w, http.StatusOK, out)
 }
 
 func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
@@ -362,28 +508,129 @@ func (s *Server) handleRDPStart(w http.ResponseWriter, r *http.Request) {
 		req.Port = 3389
 	}
 	user := s.actor(r)
+	var injectMeta map[string]any
+	secretID := ""
 	if req.CheckoutID != "" {
 		cr, ok := s.Checkout.Get(req.CheckoutID)
 		if !ok || cr.Status != checkout.StatusApproved && cr.Status != checkout.StatusConsumed {
 			http.Error(w, "invalid checkout", http.StatusForbidden)
 			return
 		}
+		secretID = cr.SecretID
 		if meta, ok := s.Vault.GetMeta(cr.SecretID); ok {
 			user = meta.Username
 		}
 	}
 	rec := s.Sessions.Start(s.actor(r), req.Host)
+	if req.CheckoutID != "" && s.Vault != nil && s.Broker != nil {
+		u, pass, err := s.Vault.Reveal(secretID)
+		if err == nil {
+			if u != "" {
+				user = u
+			}
+			if inj, err := s.Broker.Bind(rec.ID, user, pass, secretID, req.CheckoutID); err == nil {
+				injectMeta = inj.PublicMeta()
+				_, _ = s.Checkout.Consume(req.CheckoutID)
+			}
+		}
+	}
+	proxyAddr := ""
+	if s.RDPProxy != nil {
+		if addr, err := s.RDPProxy.Start(rec.ID, req.Host, req.Port); err == nil {
+			proxyAddr = addr
+		}
+	}
+	if s.Tracker != nil {
+		s.Tracker.Start(rec.ID)
+	}
+	if s.Recording != nil {
+		s.Recording.Add(rec.ID, "connect", req.Host)
+		s.Recording.Add(rec.ID, "keyframe_stub", "phase2 metadata only")
+	}
 	s.auditCustody("proxy.rdp.start", rec.ID, s.actor(r), req.Host)
-	writeJSON(w, http.StatusCreated, map[string]any{
+	out := map[string]any{
 		"session_id": rec.ID,
 		"host":       req.Host,
 		"port":       req.Port,
 		"user":       user,
 		"protocol":   "rdp",
+		"proxy_addr": proxyAddr,
 		"width":      req.Width,
 		"height":     req.Height,
-		"stub":       true,
-	})
+		"mode":       "tcp_relay",
+		"recording":  "metadata",
+		"tls":        os.Getenv("ERA_TLS_CERT") != "",
+	}
+	for k, v := range injectMeta {
+		out[k] = v
+	}
+	// Guard: never leak password fields
+	delete(out, "password")
+	delete(out, "secret")
+	writeJSON(w, http.StatusCreated, out)
+}
+
+func (s *Server) handleRDPEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost || !s.requirePAM(w) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	var req struct {
+		SessionID string `json:"session_id"`
+		Kind      string `json:"kind"`
+		Detail    string `json:"detail"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.SessionID == "" {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if s.Tracker != nil {
+		s.Tracker.Touch(req.SessionID)
+	}
+	if s.Recording != nil {
+		kind := req.Kind
+		if kind == "" {
+			kind = "clipboard"
+		}
+		s.Recording.Add(req.SessionID, kind, req.Detail)
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
+func (s *Server) handleRDPEnd(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost || !s.requirePAM(w) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	var req struct {
+		SessionID string `json:"session_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.SessionID == "" {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if s.RDPProxy != nil {
+		_ = s.RDPProxy.Stop(req.SessionID)
+	}
+	if s.Tracker != nil {
+		s.Tracker.Stop(req.SessionID)
+	}
+	var art *recording.Artifact
+	if s.Recording != nil {
+		s.Recording.Add(req.SessionID, "disconnect", "")
+		art, _ = s.Recording.Finalize(req.SessionID)
+	}
+	if s.Sessions != nil {
+		_, _ = s.Sessions.End(req.SessionID)
+	}
+	hash := ""
+	if art != nil {
+		hash = art.SHA256
+		s.auditCustody("proxy.rdp.end", req.SessionID, s.actor(r), hash)
+	} else {
+		s.auditCustody("proxy.rdp.end", req.SessionID, s.actor(r), "")
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"ended": true, "artifact": art})
 }
 
 func (s *Server) handleSSHCommand(w http.ResponseWriter, r *http.Request) {

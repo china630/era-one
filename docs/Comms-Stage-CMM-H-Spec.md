@@ -25,7 +25,7 @@
 | MM-H-5 | Rules persist (PG) | [x] `internal/rules` + adminapi Persist |
 | MM-H-6 | Compose/env + lab doc | [x] compose + partner env example + IceWarp lab doc |
 | MM-H-7 | IceWarp lab script (SKIP without host) | [x] `scripts/run-comms-mm-icewarp-lab.ps1` |
-| MM-H-8 | Stage gate C-MM-H + matrix Pilot-ready | [x] gate + matrix |
+| MM-H-8 | Stage gate C-MM-H + matrix update | [x] gate PASS · Scaffold ✅ · **Pilot-ready [ ]** (IceWarp field open) |
 
 ## 3. Stage Gate
 
@@ -33,7 +33,7 @@
 |---|----------|----------------|
 | G1 | `.\scripts\run-comms-stage-gate.ps1 -Stage C-MM-H` | PASS |
 | G2 | e2e log | `reports/comms-stage-C-MM-H-e2e.log` |
-| G3 | Matrix Pilot-ready AC-MM | docs |
+| G3 | Matrix AC-MM 🟡 (engine unit; admin AuthZ open); Pilot-ready open | docs |
 | G4 | IceWarp lab script | SKIP or PASS log |
 
 Edition остаётся **mvp** (ga — после field sign-off).

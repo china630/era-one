@@ -1,0 +1,4 @@
+==> stage gate C-MM-H 20260729-235749
+[FAIL] F-MM-H/mail-moderation :: go test -C services/comms/mail-moderation ./... -count=1
+[PASS] CM-MM-H/licensegate :: go test -C services/platform ./licensegate/... -count=1
+STAGE GATE FAIL (C-MM-H)

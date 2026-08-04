@@ -1,0 +1,10 @@
+2026-07-30T00:22:02.5096542+04:00 CUTOVER Step 1: final delta migration jobs (mode=delta)
+2026-07-30T00:22:02.5199014+04:00 CUTOVER delta skip: Response status code does not indicate success: 400 (Bad Request).
+2026-07-30T00:22:02.5225724+04:00 CUTOVER Step 2: rerun idempotency probe
+2026-07-30T00:22:02.5372233+04:00 CUTOVER rerun: {"new_items":0}
+
+2026-07-30T00:22:02.5403861+04:00 CUTOVER Step 3: switch Autodiscover to Bridge (manual MX/AD — see Comms-Cutover-Rehearsal-Runbook.md)
+2026-07-30T00:22:02.5888619+04:00 CUTOVER bridge autodiscover EwsUrl present: True
+2026-07-30T00:22:02.5912233+04:00 CUTOVER Step 4: Outlook VM send/receive smoke - MANUAL (partner site RT-11)
+2026-07-30T00:22:02.5935132+04:00 CUTOVER Step 5: decommission CG SMTP after MX cutover - MANUAL
+2026-07-30T00:22:02.5956090+04:00 CUTOVER CUTOVER rehearsal log complete: D:\My Projects\era-one\scripts\..\reports\comms-migration-cutover-20260730-002202.log

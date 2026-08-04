@@ -12,13 +12,22 @@ import (
 	lic "era/services/license/pkg/license"
 )
 
-// StrictMode — fail-closed: ERA_LICENSE_STRICT=1|true или ERA_PRODUCTION=1|true.
+// StrictMode — fail-closed, synced with rbac.TrustFromEnv production signals.
+// True when ERA_LICENSE_STRICT / ERA_PRODUCTION / ERA_ENV_PRODUCTION truthy,
+// or ERA_ENV=production (case-insensitive).
 func StrictMode() bool {
-	return envTruthy("ERA_LICENSE_STRICT") || envTruthy("ERA_PRODUCTION")
+	if envTruthy("ERA_LICENSE_STRICT") || envTruthy("ERA_PRODUCTION") || envTruthy("ERA_ENV_PRODUCTION") {
+		return true
+	}
+	return strings.EqualFold(strings.TrimSpace(os.Getenv("ERA_ENV")), "production")
 }
 
 // GateFromEnv строит Gate из проверенного лицензионного токена или DevDefault в dev.
+// ERA_LICENSE_DEV=1 (только вне strict/production) → DevAllEnabled для lab.
 func GateFromEnv(activeNodes int) (*Gate, error) {
+	if envTruthy("ERA_LICENSE_DEV") && !StrictMode() {
+		return DevAllEnabled(), nil
+	}
 	token, err := loadLicenseToken()
 	if err != nil {
 		if StrictMode() {

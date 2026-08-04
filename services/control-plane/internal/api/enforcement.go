@@ -28,7 +28,7 @@ func (s *Server) handleEnforcementPolicy(w http.ResponseWriter, r *http.Request)
 		}
 		writeJSON(w, http.StatusOK, map[string]any{"policy": st.GetEnforcementPolicy()})
 	case http.MethodPut:
-		if !s.requireManage(w, r) {
+		if !s.requireManageAdmin(w, r) {
 			return
 		}
 		var p store.EnforcementPolicy
@@ -52,7 +52,7 @@ func (s *Server) handleEnforcementRollback(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	if !s.requireManage(w, r) {
+	if !s.requireManageAdmin(w, r) {
 		return
 	}
 	st := s.scopedStore(r)
@@ -78,7 +78,11 @@ func (s *Server) handleEnforcementHistory(w http.ResponseWriter, r *http.Request
 }
 
 func (s *Server) handleEnforcementEscrow(w http.ResponseWriter, r *http.Request) {
-	if !s.requireManage(w, r) {
+	if r.Method == http.MethodGet {
+		if !s.requireManage(w, r) {
+			return
+		}
+	} else if !s.requireManageAdmin(w, r) {
 		return
 	}
 	st := s.scopedStore(r)
@@ -120,7 +124,7 @@ func (s *Server) handleEnforcementEscrowDetail(w http.ResponseWriter, r *http.Re
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	if !s.requireManage(w, r) {
+	if !s.requireManageAdmin(w, r) {
 		return
 	}
 	path := strings.TrimPrefix(r.URL.Path, "/api/v1/enforcement/escrow/")
@@ -148,7 +152,7 @@ func (s *Server) handleEnforcementVirtualPatch(w http.ResponseWriter, r *http.Re
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	if !s.requireManage(w, r) {
+	if !s.requireManageAdmin(w, r) {
 		return
 	}
 	var req struct {
@@ -192,8 +196,7 @@ func bumpPatchVersion(cur string) string {
 }
 
 func (s *Server) allowEnforcementRead(w http.ResponseWriter, r *http.Request) bool {
-	actor := r.Header.Get("X-ERA-Actor")
-	if actor == "era-agent" {
+	if rbac.IsTrustedAgent(r) {
 		return true
 	}
 	if s.Gate != nil && !s.Gate.Allow(licensegate.ModuleManage) {

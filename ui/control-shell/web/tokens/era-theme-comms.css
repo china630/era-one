@@ -1,0 +1,6 @@
+/* Communications line — light dense inbox. */
+[data-line="comms"],
+[data-sku="mail"] {
+  --era-accent: #188038;
+  --era-accent-soft: #e6f4ea;
+}

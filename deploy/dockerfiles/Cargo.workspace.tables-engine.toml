@@ -1,0 +1,8 @@
+# ERA Office — trimmed Rust workspace for tables-engine Docker build.
+[workspace]
+resolver = "2"
+members = [
+    "crates/era-tables-core",
+    "crates/era-office-storage",
+    "services/platform/tables-engine",
+]

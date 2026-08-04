@@ -5,6 +5,7 @@ COPY deploy/dockerfiles/go.work.mail-api ./go.work
 COPY gen/go gen/go
 COPY services/comms/mail services/comms/mail
 COPY services/comms/calendar services/comms/calendar
+COPY services/comms/internal/httpauth services/comms/internal/httpauth
 COPY services/platform services/platform
 COPY services/license services/license
 COPY ui/drive ui/drive

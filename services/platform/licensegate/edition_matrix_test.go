@@ -54,12 +54,15 @@ func TestEditionMatrix(t *testing.T) {
 
 func TestDevDefaultMatchesCoreUpsell(t *testing.T) {
 	g := DevDefault()
-	for _, m := range []Module{ModuleVuln, ModuleControlAI, ModuleResponse, ModuleManage, ModuleService, ModuleProvision, ModulePAM, ModuleObserve} {
+	for _, m := range []Module{
+		ModuleVuln, ModuleControlAI, ModuleResponse, ModuleManage, ModuleService, ModuleProvision,
+		ModulePAM, ModuleObserve, ModulePerimeter, ModuleResolve,
+	} {
 		if !g.Allow(m) {
 			t.Fatalf("dev default missing %s", m)
 		}
 	}
-	for _, m := range []Module{ModuleFederated, ModuleNational, ModulePerimeter, ModuleResolve} {
+	for _, m := range []Module{ModuleFederated, ModuleNational} {
 		if g.Allow(m) {
 			t.Fatalf("dev default must not include %s", m)
 		}
@@ -108,6 +111,10 @@ func TestKnownModulesComplete(t *testing.T) {
 		ModuleCommsChat: true, ModuleCommsConference: true, ModuleCommsAI: true,
 		ModulePlatformDrive: true,
 		ModuleOfficeDocuments: true,
+		ModuleOfficeTables: true,
+		ModuleOfficePresentations: true,
+		ModuleOfficeProjects: true,
+		ModuleOfficeAI: true,
 	}
 	for _, m := range KnownModules {
 		if !want[m] {

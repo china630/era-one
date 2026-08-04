@@ -1,0 +1,7 @@
+==> stage gate C-5 20260729-235746
+[FAIL] F-C31/comms-ai :: go test ./services/comms/ai/... -count=1
+[FAIL] F-C32/phishing-golden :: go test ./services/comms/ai/... -run F_C32 -count=1
+[FAIL] F-C33/loadgen :: go test ./services/comms/cmd/loadgen-mailboxes/... -count=1
+[FAIL] F-C34/budget :: go test ./services/comms/ai/... -run F_C34 -count=1
+[SKIP] F-C32/audit-ch :: go test -tags integration ./services/comms/auditch/... -run AIInference -count=1
+STAGE GATE FAIL (C-5)

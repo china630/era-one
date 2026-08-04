@@ -56,6 +56,17 @@ func TestResolve_CuratorMap(t *testing.T) {
 	}
 }
 
+func TestResolve_AllOf(t *testing.T) {
+	r := &resolve.Resolver{Dir: &resolve.MemoryDir{}}
+	mods, err := r.Resolve("x@y.z", policy.ModeratorSpec{
+		Mode:   policy.ModAllOf,
+		Static: []string{"a@c.local", "b@c.local"},
+	})
+	if err != nil || len(mods) != 2 {
+		t.Fatalf("got %v %v", mods, err)
+	}
+}
+
 func TestResolve_StaticAnyOf(t *testing.T) {
 	r := &resolve.Resolver{Dir: &resolve.MemoryDir{}}
 	mods, err := r.Resolve("x@y.z", policy.ModeratorSpec{

@@ -28,10 +28,14 @@ const (
 	ModuleCommsAI          Module = "comms-ai"
 	ModulePlatformDrive    Module = "platform-drive"
 	ModuleOfficeDocuments  Module = "office-documents"
+	ModuleOfficeTables         Module = "office-tables"
+	ModuleOfficePresentations  Module = "office-presentations"
+	ModuleOfficeProjects       Module = "office-projects"
+	ModuleOfficeAI             Module = "office-ai"
 )
 
 // KnownModules — все опциональные модули.
-var KnownModules = []Module{ModuleVuln, ModuleControlAI, ModuleResponse, ModuleManage, ModuleService, ModuleProvision, ModulePAM, ModuleObserve, ModulePerimeter, ModuleResolve, ModuleFederated, ModuleNational, ModuleCommsMailServer, ModuleCommsMailConnect, ModuleCommsMigration, ModuleCommsOutlookBridge, ModuleCommsMailModeration, ModuleCommsChat, ModuleCommsConference, ModuleCommsAI, ModulePlatformDrive, ModuleOfficeDocuments}
+var KnownModules = []Module{ModuleVuln, ModuleControlAI, ModuleResponse, ModuleManage, ModuleService, ModuleProvision, ModulePAM, ModuleObserve, ModulePerimeter, ModuleResolve, ModuleFederated, ModuleNational, ModuleCommsMailServer, ModuleCommsMailConnect, ModuleCommsMigration, ModuleCommsOutlookBridge, ModuleCommsMailModeration, ModuleCommsChat, ModuleCommsConference, ModuleCommsAI, ModulePlatformDrive, ModuleOfficeDocuments, ModuleOfficeTables, ModuleOfficePresentations, ModuleOfficeProjects, ModuleOfficeAI}
 
 // Gate описывает, какие модули включены в текущей лицензии.
 type Gate struct {
@@ -41,7 +45,10 @@ type Gate struct {
 // DevDefault — стандартная dev-лицензия без federated/national (F3-6).
 func DevDefault() *Gate {
 	g := &Gate{enabled: make(map[Module]bool)}
-	for _, m := range []Module{ModuleVuln, ModuleControlAI, ModuleResponse, ModuleManage, ModuleService, ModuleProvision, ModulePAM, ModuleObserve} {
+	for _, m := range []Module{
+		ModuleVuln, ModuleControlAI, ModuleResponse, ModuleManage, ModuleService, ModuleProvision,
+		ModulePAM, ModuleObserve, ModulePerimeter, ModuleResolve,
+	} {
 		g.enabled[m] = true
 	}
 	return g
@@ -52,6 +59,10 @@ func OfficeDevGate() *Gate {
 	g := DevDefault()
 	g.enabled[ModulePlatformDrive] = true
 	g.enabled[ModuleOfficeDocuments] = true
+	g.enabled[ModuleOfficeTables] = true
+	g.enabled[ModuleOfficePresentations] = true
+	g.enabled[ModuleOfficeProjects] = true
+	g.enabled[ModuleOfficeAI] = true
 	return g
 }
 

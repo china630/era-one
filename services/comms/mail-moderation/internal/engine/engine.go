@@ -85,6 +85,8 @@ func (e *Engine) ProcessRaw(raw []byte, envelopeFrom string, envelopeTo []string
 			Recipients: msg.To,
 			Subject:    msg.Subject,
 			Moderators: mods,
+			RequireAll: res.Rule.Moderator.Mode == policy.ModAllOf,
+			Level:      res.Rule.Level,
 			Raw:        raw,
 			ExpiresAt:  time.Now().UTC().Add(policy.EffectiveTTL(res.Rule)),
 		})
@@ -92,6 +94,13 @@ func (e *Engine) ProcessRaw(raw []byte, envelopeFrom string, envelopeTo []string
 			return res.Decision, "", err
 		}
 		_ = e.Audit.Record(audit.Event{HoldID: rec.ID, Action: "hold", Sender: rec.Sender, RuleID: res.RuleID})
+		if res.Rule != nil && len(res.Rule.Conditions.DLPTrigger) > 0 {
+			dlp := DLPHandoff(rec.ID, rec.Sender, rec.Subject, res.RuleID)
+			_ = e.Audit.Record(audit.Event{
+				HoldID: rec.ID, Action: "dlp_handoff", Sender: rec.Sender, RuleID: res.RuleID,
+				Meta: map[string]string{"mode": dlp.Mode},
+			})
+		}
 		if e.Notify != nil {
 			_ = e.Notify.NotifyModerator(rec.ID, rec.Sender, rec.Subject, mods, truncate(string(raw), 500))
 			if policy.NotifyOnHoldDefault(res.Rule) {
@@ -124,11 +133,78 @@ func (e *Engine) ApplyAction(holdID, moderator, action, comment string) error {
 		HoldID: holdID, Action: action, Sender: rec.Sender, RuleID: rec.RuleID, Moderator: moderator,
 		Meta: map[string]string{"comment": comment},
 	})
-	if action == "approve" && e.Upstream != nil {
-		return e.Upstream.Deliver(rec.Raw, rec.Sender, rec.Recipients)
+	if action == "approve" {
+		if rec.Status != hold.StatusApproved {
+			return nil // all_of partial quorum
+		}
+		if rule := e.ruleByID(rec.RuleID); rule != nil && strings.TrimSpace(rule.EscalateTo) != "" {
+			_, err := e.Escalate(holdID)
+			return err
+		}
+		if e.Upstream != nil {
+			return e.Upstream.Deliver(rec.Raw, rec.Sender, rec.Recipients)
+		}
 	}
 	if action == "reject" && e.Notify != nil {
 		return e.Notify.NotifySenderRejected(rec.Sender, rec.Subject, comment)
+	}
+	return nil
+}
+
+// Escalate re-holds after L1 approve path with EscalateTo moderators and Level+1 (B-MM).
+func (e *Engine) Escalate(holdID string) (string, error) {
+	rec, ok := e.Holds.Get(holdID)
+	if !ok {
+		return "", fmt.Errorf("hold %s not found", holdID)
+	}
+	rule := e.ruleByID(rec.RuleID)
+	if rule == nil || strings.TrimSpace(rule.EscalateTo) == "" {
+		return "", fmt.Errorf("hold %s has no escalate_to", holdID)
+	}
+	next := e.ruleByID(rule.EscalateTo)
+	if next == nil {
+		return "", fmt.Errorf("escalate_to rule %q missing", rule.EscalateTo)
+	}
+	mods, err := e.Resolve.Resolve(extractAddr(rec.Sender), next.Moderator)
+	if err != nil {
+		return "", err
+	}
+	level := next.Level
+	if level == 0 {
+		level = rec.Level + 1
+	}
+	if level <= rec.Level {
+		level = rec.Level + 1
+	}
+	newRec, err := e.Holds.Put(hold.Record{
+		RuleID:     next.ID,
+		Sender:     rec.Sender,
+		Recipients: rec.Recipients,
+		Subject:    rec.Subject,
+		Moderators: mods,
+		RequireAll: next.Moderator.Mode == policy.ModAllOf,
+		Level:      level,
+		Raw:        rec.Raw,
+		ExpiresAt:  time.Now().UTC().Add(policy.EffectiveTTL(next)),
+	})
+	if err != nil {
+		return "", err
+	}
+	_ = e.Audit.Record(audit.Event{
+		HoldID: newRec.ID, Action: "escalate", Sender: rec.Sender, RuleID: next.ID,
+		Meta: map[string]string{"from_hold": holdID, "from_rule": rec.RuleID},
+	})
+	if e.Notify != nil {
+		_ = e.Notify.NotifyModerator(newRec.ID, newRec.Sender, newRec.Subject, mods, truncate(string(rec.Raw), 500))
+	}
+	return newRec.ID, nil
+}
+
+func (e *Engine) ruleByID(id string) *policy.Rule {
+	for i := range e.Rules {
+		if e.Rules[i].ID == id {
+			return &e.Rules[i]
+		}
 	}
 	return nil
 }

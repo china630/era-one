@@ -1,0 +1,198 @@
+/* Google Docs–style menubar: compact width, flyout submenus, no scrollbars. */
+.era-menubar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem;
+  align-items: stretch;
+  padding: 0.15rem 0.75rem 0.25rem;
+  background: var(--era-surface);
+  border-bottom: 1px solid var(--era-line);
+  position: sticky;
+  top: 0;
+  z-index: 19;
+  font-size: 0.875rem;
+}
+
+.era-menubar .era-menu {
+  position: relative;
+}
+
+.era-menubar .era-menu-btn {
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: var(--era-ink);
+  padding: 0.3rem 0.55rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.era-menubar .era-menu-btn:hover,
+.era-menubar .era-menu.open .era-menu-btn {
+  background: var(--era-accent-soft);
+}
+
+.era-menubar .era-menu-panel {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  width: max-content;
+  min-width: 11.5rem;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  background: var(--era-surface);
+  border: 1px solid var(--era-line);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px 2px rgba(60, 64, 67, 0.15);
+  padding: 0.35rem 0;
+  z-index: 80;
+}
+
+.era-menubar .era-menu.open .era-menu-panel {
+  display: block;
+}
+
+.era-menubar .era-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.65rem;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: var(--era-ink);
+  text-align: left;
+  padding: 0.25rem 2.25rem 0.25rem 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Icon column: fixed so labels share one vertical edge (Google Docs) */
+.era-menubar .era-menu-item > .era-icon,
+.era-menubar .era-menu-item > .era-icon-slot {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: 0 0 1.125rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.era-menubar .era-menu-item > .era-icon {
+  opacity: 0.78;
+  color: var(--era-muted);
+}
+
+.era-menubar .era-menu-item > .era-icon svg,
+.era-menubar .era-menu-item > svg.era-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.era-menubar .era-menu-item > .era-icon + span,
+.era-menubar .era-menu-item > .era-icon-slot + span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.era-menubar .era-menu-item:hover:not(:disabled) {
+  background: var(--era-accent-soft);
+}
+
+.era-menubar .era-menu-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.era-menubar .era-menu-item.era-plus:disabled {
+  opacity: 0.72;
+  color: var(--era-muted);
+}
+
+.era-menubar .era-menu-item .hint {
+  color: var(--era-muted);
+  font-size: 0.75rem;
+  margin-left: 1.25rem;
+  flex-shrink: 0;
+}
+
+.era-menubar .era-menu-item .era-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--era-accent);
+  background: var(--era-accent-soft);
+  border-radius: 3px;
+  padding: 0.1rem 0.3rem;
+  flex-shrink: 0;
+  margin-left: 0.75rem;
+}
+
+.era-menubar .era-menu-sep {
+  height: 1px;
+  background: var(--era-line);
+  margin: 0.35rem 0;
+}
+
+/* Nested flyouts — never scroll; grow with content */
+.era-menubar .era-submenu {
+  position: relative;
+}
+
+.era-menubar .era-submenu-btn {
+  position: relative;
+  padding-right: 1.75rem;
+}
+
+.era-menubar .era-submenu-btn .era-submenu-caret {
+  position: absolute;
+  right: 0.55rem;
+  color: var(--era-muted);
+  font-size: 1.05rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.era-menubar .era-submenu-panel {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: -0.35rem;
+  width: max-content;
+  min-width: 11rem;
+  max-height: none;
+  overflow: visible;
+  background: var(--era-surface);
+  border: 1px solid var(--era-line);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px 2px rgba(60, 64, 67, 0.15);
+  padding: 0.35rem 0;
+  z-index: 50;
+}
+
+.era-menubar .era-submenu.open > .era-submenu-panel,
+.era-menubar .era-submenu:hover > .era-submenu-panel {
+  display: block;
+}
+
+.era-menubar .era-submenu.open > .era-submenu-btn,
+.era-menubar .era-submenu:hover > .era-submenu-btn {
+  background: var(--era-accent-soft);
+}
+
+@media (max-width: 720px) {
+  .era-menubar .era-submenu-panel {
+    left: 0;
+    top: 100%;
+  }
+}
+
+.era-menubar-toolbar {
+  margin-top: 0;
+}

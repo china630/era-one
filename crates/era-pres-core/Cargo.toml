@@ -1,0 +1,22 @@
+[package]
+name = "era-pres-core"
+version = "0.1.0"
+edition = "2021"
+description = "ERA Presentations pure core — .erap, pptx/odp convert (B1; ADR-0026)"
+publish = false
+
+[lib]
+name = "era_pres_core"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1"
+base64 = "0.22"
+era-office-richtext = { path = "../../services/platform/office-richtext" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4"] }
+zip = { version = "2", default-features = false, features = ["deflate"] }
+
+[dev-dependencies]
+tempfile = "3"

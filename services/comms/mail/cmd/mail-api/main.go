@@ -37,7 +37,10 @@ func main() {
 	seedDemoTenants(tenants)
 
 	policies := policy.NewStore()
-	aud := audit.NewFromEnv()
+	aud, err := audit.NewFromEnvStrict()
+	if err != nil {
+		log.Fatalf("audit: %v", err)
+	}
 
 	mailRepo, err := repo.New()
 	if err != nil {
@@ -90,7 +93,7 @@ func seedDemoMailbox(r repo.Backend) {
 	if _, err := r.GetMailboxByEmail("alice@mail.gov.az"); err == nil {
 		return
 	}
-	_, _ = r.CreateMailbox("t-demo", "alice@mail.gov.az", "demo-pass", 512<<20)
+	_, _ = r.CreateMailbox("t-demo", "alice@mail.gov.az", "1234", 512<<20)
 }
 
 func storageMode(r *repo.Repository) string {

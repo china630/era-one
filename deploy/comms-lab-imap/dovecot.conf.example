@@ -1,0 +1,12 @@
+# Optional: if swapping image to dovecot/dovecot, mount this as /etc/dovecot/dovecot.conf
+protocols = imap
+listen = *
+mail_location = maildir:~/Maildir
+passdb {
+  driver = static
+  args = password=lab
+}
+userdb {
+  driver = static
+  args = uid=vmail gid=vmail home=/var/mail/%u
+}

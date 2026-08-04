@@ -1,0 +1,9 @@
+# Deny copyleft licenses in ERA Office runtime (ADR-0026).
+# One pattern per line; matched against Cargo package license strings.
+# LGPL / "Lesser" GPL dual-license options are allowed by the gate.
+
+AGPL
+GNU Affero
+GPL-2.0
+GPL-3.0
+GNU General Public License

@@ -1,0 +1,6 @@
+2026-07-30T00:21:01.6386995+04:00 CUTOVER Step 1: final delta migration jobs (mode=delta)
+2026-07-30T00:21:01.6568415+04:00 CUTOVER delta skip: Response status code does not indicate success: 400 (Bad Request).
+2026-07-30T00:21:01.6636079+04:00 CUTOVER Step 2: rerun idempotency probe
+2026-07-30T00:21:01.7024184+04:00 CUTOVER rerun: {"new_items":1}
+
+2026-07-30T00:21:01.7065519+04:00 CUTOVER Step 3: switch Autodiscover to Bridge (manual MX/AD — see Comms-Cutover-Rehearsal-Runbook.md)

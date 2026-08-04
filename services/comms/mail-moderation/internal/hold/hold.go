@@ -35,6 +35,9 @@ type Record struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	ConsumedBy  string // moderator who acted (any-of)
+	ApprovedBy  []string // P2 all_of: accumulated approvals before unanimous
+	RequireAll  bool     // when true, Approve waits for every Moderator
+	Level       int      // P2 multi-level L1=1, L2=2…
 }
 
 // Store — in-memory hold.
@@ -101,9 +104,37 @@ func (s *Store) Get(id string) (Record, bool) {
 	return out, true
 }
 
-// Approve — any-of: первый побеждает.
+// Approve — any-of by default; when RequireAll, collects until all Moderators approve.
 func (s *Store) Approve(id, moderator string) (Record, error) {
-	return s.act(id, moderator, StatusApproved, "")
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	r, ok := s.byID[id]
+	if !ok {
+		return Record{}, fmt.Errorf("hold %s not found", id)
+	}
+	if r.Status != StatusPending {
+		return Record{}, fmt.Errorf("hold %s status %s", id, r.Status)
+	}
+	if !isModerator(r.Moderators, moderator) && moderator != "admin" {
+		return Record{}, fmt.Errorf("moderator %s not allowed", moderator)
+	}
+	if r.RequireAll && moderator != "admin" {
+		if !containsFold(r.ApprovedBy, moderator) {
+			r.ApprovedBy = append(r.ApprovedBy, moderator)
+		}
+		r.UpdatedAt = s.now()
+		if !allApproved(r.Moderators, r.ApprovedBy) {
+			out := *r
+			out.Raw = append([]byte(nil), r.Raw...)
+			return out, nil // still pending
+		}
+	}
+	r.Status = StatusApproved
+	r.ConsumedBy = moderator
+	r.UpdatedAt = s.now()
+	out := *r
+	out.Raw = append([]byte(nil), r.Raw...)
+	return out, nil
 }
 
 // Reject требует comment.
@@ -161,12 +192,25 @@ func (s *Store) ExpirePending(autoApprove bool) []Record {
 }
 
 func isModerator(list []string, who string) bool {
+	return containsFold(list, who)
+}
+
+func containsFold(list []string, who string) bool {
 	for _, m := range list {
 		if strings.EqualFold(m, who) {
 			return true
 		}
 	}
 	return false
+}
+
+func allApproved(need, got []string) bool {
+	for _, m := range need {
+		if !containsFold(got, m) {
+			return false
+		}
+	}
+	return len(need) > 0
 }
 
 func newID() (string, error) {

@@ -7,6 +7,7 @@ import (
 	icewarpbe "era/services/comms/mail-bridge/internal/upstream/icewarp"
 	exchangebe "era/services/comms/mail-bridge/internal/upstream/exchange"
 	imapgen "era/services/comms/mail-bridge/internal/upstream/imap_generic"
+	"era/services/comms/mail-bridge/internal/upstream/synthetic"
 )
 
 // BuildBackend constructs a production upstream from route metadata.
@@ -46,6 +47,8 @@ func BuildBackend(route Route, defaultB Backend) Backend {
 			return defaultB
 		}
 		return imapgen.New(cfg)
+	case "synthetic":
+		return synthetic.Backend{}
 	default:
 		return defaultB
 	}

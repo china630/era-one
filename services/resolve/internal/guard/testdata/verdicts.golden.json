@@ -1,0 +1,1 @@
+{"allow":{"qname":"ok.example","qtype":"A","action":"allow","source":"default"},"atlas":{"qname":"c2.evil.example","qtype":"A","action":"nxdomain","rule_id":"atlas:c2.evil.example","reason":"atlas hit severity=high","source":"atlas"},"malware":{"qname":"x.malware.test","qtype":"A","action":"nxdomain","rule_id":"block-malware-lab","reason":"lab deny","source":"policy"}}

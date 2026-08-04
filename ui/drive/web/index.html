@@ -2,29 +2,298 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>ERA Drive</title>
+  <link rel="stylesheet" href="/office-assets/office.css"/>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 960px; }
-    header { display: flex; justify-content: space-between; align-items: center; }
-    ul { list-style: none; padding: 0; }
-    li { border-bottom: 1px solid #ddd; padding: .5rem 0; }
-    #upload { margin-top: 1rem; }
+    #breadcrumb {
+      display: flex; flex-wrap: wrap; gap: .35rem; align-items: center;
+      font-size: .9rem; margin: 0 0 .65rem; color: var(--era-muted);
+    }
+    #breadcrumb button.link {
+      border: none; background: none; color: var(--era-accent); padding: 0;
+      cursor: pointer; font: inherit; font-weight: 600;
+    }
+    #breadcrumb .sep { color: var(--era-muted); }
+    #breadcrumb .here { font-weight: 650; color: var(--era-ink); }
+    ul#files { list-style: none; padding: 0; margin: 0; }
+    ul#files.era-drive-view-list > li {
+      display: grid;
+      grid-template-columns: 1.25rem minmax(0,1fr) 6.5rem auto;
+      gap: .35rem .5rem;
+      align-items: center;
+      border-bottom: 1px solid var(--era-line);
+      padding: .3rem .4rem;
+      border-radius: 4px;
+    }
+    ul#files.era-drive-view-list > li:hover { background: #f8fafc; }
+    ul#files.era-drive-view-list > li.selected {
+      background: var(--era-accent-soft);
+      outline: 1px solid #c5d7ff;
+    }
+    ul#files li .name {
+      min-width: 0;
+      display: flex; flex-wrap: nowrap; gap: .3rem; align-items: center;
+      font-weight: 600; color: var(--era-ink); font-size: .9rem;
+    }
+    ul#files li .name button.link,
+    ul#files li .name > span:not(.lock-badge) {
+      border: none; background: none; color: inherit; font: inherit; font-weight: 600;
+      padding: 0; cursor: pointer; text-align: left;
+      text-decoration: none;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+    }
+    ul#files li .name button.link:hover { color: var(--era-accent); text-decoration: underline; }
+    ul#files li .meta {
+      color: var(--era-muted); font-size: .75rem; white-space: nowrap;
+      justify-self: end;
+    }
+    ul#files li .lock-badge {
+      display: inline-flex; align-items: center; gap: .2rem;
+      font-size: .7rem; font-weight: 600; color: var(--era-muted);
+      border: 1px solid var(--era-line); border-radius: 4px; padding: .02rem .25rem;
+      flex-shrink: 0;
+    }
+    ul#files li .era-row-actions {
+      display: inline-flex; flex-wrap: nowrap; gap: .15rem;
+      align-items: center; justify-content: flex-end;
+    }
+    ul#files li .era-row-actions .era-btn {
+      min-height: 1.65rem; padding: .15rem .45rem; font-size: .78rem;
+      white-space: nowrap;
+    }
+    ul#files li .era-row-actions .era-icon-btn {
+      width: 1.65rem; height: 1.65rem; min-width: 1.65rem; padding: 0;
+    }
+    ul#files li .era-more-wrap { position: relative; display: inline-flex; }
+    ul#files li .era-more-menu {
+      position: absolute; right: 0; top: calc(100% + 2px); z-index: 40;
+      min-width: 9.5rem; padding: .25rem;
+      background: var(--era-surface); border: 1px solid var(--era-line);
+      border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.12);
+      display: none;
+    }
+    ul#files li .era-more-menu.open { display: block; }
+    ul#files li .era-more-menu button {
+      display: flex; width: 100%; align-items: center; gap: .4rem;
+      border: none; background: transparent; padding: .35rem .45rem;
+      border-radius: 4px; cursor: pointer; font: inherit; font-size: .82rem; text-align: left;
+    }
+    ul#files li .era-more-menu button:hover { background: var(--era-accent-soft); }
+    ul#files li .era-more-menu button.disabled { opacity: .45; cursor: not-allowed; }
+    ul#files.era-drive-view-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+      gap: .5rem;
+    }
+    ul#files.era-drive-view-grid > li {
+      display: flex; flex-direction: column; align-items: stretch;
+      border: 1px solid var(--era-line); border-radius: 8px;
+      padding: .55rem .5rem .45rem; background: var(--era-surface);
+      min-height: 0; gap: .25rem;
+    }
+    ul#files.era-drive-view-grid > li.selected {
+      border-color: var(--era-accent); background: var(--era-accent-soft);
+    }
+    ul#files.era-drive-view-grid > li .name {
+      flex-direction: column; align-items: flex-start; font-size: .8rem;
+      word-break: break-word; white-space: normal;
+    }
+    ul#files.era-drive-view-grid > li .name .era-icon {
+      width: 1.75rem; height: 1.75rem; margin-bottom: .1rem;
+    }
+    ul#files.era-drive-view-grid > li .meta { justify-self: start; font-size: .7rem; }
+    ul#files.era-drive-view-grid > li .era-row-actions {
+      flex-wrap: nowrap; justify-content: flex-start; gap: .15rem; margin-top: .15rem;
+    }
+    ul#files.era-drive-view-grid > li .era-row-actions .era-icon-btn {
+      width: 1.85rem; height: 1.85rem; min-width: 1.85rem;
+    }
+    ul#files li .era-row-check {
+      width: 1rem; height: 1rem; accent-color: var(--era-accent);
+    }
+    #selectionBar {
+      background: #eef3ff;
+      border-top: 1px solid #c5d7ff !important;
+    }
+    #selectionBar .era-btn { min-height: 1.75rem; padding: .2rem .55rem; font-size: .82rem; }
+    #versionsPanel, #sharePanel { display: none; }
+    #versionsPanel.open, #sharePanel.open { display: block; }
+    #movePanel.era-drive-modal { display: none; }
+    #movePanel.era-drive-modal.open { display: flex; }
+    #previewBody { margin: .5rem 0 .75rem; max-height: calc(100vh - 12rem); overflow: auto; }
+    #previewBody pre {
+      margin: 0; white-space: pre-wrap; word-break: break-word;
+      font-size: .85rem; font-family: ui-monospace, monospace;
+    }
+    #previewBody img { max-width: 100%; height: auto; display: block; }
+    #previewSizeHint { font-size: .8rem; color: var(--era-muted); margin: 0 0 .35rem; }
+    #versionsList { margin: 0; padding-left: 1.2rem; font-size: .9rem; }
+    #aclList { list-style: none; padding: 0; margin: 0 0 .75rem; }
+    #aclList li {
+      display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+      border-bottom: 1px solid var(--era-line); padding: .4rem 0; font-size: .9rem;
+    }
+    #moveFolderSelect { min-width: 14rem; }
+    .era-drive-tree-head {
+      display: flex; align-items: center; justify-content: space-between; gap: .35rem;
+      margin-bottom: .35rem;
+    }
+    .era-drive-tree-head h2 { margin: 0; font-size: .95rem; }
+    .era-drive-new-wrap { position: relative; display: inline-flex; }
+    .era-drive-browser-col { min-width: 0; }
+    #selectionBar[hidden] { display: none !important; }
   </style>
 </head>
-<body>
-  <header>
-    <h1>ERA Drive</h1>
-    <nav>
-      <a href="/mail/">Mail</a> ·
-      <a href="/docs">Docs (P1)</a>
+<body class="era-app era-drive-app" data-line="office" data-sku="drive">
+  <header class="era-topbar">
+    <a class="era-brand" href="/drive/" data-icon="brand" data-mod="drive">
+      <span class="era-brand-mark">ERA Office</span>
+      <span class="era-brand-mod">Drive</span>
+    </a>
+    <nav class="era-nav" aria-label="Office modules">
+      <a href="/drive/" data-mod="drive">Drive</a>
+      <a href="/docs/" data-mod="docs">Documents</a>
+      <a href="/tables/" data-mod="tables">Tables</a>
+      <a href="/presentations/" data-mod="pres">Presentations</a>
+      <a href="/projects/" data-mod="projects">Projects</a>
+      <a href="/office-ai/" data-mod="ai">Office AI</a>
+      <a href="/mail/" data-mod="mail">Mail</a>
     </nav>
+    <div class="era-topbar-right">
+      <p id="authStatus" class="era-status" role="status" aria-live="polite"></p>
+      <span id="userChip" class="era-user-chip" title="Signed-in user">—</span>
+    </div>
   </header>
-  <section id="upload">
-    <input type="file" id="file"/>
-    <button id="uploadBtn">Upload</button>
-  </section>
-  <h2>Files</h2>
-  <ul id="files"></ul>
+
+  <div class="era-doc-header">
+    <div class="era-doc-header-main">
+      <h1 class="era-doc-title" style="margin:0;font-size:1.2rem">My Drive</h1>
+      <div class="era-doc-header-meta">
+        <span id="driveHeaderHint">Folders · files · Office objects</span>
+      </div>
+    </div>
+  </div>
+
+  <main class="era-main era-main-fluid">
+    <div class="era-toolbar-rail">
+      <div class="era-toolbar" role="toolbar" aria-label="Drive actions">
+        <div class="era-toolbar-group">
+          <div class="era-drive-new-wrap">
+            <button id="newMenuBtn" type="button" class="era-btn era-btn-primary" data-icon="add" aria-haspopup="true" aria-expanded="false">New</button>
+            <div id="newMenu" class="era-drive-new-menu" role="menu" hidden>
+              <button type="button" id="newDocBtn" role="menuitem" data-icon="navDocs">Document</button>
+              <button type="button" id="newSheetBtn" role="menuitem" data-icon="navTables">Spreadsheet</button>
+              <button type="button" id="newDeckBtn" role="menuitem" data-icon="navPres">Presentation</button>
+              <button type="button" id="newProjectBtn" role="menuitem" data-icon="navProjects">Project</button>
+              <button type="button" id="newFolderMenuBtn" role="menuitem" data-icon="folder">Folder</button>
+            </div>
+          </div>
+          <input type="text" id="newFolderName" class="era-input" placeholder="Folder name" aria-label="New folder name"/>
+          <button id="createFolderBtn" type="button" class="era-icon-btn" data-icon="folder" title="Create folder" aria-label="Create folder"></button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <input type="search" id="driveSearchInput" class="era-input era-find-input" placeholder="Search" aria-label="Search Drive" autocomplete="off"/>
+          <button id="driveSearchBtn" type="button" class="era-icon-btn" data-icon="search" title="Search" aria-label="Search"></button>
+          <button id="driveSearchClear" type="button" class="era-btn" hidden>Clear</button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group" role="group" aria-label="View">
+          <button id="viewListBtn" type="button" class="era-icon-btn era-view-toggle active" data-icon="viewList" title="List view" aria-label="List view" aria-pressed="true"></button>
+          <button id="viewGridBtn" type="button" class="era-icon-btn era-view-toggle" data-icon="viewGrid" title="Grid view" aria-label="Grid view" aria-pressed="false"></button>
+          <select id="driveSortSelect" class="era-input" aria-label="Sort by" title="Sort">
+            <option value="name">Name</option>
+            <option value="date">Modified</option>
+            <option value="type">Type</option>
+          </select>
+        </div>
+        <div class="era-toolbar-secondary">
+          <input type="file" id="file" hidden/>
+          <button id="pickFileBtn" type="button" class="era-icon-btn" data-icon="upload" title="Choose file" aria-label="Choose file"></button>
+          <button id="uploadBtn" type="button" class="era-btn era-btn-primary" data-icon="upload">Upload</button>
+        </div>
+      </div>
+      <div id="selectionBar" class="era-toolbar" hidden>
+        <div class="era-toolbar-group">
+          <span id="selectionCount" class="era-hint">0 selected</span>
+          <button id="selMoveBtn" type="button" class="era-btn era-btn-primary" data-icon="move">Move to folder</button>
+          <button id="selTrashBtn" type="button" class="era-btn" data-icon="trash">Trash</button>
+          <button id="selClearBtn" type="button" class="era-btn">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="era-drive-layout">
+      <aside id="folderTree" class="era-drive-tree" aria-label="Folder tree">
+        <div class="era-drive-tree-head">
+          <h2>Folders</h2>
+          <button id="treeNewFolderBtn" type="button" class="era-icon-btn" data-icon="add" title="New folder here" aria-label="New folder in tree"></button>
+        </div>
+        <ul id="folderTreeList" class="era-drive-tree-list"></ul>
+      </aside>
+
+      <div class="era-drive-main" id="driveMain">
+        <div class="era-drive-browser-col">
+        <section id="browser" class="era-section" style="border:none;padding:0;margin:0;box-shadow:none">
+          <nav id="breadcrumb" aria-label="Folder path"></nav>
+          <ul id="files" class="era-file-list era-drive-view-list"></ul>
+        </section>
+
+        <section id="versionsPanel" class="era-section">
+          <h2>Versions — <span id="versionsTitle"></span></h2>
+          <p class="era-hint">Each re-upload of the same object creates a new immutable version (TE-D04).</p>
+          <ol id="versionsList"></ol>
+          <button id="closeVersionsBtn" type="button" class="era-btn">Close</button>
+        </section>
+
+        <section id="sharePanel" class="era-section">
+          <h2>Share — <span id="shareTitle"></span></h2>
+          <p class="era-hint">ACL roles: Owner=1 · Read=2 · Write=3. Principals: <code>user:&lt;id&gt;</code>, <code>group:&lt;id&gt;</code>.</p>
+          <ul id="aclList"></ul>
+          <div class="era-toolbar">
+            <input type="text" id="aclPrincipal" class="era-input" placeholder="user:bob" aria-label="Principal"/>
+            <select id="aclRole" class="era-input" aria-label="Role">
+              <option value="2">Read</option>
+              <option value="3">Write</option>
+              <option value="1">Owner</option>
+            </select>
+            <button id="aclAddBtn" type="button" class="era-btn">Add</button>
+            <button id="aclSaveBtn" type="button" class="era-btn era-btn-primary">Save ACL</button>
+            <button id="closeShareBtn" type="button" class="era-btn">Close</button>
+          </div>
+        </section>
+
+        </div>
+
+        <aside id="previewPanel" class="era-drive-preview" aria-label="File preview">
+          <h2>Preview — <span id="previewTitle"></span></h2>
+          <p id="previewSizeHint" class="era-hint" hidden></p>
+          <div id="previewBody"></div>
+          <button id="closePreviewBtn" type="button" class="era-btn">Close</button>
+        </aside>
+      </div>
+    </div>
+    <footer class="era-status-bar" aria-label="Drive status">
+      <span id="driveStats" class="era-sheet-stats">—</span>
+    </footer>
+  </main>
+
+  <div id="movePanel" class="era-drive-modal" role="dialog" aria-modal="true" aria-labelledby="moveDialogTitle">
+    <div class="era-drive-modal-card">
+      <h2 id="moveDialogTitle" style="margin:0 0 .35rem;font-size:1.05rem">Move — <span id="moveTitle"></span></h2>
+      <p class="era-hint" style="margin:0 0 .65rem">Choose destination folder (or drag items onto a folder / Trash in the tree).</p>
+      <select id="moveFolderSelect" class="era-input" aria-label="Destination folder" style="width:100%;margin-bottom:.75rem"></select>
+      <div class="era-toolbar" style="justify-content:flex-end;gap:.35rem">
+        <button id="closeMoveBtn" type="button" class="era-btn">Cancel</button>
+        <button id="moveConfirmBtn" type="button" class="era-btn era-btn-primary">Move here</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/office-assets/icons.js"></script>
+  <script src="/office-assets/era-chrome.js"></script>
+  <script src="/office-assets/shell.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

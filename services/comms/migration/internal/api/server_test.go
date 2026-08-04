@@ -13,6 +13,7 @@ import (
 )
 
 func TestCreateJobAndRerun(t *testing.T) {
+	t.Setenv("ERA_MAIL_DEV", "1")
 	dir := t.TempDir()
 	imapFile := filepath.Join(dir, "imap.txt")
 	if err := os.WriteFile(imapFile, []byte("msg1\nmsg2\n"), 0o644); err != nil {
@@ -31,8 +32,32 @@ func TestCreateJobAndRerun(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d body=%s", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), `"items_total":4`) {
-		t.Fatalf("unexpected body %s", rec.Body.String())
+	body := rec.Body.String()
+	// Honesty: calendar stub does not inflate items_total / items_ok; pst smoke → mode=stub
+	if !strings.Contains(body, `"items_total":2`) {
+		t.Fatalf("unexpected body %s", body)
+	}
+	if !strings.Contains(body, `"items_ok":0`) {
+		t.Fatalf("calendar stub must not inflate items_ok; body=%s", body)
+	}
+	if !strings.Contains(body, `"mode":"stub"`) {
+		t.Fatalf("want mode=stub in %s", body)
+	}
+	if !strings.Contains(body, `"calendar_stub_count":1`) {
+		t.Fatalf("want calendar_stub_count=1 (reported, not counted) in %s", body)
+	}
+	if !strings.Contains(body, `"mailbox":"alice@mail.gov.az"`) {
+		t.Fatalf("want mailbox on job response (CH audit path) in %s", body)
+	}
+	var sawMailbox bool
+	for _, ev := range a.Events() {
+		if ev.Mailbox == "alice@mail.gov.az" {
+			sawMailbox = true
+			break
+		}
+	}
+	if !sawMailbox {
+		t.Fatal("audit events must carry mailbox for CH migration_job")
 	}
 
 	rec = httptest.NewRecorder()

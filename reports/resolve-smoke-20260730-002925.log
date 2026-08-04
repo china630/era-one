@@ -1,0 +1,4 @@
+==> Resolve smoke
+resolve tests: PASS
+resolve live: not running (optional: compose --profile resolve)
+Resolve smoke PASS — log D:\My Projects\era-one\reports\resolve-smoke-20260730-002925.log

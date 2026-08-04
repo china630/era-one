@@ -1,0 +1,21 @@
+[
+  {
+    "technique": "T1059.001",
+    "rule_ids": [
+      "r2"
+    ],
+    "rule_count": 1,
+    "in_corpus": true,
+    "seen_count": 0
+  },
+  {
+    "technique": "T1099",
+    "rule_ids": [
+      "r1",
+      "r2"
+    ],
+    "rule_count": 2,
+    "in_corpus": true,
+    "seen_count": 0
+  }
+]

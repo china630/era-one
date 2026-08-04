@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERA Office AI</title>
+  <link rel="stylesheet" href="/office-assets/office.css"/>
+  <link rel="stylesheet" href="/office-assets/menubar.css"/>
+  <style>
+    :root { --stub: #8a6d00; }
+    label { display: block; font-size: .9rem; color: var(--era-muted); margin-bottom: .35rem; }
+    textarea, input[type="text"] {
+      width: 100%; border: 1px solid var(--era-line); border-radius: 6px;
+      padding: .6rem .75rem; font: inherit;
+    }
+    textarea { min-height: 12rem; resize: vertical; }
+    #instructionInput { margin-bottom: .75rem; }
+    #modeBadge {
+      display: none; font-size: .8rem; font-weight: 650;
+      padding: .2rem .5rem; border-radius: 4px; border: 1px solid var(--era-line);
+    }
+    #modeBadge.stub { display: inline-block; color: var(--stub); background: var(--era-warn-bg); }
+    #modeBadge.ollama { display: inline-block; color: var(--era-ok); background: #e8f7ee; }
+    #result {
+      border: 1px solid var(--era-line); border-radius: 6px; background: #fafbfc;
+      padding: .75rem .9rem; min-height: 4rem; white-space: pre-wrap;
+      font-size: .95rem; line-height: 1.45;
+    }
+    #result:empty::before { content: 'Output appears here.'; color: var(--era-muted); }
+    .rewrite-only { display: none; }
+    body.mode-rewrite .rewrite-only { display: block; }
+    body.mode-rewrite #resultLabel::after { content: 'Result'; }
+    body:not(.mode-rewrite) #resultLabel::after { content: 'Summary'; }
+  </style>
+</head>
+<body class="era-app" data-line="office" data-sku="ai">
+  <header class="era-topbar">
+    <a class="era-brand" href="/drive/" data-icon="brand">
+      <span class="era-brand-mark">ERA Office</span>
+      <span class="era-brand-mod">Office AI</span>
+    </a>
+    <nav class="era-nav" aria-label="Office modules">
+      <a href="/drive/" data-mod="drive">Drive</a>
+      <a href="/docs/" data-mod="docs">Documents</a>
+      <a href="/tables/" data-mod="tables">Tables</a>
+      <a href="/presentations/" data-mod="pres">Presentations</a>
+      <a href="/projects/" data-mod="projects">Projects</a>
+      <a href="/office-ai/" data-mod="ai">Office AI</a>
+      <a href="/mail/" data-mod="mail">Mail</a>
+    </nav>
+    <div class="era-topbar-right">
+      <span id="userChip" class="era-user-chip" title="Signed-in user">—</span>
+    </div>
+  </header>
+
+  <nav id="menubar" class="era-menubar" aria-label="Office AI menus">
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">File</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="file.openDrive"><span>Open Drive</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.clear"><span>Clear text</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Tools</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="tools.summarize"><span>Summarize</span></button>
+        <button type="button" class="era-menu-item" data-cmd="tools.rewrite"><span>Rewrite</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Help</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="help.about"><span>About ERA Office AI</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="era-main">
+    <p id="authStatus" class="era-status" role="status" aria-live="polite"></p>
+    <div class="era-banner-warn">
+      Air-gap assist only. Default <code>mode=stub</code> (no outbound calls). Optional in-contour Ollama via
+      <code>ERA_OLLAMA_URL</code>. No cloud SaaS LLM.
+    </div>
+
+    <section class="era-section">
+      <div class="era-editor-chrome">
+        <div class="era-editor-chrome-main">
+          <strong style="font-size:1.1rem">Assist</strong>
+          <p class="era-hint" id="modeHint" style="margin:0">Paste text → Summarize or Rewrite (JWT + office-ai license).</p>
+        </div>
+        <div class="era-editor-chrome-actions">
+          <span id="modeBadge"></span>
+        </div>
+      </div>
+      <label for="sourceText">Source text</label>
+      <textarea id="sourceText" placeholder="Paste notes or document excerpt…"></textarea>
+      <label class="rewrite-only" for="instructionInput">Rewrite instruction (optional)</label>
+      <input class="rewrite-only" id="instructionInput" type="text" placeholder="e.g. make it more formal"/>
+      <div id="toolbar" class="era-toolbar" role="toolbar" aria-label="Office AI actions">
+        <div class="era-toolbar-group">
+          <button id="summarizeBtn" type="button" class="era-btn era-btn-primary" data-icon="sparkle">Summarize</button>
+          <button id="rewriteBtn" type="button" class="era-btn era-btn-primary rewrite-only" data-icon="sparkle">Rewrite</button>
+        </div>
+        <div class="era-toolbar-secondary">
+          <button id="clearBtn" type="button" class="era-icon-btn" data-icon="trash" title="Clear" aria-label="Clear"></button>
+        </div>
+      </div>
+      <label id="resultLabel" for="result"></label>
+      <div id="result" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script src="/office-assets/icons.js"></script>
+  <script src="/office-assets/menubar.js"></script>
+  <script src="/office-assets/era-chrome.js"></script>
+  <script src="/office-assets/shell.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

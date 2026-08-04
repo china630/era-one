@@ -23,7 +23,7 @@ func Poll(target string) HostMetrics {
 	return m
 }
 
-// PollReal — SNMP GET sysUpTime + ifTable (gosnmp).
+// PollReal — SNMP GET ifTable + HOST-RESOURCES-MIB (CPU/mem); fallback estimate при отсутствии MIB.
 func PollReal(target string) (HostMetrics, error) {
 	params := &gosnmp.GoSNMP{
 		Target:    target,
@@ -43,8 +43,72 @@ func PollReal(target string) (HostMetrics, error) {
 	if err == nil {
 		m.Interfaces = ifStats
 	}
-	m.CPUPercent, m.MemPercent = estimateLoad(ifStats)
+	if cpu, mem, ok := pollHostResources(params); ok {
+		m.CPUPercent, m.MemPercent = cpu, mem
+		m.MetricsSource = "host_resources"
+	} else {
+		m.CPUPercent, m.MemPercent = estimateLoad(ifStats)
+		m.MetricsSource = "estimate"
+	}
 	return m, nil
+}
+
+// pollHostResources — HOST-RESOURCES-MIB: hrProcessorLoad + hrStorage (RAM).
+func pollHostResources(params *gosnmp.GoSNMP) (cpu, mem float64, ok bool) {
+	var loads []float64
+	err := params.Walk("1.3.6.1.2.1.25.3.3.1.2", func(pdu gosnmp.SnmpPDU) error {
+		loads = append(loads, float64(gosnmpToUint(pdu)))
+		return nil
+	})
+	if err != nil || len(loads) == 0 {
+		return 0, 0, false
+	}
+	var sum float64
+	for _, v := range loads {
+		sum += v
+	}
+	cpu = sum / float64(len(loads))
+	if cpu > 100 {
+		cpu = 100
+	}
+
+	// hrStorage: walk size/used; pick largest non-zero as RAM proxy if type walk fails
+	type pair struct{ size, used uint64 }
+	byIdx := map[int]*pair{}
+	_ = params.Walk("1.3.6.1.2.1.25.2.3.1.5", func(pdu gosnmp.SnmpPDU) error { // hrStorageSize
+		idx := lastOIDIndex(pdu.Name)
+		p := byIdx[idx]
+		if p == nil {
+			p = &pair{}
+			byIdx[idx] = p
+		}
+		p.size = uint64(gosnmpToUint(pdu))
+		return nil
+	})
+	_ = params.Walk("1.3.6.1.2.1.25.2.3.1.6", func(pdu gosnmp.SnmpPDU) error { // hrStorageUsed
+		idx := lastOIDIndex(pdu.Name)
+		p := byIdx[idx]
+		if p == nil {
+			p = &pair{}
+			byIdx[idx] = p
+		}
+		p.used = uint64(gosnmpToUint(pdu))
+		return nil
+	})
+	var bestSize, bestUsed uint64
+	for _, p := range byIdx {
+		if p.size > bestSize {
+			bestSize, bestUsed = p.size, p.used
+		}
+	}
+	if bestSize == 0 {
+		return cpu, 0, true
+	}
+	mem = float64(bestUsed) * 100.0 / float64(bestSize)
+	if mem > 100 {
+		mem = 100
+	}
+	return cpu, mem, true
 }
 
 func snmpCommunity() string {

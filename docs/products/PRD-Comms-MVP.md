@@ -3,7 +3,7 @@
 **Статус:** Accepted scope  
 **Дата:** 5 июля 2026 г.  
 **Продукт:** ERA Communications (ERA One)  
-**ADR:** [`0025`](../adr/0025-era-one-shared-platform.md) · [`0027`](../adr/0027-era-communications-architecture.md)  
+**ADR:** [`0025`](../adr/0025-era-one-shared-platform.md) · [`0027`](../adr/0027-era-communications-architecture.md) · [`0028`](../adr/0028-era-mail-client-strategy.md)  
 **Pricing:** [`pricing-comms-data.yaml`](../distributor/pricing-comms-data.yaml)
 
 ---
@@ -13,6 +13,7 @@
 On-prem **почта + клиент + autodiscover + календарь**; **ClickHouse audit обязателен**.
 Phase 1.1: **ERA Mail Connect** (hybrid tier).
 Phase 1.2 upsell: **ERA Comms Migration** (см. [`PRD-Comms-Migration.md`](PRD-Comms-Migration.md)).
+Partner upsell (не блокирует MVP): **Outlook Bridge**, **Mail Moderation** — см. [`PRD-Outlook-Bridge.md`](PRD-Outlook-Bridge.md), [`PRD-Mail-Moderation.md`](PRD-Mail-Moderation.md).
 Без chat/VCS/Comms AI в первом релизе.
 
 ---
@@ -29,6 +30,21 @@ Phase 1.2 upsell: **ERA Comms Migration** (см. [`PRD-Comms-Migration.md`](PRD-
 | **ActiveSync** | Протокол Microsoft для **синхронизации с телефонами** (почта/календарь/контакты) как у Exchange | ✅ **gov pilot** (subset) |
 
 **Рекомендация MVP:** IMAP + CalDAV full + EWS subset для Outlook desktop; **ActiveSync subset — обязателен для gov pilot** ([`PRD-Comms-Gov-Protocols.md`](PRD-Comms-Gov-Protocols.md)).
+
+---
+
+## 2a. Модель клиентов (ERA Mail Client)
+
+**ADR:** [`0028-era-mail-client-strategy.md`](../adr/0028-era-mail-client-strategy.md) (Accepted).
+
+| Канал | Реализация MVP | Своё приложение ERA? |
+|-------|----------------|----------------------|
+| **Web** | SPA webmail `app.customer.local/mail` | **Да** (ERA Mail Client) |
+| **Desktop** | Outlook, Thunderbird, Apple Mail через сервер | **Нет** — протоколы (EWS, IMAP, CalDAV, CardDAV) |
+| **Mobile** | Встроенная «Почта» iOS/Android через ActiveSync; IMAP fallback | **Нет** — протоколы |
+
+- **Не в scope MVP:** MAPI, проприетарный Outlook desktop connector, нативное почтовое приложение ERA.
+- **Post-pilot (опционально):** ERA Workspace shell — Tauri (desktop) / Flutter (mobile) по ADR-0025; почта как модуль, не отдельный «Outlook-killer».
 
 ---
 
@@ -94,6 +110,8 @@ Phase 1.2 upsell: **ERA Comms Migration** (см. [`PRD-Comms-Migration.md`](PRD-
 
 Отдельный upsell, не входящий в MVP AC-C1…AC-C9:
 - **ERA Comms Migration** — €1/mailbox one-time (см. [`pricing-comms-data.yaml`](../distributor/pricing-comms-data.yaml)).
+- **ERA Outlook Bridge** — €3/user/year ([`PRD-Outlook-Bridge.md`](PRD-Outlook-Bridge.md)).
+- **ERA Mail Moderation** — €2/user/year, roadmap ([`PRD-Mail-Moderation.md`](PRD-Mail-Moderation.md)).
 
 **Не требует ERA Core.** Pricing: [`pricing-comms-data.yaml`](../distributor/pricing-comms-data.yaml).
 

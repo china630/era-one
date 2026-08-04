@@ -48,6 +48,7 @@ func TestHealthz(t *testing.T) {
 }
 
 func TestPolicyDefaults(t *testing.T) {
+	t.Setenv("ERA_MAIL_DEV", "1")
 	s := newTestServer(t)
 	mux := http.NewServeMux()
 	s.Register(mux)

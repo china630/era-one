@@ -21,7 +21,7 @@ func StartTestServer(messages map[string][]byte) (addr string, stop func(), err 
 	for _, raw := range messages {
 		folders["INBOX"] = append(folders["INBOX"], SeedMessage{Raw: raw})
 	}
-	return startMemoryServer(folders, nil)
+	return startMemoryServer("127.0.0.1:0", folders, nil)
 }
 
 // StartTestServerFolders starts server with per-folder messages and optional LIST attrs.
@@ -29,11 +29,22 @@ func StartTestServerFolders(folders map[string][]SeedMessage, listAttrs map[stri
 	if folders == nil {
 		folders = map[string][]SeedMessage{}
 	}
-	return startMemoryServer(folders, listAttrs)
+	return startMemoryServer("127.0.0.1:0", folders, listAttrs)
 }
 
-func startMemoryServer(folders map[string][]SeedMessage, listAttrs map[string][]string) (string, func(), error) {
-	ln, err := net.Listen("tcp", "127.0.0.1:0")
+// StartLabServer listens on addr (e.g. ":143") for compose lab IMAP (L-1 dovecot-lab).
+func StartLabServer(addr string, folders map[string][]SeedMessage, listAttrs map[string][]string) (bound string, stop func(), err error) {
+	if folders == nil {
+		folders = map[string][]SeedMessage{"INBOX": {}}
+	}
+	if addr == "" {
+		addr = ":143"
+	}
+	return startMemoryServer(addr, folders, listAttrs)
+}
+
+func startMemoryServer(listenAddr string, folders map[string][]SeedMessage, listAttrs map[string][]string) (string, func(), error) {
+	ln, err := net.Listen("tcp", listenAddr)
 	if err != nil {
 		return "", nil, err
 	}

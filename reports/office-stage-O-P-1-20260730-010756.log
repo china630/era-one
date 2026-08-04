@@ -1,0 +1,3 @@
+==> office stage gate O-P-1 20260730-010756
+[PASS] O-P-1/crate :: cmd /c "if exist services\platform\presentations-engine\Cargo.toml (exit /b 0) else (exit /b 1)"
+STAGE GATE PASS (O-P-1)

@@ -1,0 +1,6 @@
+==> office stage gate O-T-0 20260730-010823
+[PASS] O-T-0/spec :: cmd /c "if exist docs\Office-Stage-OT0-Spec.md (exit /b 0) else (exit /b 1)"
+[PASS] O-T-0/tables-vs-excel :: cmd /c "if exist docs\ERA-Tables-vs-Excel.md (exit /b 0) else (exit /b 1)"
+[PASS] O-T-0/proto :: powershell -NoProfile -Command "if (Select-String -Path proto/era/v1/office.proto -Pattern 'message EratSheet' -Quiet) { exit 0 } else { exit 1 }"
+[PASS] O-T-0/golden :: go test -C gen/go ./era/v1/ -run "EratSheetWire" -count=1
+STAGE GATE PASS (O-T-0)

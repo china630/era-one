@@ -1,4 +1,5 @@
 //! Codegen из единого источника proto/era/v1/ (ADR-0001, ADR-0003, S1-1).
+//! Office/Drive/Comms: ADR-0025/0026/0027.
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let proto_root = "../../proto";
@@ -8,12 +9,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("cargo:rerun-if-changed={proto_root}/era/v1/envelope.proto");
     println!("cargo:rerun-if-changed={proto_root}/era/v1/ingest.proto");
+    println!("cargo:rerun-if-changed={proto_root}/era/v1/comms.proto");
+    println!("cargo:rerun-if-changed={proto_root}/era/v1/drive.proto");
+    println!("cargo:rerun-if-changed={proto_root}/era/v1/office.proto");
 
     tonic_build::configure()
         .build_server(true)
         .build_client(true)
         .compile_protos(
-            &[format!("{proto_root}/era/v1/ingest.proto")],
+            &[
+                format!("{proto_root}/era/v1/ingest.proto"),
+                format!("{proto_root}/era/v1/comms.proto"),
+                format!("{proto_root}/era/v1/drive.proto"),
+                format!("{proto_root}/era/v1/office.proto"),
+            ],
             &[proto_root],
         )?;
 

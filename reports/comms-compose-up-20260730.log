@@ -1,0 +1,418 @@
+ Image deploy-era-mail-moderation Building 
+ Image deploy-era-mail-bridge Building 
+ Image deploy-era-migration-api Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 3.32kB 0.0s done
+#1 DONE 0.0s
+
+#2 [era-migration-api internal] load build definition from Dockerfile.migration-api
+#2 transferring dockerfile: 668B 0.0s done
+#2 DONE 0.1s
+
+#3 [era-mail-bridge internal] load build definition from Dockerfile.mail-bridge
+#3 transferring dockerfile: 784B 0.0s done
+#3 DONE 0.1s
+
+#4 [era-mail-moderation internal] load build definition from Dockerfile.mail-moderation
+#4 transferring dockerfile: 633B done
+#4 DONE 0.1s
+
+#5 [era-mail-moderation] resolve image config for docker-image://docker.io/docker/dockerfile:1
+#5 DONE 0.9s
+
+#6 [era-mail-bridge] docker-image://docker.io/docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
+#6 resolve docker.io/docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89 0.0s done
+#6 CACHED
+
+#7 [era-mail-bridge internal] load metadata for docker.io/library/alpine:3.20
+#7 DONE 0.6s
+
+#8 [era-mail-bridge internal] load metadata for docker.io/library/golang:1.26.4-alpine
+#8 DONE 0.6s
+
+#9 [era-mail-bridge internal] load .dockerignore
+#9 transferring context: 2B done
+#9 DONE 0.0s
+
+#10 [era-mail-bridge internal] load build context
+#10 DONE 0.0s
+
+#11 [era-mail-moderation internal] load build context
+#11 DONE 0.0s
+
+#12 [era-migration-api internal] load build context
+#12 DONE 0.0s
+
+#13 [era-migration-api build  1/12] FROM docker.io/library/golang:1.26.4-alpine@sha256:3ad57304ad93bbec8548a0437ad9e06a455660655d9af011d58b993f6f615648
+#13 resolve docker.io/library/golang:1.26.4-alpine@sha256:3ad57304ad93bbec8548a0437ad9e06a455660655d9af011d58b993f6f615648 0.1s done
+#13 resolve docker.io/library/golang:1.26.4-alpine@sha256:3ad57304ad93bbec8548a0437ad9e06a455660655d9af011d58b993f6f615648 0.1s done
+#13 DONE 0.1s
+
+#14 [era-migration-api stage-1 1/2] FROM docker.io/library/alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
+#14 resolve docker.io/library/alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc 0.1s done
+#14 CACHED
+
+#10 [era-mail-bridge internal] load build context
+#10 ...
+
+#11 [era-mail-moderation internal] load build context
+#11 transferring context: 117.98kB 0.2s done
+#11 DONE 0.3s
+
+#10 [era-mail-bridge internal] load build context
+#10 transferring context: 552.16kB 0.4s done
+#10 DONE 0.5s
+
+#15 [era-mail-moderation build 3/9] COPY deploy/dockerfiles/go.work.mail-moderation ./go.work
+#15 CACHED
+
+#16 [era-mail-moderation build 6/9] COPY services/platform services/platform
+#16 CACHED
+
+#17 [era-mail-moderation build 7/9] COPY services/comms/mail-moderation services/comms/mail-moderation
+#17 CACHED
+
+#18 [era-mail-moderation build 4/9] COPY gen/go gen/go
+#18 CACHED
+
+#19 [era-mail-moderation build 5/9] COPY services/license services/license
+#19 CACHED
+
+#20 [era-mail-moderation build 8/9] WORKDIR /src/services/comms/mail-moderation
+#20 CACHED
+
+#12 [era-migration-api internal] load build context
+#12 transferring context: 109.80kB 0.4s done
+#12 DONE 0.5s
+
+#21 [era-migration-api build  2/12] WORKDIR /src
+#21 CACHED
+
+#22 [era-mail-bridge build  3/12] COPY deploy/dockerfiles/go.work.mail-bridge ./go.work
+#22 DONE 0.1s
+
+#23 [era-migration-api build  3/10] COPY deploy/dockerfiles/go.work.migration ./go.work
+#23 DONE 0.2s
+
+#24 [era-mail-bridge build  4/12] COPY gen/go gen/go
+#24 DONE 0.1s
+
+#25 [era-migration-api build  4/10] COPY gen/go gen/go
+#25 DONE 0.1s
+
+#26 [era-mail-bridge build  5/12] COPY services/comms/internal/imapclient services/comms/internal/imapclient
+#26 DONE 0.1s
+
+#27 [era-migration-api build  5/10] COPY services/comms/internal/imapclient services/comms/internal/imapclient
+#27 DONE 0.1s
+
+#28 [era-mail-bridge build  6/12] COPY services/comms/mail services/comms/mail
+#28 DONE 0.2s
+
+#29 [era-migration-api build  6/10] COPY services/comms/migration services/comms/migration
+#29 DONE 0.2s
+
+#30 [era-migration-api build  7/10] COPY services/platform services/platform
+#30 ...
+
+#31 [era-mail-bridge build  7/12] COPY services/comms/calendar services/comms/calendar
+#31 DONE 0.2s
+
+#30 [era-migration-api build  7/10] COPY services/platform services/platform
+#30 DONE 0.3s
+
+#32 [era-mail-bridge build  8/12] COPY services/comms/mail-bridge services/comms/mail-bridge
+#32 DONE 0.2s
+
+#33 [era-migration-api build  8/10] COPY services/license services/license
+#33 DONE 0.2s
+
+#34 [era-migration-api build  9/10] WORKDIR /src/services/comms/migration
+#34 DONE 0.1s
+
+#35 [era-mail-bridge build  9/12] COPY services/platform services/platform
+#35 DONE 0.2s
+
+#36 [era-mail-bridge build 10/12] COPY services/license services/license
+#36 DONE 0.2s
+
+#37 [era-migration-api build 10/10] RUN go build -o /out/migration-api ./cmd/migration-api
+#37 ...
+
+#38 [era-mail-bridge build 11/12] WORKDIR /src/services/comms/mail-bridge
+#38 DONE 0.2s
+
+#39 [era-mail-bridge build 12/12] RUN go build -o /out/mail-bridge-api ./cmd/mail-bridge-api
+#39 4.753 go: downloading github.com/ClickHouse/clickhouse-go/v2 v2.30.0
+#39 4.753 go: downloading github.com/oklog/ulid v1.3.1
+#39 4.753 go: downloading google.golang.org/grpc v1.79.3
+#39 ...
+
+#37 [era-migration-api build 10/10] RUN go build -o /out/migration-api ./cmd/migration-api
+#37 4.701 go: downloading github.com/ClickHouse/clickhouse-go/v2 v2.30.0
+#37 4.701 go: downloading github.com/oklog/ulid v1.3.1
+#37 4.702 go: downloading github.com/jackc/pgx/v5 v5.10.0
+#37 4.702 go: downloading google.golang.org/grpc v1.79.3
+#37 5.760 go: downloading github.com/jackc/puddle/v2 v2.2.2
+#37 5.760 go: downloading github.com/jackc/pgpassfile v1.0.0
+#37 5.760 go: downloading github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+#37 5.766 go: downloading golang.org/x/text v0.38.0
+#37 7.046 go: downloading golang.org/x/sync v0.21.0
+#37 ...
+
+#40 [era-mail-moderation build 9/9] RUN go build -o /out/mail-moderation ./cmd/mail-moderation
+#40 2.952 go: downloading github.com/jackc/pgx/v5 v5.10.0
+#40 2.953 go: downloading gopkg.in/yaml.v3 v3.0.1
+#40 2.955 go: downloading github.com/ClickHouse/clickhouse-go/v2 v2.47.0
+#40 2.955 go: downloading google.golang.org/grpc v1.68.0
+#40 4.079 go: downloading github.com/jackc/puddle/v2 v2.2.2
+#40 4.080 go: downloading github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+#40 4.080 go: downloading github.com/jackc/pgpassfile v1.0.0
+#40 4.080 go: downloading golang.org/x/text v0.38.0
+#40 5.267 go: downloading golang.org/x/sync v0.21.0
+#40 5.398 go: downloading github.com/ClickHouse/ch-go v0.73.0
+#40 5.398 go: downloading github.com/andybalholm/brotli v1.2.1
+#40 5.399 go: downloading go.opentelemetry.io/otel/trace v1.44.0
+#40 5.409 go: downloading go.yaml.in/yaml/v3 v3.0.4
+#40 6.504 go: downloading github.com/google/uuid v1.6.0
+#40 6.666 go: downloading go.opentelemetry.io/otel v1.44.0
+#40 6.730 go: downloading github.com/paulmach/orb v0.13.0
+#40 7.454 go: downloading github.com/shopspring/decimal v1.4.0
+#40 7.813 go: downloading google.golang.org/protobuf v1.36.10
+#40 ...
+
+#37 [era-migration-api build 10/10] RUN go build -o /out/migration-api ./cmd/migration-api
+#37 9.155 go: downloading github.com/ClickHouse/clickhouse-go v1.5.4
+#37 9.640 go: downloading google.golang.org/protobuf v1.36.10
+#37 12.28 go: downloading gopkg.in/yaml.v3 v3.0.1
+#37 12.28 go: downloading github.com/ClickHouse/ch-go v0.61.5
+#37 12.28 go: downloading go.opentelemetry.io/otel/trace v1.41.0
+#37 12.28 go: downloading github.com/paulmach/orb v0.11.1
+#37 12.28 go: downloading github.com/google/uuid v1.6.0
+#37 12.29 go: downloading github.com/shopspring/decimal v1.4.0
+#37 13.84 go: downloading github.com/andybalholm/brotli v1.1.1
+#37 14.11 go: downloading go.opentelemetry.io/otel v1.41.0
+#37 14.34 go: downloading github.com/pkg/errors v0.9.1
+#37 ...
+
+#39 [era-mail-bridge build 12/12] RUN go build -o /out/mail-bridge-api ./cmd/mail-bridge-api
+#39 6.736 go: downloading github.com/ClickHouse/clickhouse-go v1.5.4
+#39 8.649 go: downloading gopkg.in/yaml.v3 v3.0.1
+#39 8.661 go: downloading go.opentelemetry.io/otel/trace v1.41.0
+#39 8.662 go: downloading github.com/andybalholm/brotli v1.1.1
+#39 8.663 go: downloading github.com/pkg/errors v0.9.1
+#39 8.673 go: downloading github.com/google/uuid v1.6.0
+#39 8.693 go: downloading github.com/ClickHouse/ch-go v0.61.5
+#39 8.815 go: downloading github.com/paulmach/orb v0.11.1
+#39 8.846 go: downloading github.com/shopspring/decimal v1.4.0
+#39 8.985 go: downloading go.opentelemetry.io/otel v1.41.0
+#39 9.071 go: downloading google.golang.org/protobuf v1.36.10
+#39 13.17 go: downloading github.com/pierrec/lz4/v4 v4.1.21
+#39 13.17 go: downloading github.com/go-faster/errors v0.7.1
+#39 13.17 go: downloading github.com/go-faster/city v1.0.1
+#39 13.17 go: downloading github.com/klauspost/compress v1.18.6
+#39 13.17 go: downloading github.com/segmentio/asm v1.2.0
+#39 14.84 go: downloading golang.org/x/sys v0.46.0
+#39 15.85 go: downloading github.com/cespare/xxhash/v2 v2.3.0
+#39 ...
+
+#37 [era-migration-api build 10/10] RUN go build -o /out/migration-api ./cmd/migration-api
+#37 17.12 go: downloading github.com/pierrec/lz4/v4 v4.1.21
+#37 17.12 go: downloading github.com/segmentio/asm v1.2.0
+#37 17.12 go: downloading github.com/go-faster/city v1.0.1
+#37 17.13 go: downloading github.com/go-faster/errors v0.7.1
+#37 17.13 go: downloading github.com/klauspost/compress v1.18.6
+#37 18.82 go: downloading golang.org/x/sys v0.46.0
+#37 ...
+
+#40 [era-mail-moderation build 9/9] RUN go build -o /out/mail-moderation ./cmd/mail-moderation
+#40 10.98 go: downloading github.com/go-faster/errors v0.7.1
+#40 10.98 go: downloading github.com/go-faster/city v1.0.1
+#40 10.98 go: downloading github.com/klauspost/compress v1.18.6
+#40 11.57 go: downloading github.com/pierrec/lz4/v4 v4.1.27
+#40 12.24 go: downloading github.com/segmentio/asm v1.2.1
+#40 14.80 go: downloading golang.org/x/sys v0.46.0
+#40 17.75 go: downloading github.com/cespare/xxhash/v2 v2.3.0
+#40 ...
+
+#37 [era-migration-api build 10/10] RUN go build -o /out/migration-api ./cmd/migration-api
+#37 21.01 go: downloading github.com/cespare/xxhash/v2 v2.3.0
+#37 ...
+
+#39 [era-mail-bridge build 12/12] RUN go build -o /out/mail-bridge-api ./cmd/mail-bridge-api
+#39 DONE 127.7s
+
+#41 [era-mail-bridge stage-1 2/2] COPY --from=build /out/mail-bridge-api /usr/local/bin/era-mail-bridge-api
+#41 DONE 0.6s
+
+#37 [era-migration-api build 10/10] RUN go build -o /out/migration-api ./cmd/migration-api
+#37 ...
+
+#42 [era-mail-bridge] exporting to image
+#42 exporting layers
+#42 exporting layers 6.7s done
+#42 exporting manifest sha256:6283ceb4599f36066d5112e8053566eaebfa76556e086fbfac9abd40dd6ead3f
+#42 exporting manifest sha256:6283ceb4599f36066d5112e8053566eaebfa76556e086fbfac9abd40dd6ead3f 0.2s done
+#42 exporting config sha256:6ebf0362dc02e9edf4b7db9f6e08d54731652e94722958b101a415dcc8a76c29
+#42 exporting config sha256:6ebf0362dc02e9edf4b7db9f6e08d54731652e94722958b101a415dcc8a76c29 0.1s done
+#42 exporting attestation manifest sha256:007ea4b5dadb0208e27bece646d7fdf50786ec52f115f44d4e689d07203c7919
+#42 exporting attestation manifest sha256:007ea4b5dadb0208e27bece646d7fdf50786ec52f115f44d4e689d07203c7919 0.4s done
+#42 exporting manifest list sha256:68e6276659d83f558e01c725f626639f303009ed36bd2fcc86051d0385d5ab73
+#42 exporting manifest list sha256:68e6276659d83f558e01c725f626639f303009ed36bd2fcc86051d0385d5ab73 0.2s done
+#42 naming to docker.io/library/deploy-era-mail-bridge:latest 0.0s done
+#42 unpacking to docker.io/library/deploy-era-mail-bridge:latest
+#42 unpacking to docker.io/library/deploy-era-mail-bridge:latest 1.3s done
+#42 DONE 9.3s
+
+#37 [era-migration-api build 10/10] RUN go build -o /out/migration-api ./cmd/migration-api
+#37 ...
+
+#43 [era-mail-bridge] resolving provenance for metadata file
+#43 DONE 0.5s
+
+#37 [era-migration-api build 10/10] RUN go build -o /out/migration-api ./cmd/migration-api
+#37 DONE 142.9s
+
+#40 [era-mail-moderation build 9/9] RUN go build -o /out/mail-moderation ./cmd/mail-moderation
+#40 ...
+
+#44 [era-migration-api stage-1 2/2] COPY --from=build /out/migration-api /usr/local/bin/era-migration-api
+#44 DONE 0.8s
+
+#40 [era-mail-moderation build 9/9] RUN go build -o /out/mail-moderation ./cmd/mail-moderation
+#40 ...
+
+#45 [era-migration-api] exporting to image
+#45 exporting layers
+#45 ...
+
+#40 [era-mail-moderation build 9/9] RUN go build -o /out/mail-moderation ./cmd/mail-moderation
+#40 DONE 145.7s
+
+#46 [era-mail-moderation stage-1 2/2] COPY --from=build /out/mail-moderation /usr/local/bin/era-mail-moderation
+#46 DONE 0.6s
+
+#45 [era-migration-api] exporting to image
+#45 exporting layers 2.1s done
+#45 exporting manifest sha256:843ad71dae942dc2c1b4f655850598157e7e2e0b4540ebbab80f8c30012d8487 0.1s done
+#45 exporting config sha256:951566970f2f31a07037eb2928441c605a28839f9ad5cbf909c5f1017653aac3 0.1s done
+#45 exporting attestation manifest sha256:e69c31b108fef07677c5e173e5a4f9e320a73ade4815bb63f854abb59f941b1d 0.1s done
+#45 exporting manifest list sha256:cf2bb355ac68d0cecd0a4f249c3fe70cf1624a63d3e632757a495c0a9526f305
+#45 exporting manifest list sha256:cf2bb355ac68d0cecd0a4f249c3fe70cf1624a63d3e632757a495c0a9526f305 0.1s done
+#45 naming to docker.io/library/deploy-era-migration-api:latest done
+#45 unpacking to docker.io/library/deploy-era-migration-api:latest
+#45 unpacking to docker.io/library/deploy-era-migration-api:latest 0.6s done
+#45 DONE 3.2s
+
+#47 [era-mail-moderation] exporting to image
+#47 exporting layers 4.3s done
+#47 ...
+
+#48 [era-migration-api] resolving provenance for metadata file
+#48 DONE 0.0s
+
+#47 [era-mail-moderation] exporting to image
+#47 exporting manifest sha256:c7aeffaed01ce8248259e96d1844e01dedc98e1660dd0f2c73ac82caffaf026b 0.1s done
+#47 exporting config sha256:a968fc46db3cd8c0a96b0ca6ad8cc99e6dcf890bbe50c736d300d34224613711
+#47 exporting config sha256:a968fc46db3cd8c0a96b0ca6ad8cc99e6dcf890bbe50c736d300d34224613711 0.1s done
+#47 exporting attestation manifest sha256:f05addcd88dfba4ba1e671dbcb480f564f64b4d3a2209e2d9d1784f40bced69d
+#47 exporting attestation manifest sha256:f05addcd88dfba4ba1e671dbcb480f564f64b4d3a2209e2d9d1784f40bced69d 0.2s done
+#47 exporting manifest list sha256:512642467e9711e714e83cdf0e7da4705a60b30ca400aecdd73413e7887a594d
+#47 exporting manifest list sha256:512642467e9711e714e83cdf0e7da4705a60b30ca400aecdd73413e7887a594d 0.1s done
+#47 naming to docker.io/library/deploy-era-mail-moderation:latest 0.0s done
+#47 unpacking to docker.io/library/deploy-era-mail-moderation:latest
+#47 unpacking to docker.io/library/deploy-era-mail-moderation:latest 0.4s done
+#47 DONE 5.6s
+
+#49 [era-mail-moderation] resolving provenance for metadata file
+#49 DONE 0.0s
+ Image deploy-era-mail-bridge Built 
+ Image deploy-era-mail-moderation Built 
+ Image deploy-era-migration-api Built 
+time="2026-07-30T00:17:04+04:00" level=warning msg="Found orphan containers (deploy-docs-engine-1, deploy-drive-api-1, deploy-office-migrate-1, deploy-workspace-1, deploy-admin-portal-1) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container deploy-clickhouse-1 Recreate 
+ Container deploy-postgres-1 Recreate 
+ Container deploy-clickhouse-1 Recreated 
+ Container deploy-era-mail-bridge-1 Creating 
+ Container deploy-postgres-1 Recreated 
+ Container deploy-comms-migrate-1 Recreate 
+ Container deploy-era-mail-moderation-1 Creating 
+ Container deploy-era-mail-bridge-1 Created 
+ Container deploy-era-mail-moderation-1 Created 
+ Container deploy-comms-migrate-1 Recreated 
+ Container deploy-identity-api-1 Recreate 
+ Container deploy-era-mail-api-1 Recreate 
+ Container deploy-identity-api-1 Recreated 
+ Container deploy-era-mail-api-1 Recreated 
+ Container deploy-era-mail-core-1 Recreate 
+ Container deploy-era-migration-api-1 Creating 
+ Container deploy-ui-mail-1 Recreate 
+ Container deploy-era-migration-api-1 Created 
+ Container deploy-era-mail-core-1 Recreated 
+ Container deploy-ui-mail-1 Recreated 
+ Container deploy-clickhouse-1 Starting 
+ Container deploy-postgres-1 Starting 
+ Container deploy-minio-1 Starting 
+ Container deploy-postgres-1 Started 
+ Container deploy-postgres-1 Waiting 
+ Container deploy-minio-1 Started 
+ Container deploy-clickhouse-1 Started 
+ Container deploy-clickhouse-1 Waiting 
+ Container deploy-postgres-1 Waiting 
+ Container deploy-clickhouse-1 Waiting 
+ Container deploy-postgres-1 Healthy 
+ Container deploy-postgres-1 Healthy 
+ Container deploy-comms-migrate-1 Starting 
+ Container deploy-comms-migrate-1 Started 
+ Container deploy-comms-migrate-1 Waiting 
+ Container deploy-minio-1 Waiting 
+ Container deploy-clickhouse-1 Waiting 
+ Container deploy-comms-migrate-1 Waiting 
+ Container deploy-comms-migrate-1 Exited 
+ Container deploy-comms-migrate-1 Exited 
+ Container deploy-identity-api-1 Starting 
+ Container deploy-identity-api-1 Started 
+ Container deploy-minio-1 Healthy 
+ Container deploy-clickhouse-1 Healthy 
+ Container deploy-era-mail-api-1 Starting 
+ Container deploy-clickhouse-1 Healthy 
+ Container deploy-era-mail-bridge-1 Starting 
+ Container deploy-clickhouse-1 Healthy 
+ Container deploy-era-mail-moderation-1 Starting 
+ Container deploy-era-mail-api-1 Started 
+ Container deploy-ui-mail-1 Starting 
+ Container deploy-era-mail-api-1 Waiting 
+ Container deploy-clickhouse-1 Waiting 
+ Container deploy-era-mail-api-1 Waiting 
+ Container deploy-era-mail-moderation-1 Started 
+ Container deploy-clickhouse-1 Healthy 
+ Container deploy-era-mail-bridge-1 Started 
+ Container deploy-ui-mail-1 Started 
+ Container deploy-era-mail-api-1 Healthy 
+ Container deploy-era-migration-api-1 Starting 
+ Container deploy-era-mail-api-1 Healthy 
+ Container deploy-era-mail-core-1 Starting 
+ Container deploy-era-migration-api-1 Started 
+ Container deploy-era-mail-core-1 Started 
+ Container deploy-ui-mail-1 Waiting 
+ Container deploy-era-mail-core-1 Waiting 
+ Container deploy-postgres-1 Waiting 
+ Container deploy-clickhouse-1 Waiting 
+ Container deploy-identity-api-1 Waiting 
+ Container deploy-era-mail-bridge-1 Waiting 
+ Container deploy-comms-migrate-1 Waiting 
+ Container deploy-era-mail-moderation-1 Waiting 
+ Container deploy-era-migration-api-1 Waiting 
+ Container deploy-minio-1 Waiting 
+ Container deploy-era-mail-api-1 Waiting 
+ Container deploy-minio-1 Healthy 
+ Container deploy-era-mail-api-1 Healthy 
+ Container deploy-era-mail-moderation-1 Healthy 
+ Container deploy-identity-api-1 Healthy 
+ Container deploy-comms-migrate-1 Exited 
+ Container deploy-era-mail-bridge-1 Healthy 
+ Container deploy-era-migration-api-1 Healthy 
+ Container deploy-era-mail-core-1 Healthy 
+ Container deploy-postgres-1 Healthy 
+ Container deploy-ui-mail-1 Healthy 
+ Container deploy-clickhouse-1 Healthy 

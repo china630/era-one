@@ -1,0 +1,1 @@
+{"office-desktop-default":{"identifier":"office-desktop-default","description":"ERA Office desktop (Solo + Corporate shell) capabilities","local":true,"windows":["main"],"permissions":["core:default","dialog:default","dialog:allow-open","dialog:allow-save"]}}

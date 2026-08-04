@@ -86,3 +86,157 @@ func TestBitlockerEscrowMaskedList(t *testing.T) {
 		t.Fatal("key leaked in list response")
 	}
 }
+
+func TestEnforcementWriteRequiresAdmin(t *testing.T) {
+	t.Setenv("ERA_RBAC_TRUST", "dev")
+	st := store.NewMemory()
+	srv := New(st, licensegate.DevAllEnabled())
+	body := `{"version":"1.0.1","mode":"enforce","fail_mode":"open","app_rules":[],"device_rules":[],"virtual_patches":[]}`
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPut, "/api/v1/enforcement/policy", bytes.NewReader([]byte(body)))
+	req.Header.Set("X-ERA-Role", "viewer")
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("viewer put want 403 got %d", rec.Code)
+	}
+}
+
+func TestEnforcementSpoofAdminRejectedInProxyTrust(t *testing.T) {
+	t.Setenv("ERA_RBAC_TRUST", "proxy")
+	t.Setenv("ERA_API_KEY", "")
+	t.Setenv("ERA_TRUSTED_PROXY_CIDRS", "")
+	st := store.NewMemory()
+	srv := New(st, licensegate.DevAllEnabled())
+	body := `{"version":"1.0.1","mode":"enforce","fail_mode":"open","app_rules":[],"device_rules":[],"virtual_patches":[]}`
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPut, "/api/v1/enforcement/policy", bytes.NewReader([]byte(body)))
+	req.Header.Set("X-ERA-Role", "admin") // spoof without Trusted-Proxy
+	req.RemoteAddr = "203.0.113.10:443"
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("spoof admin want 401 got %d %s", rec.Code, rec.Body.String())
+	}
+	// Trusted-Proxy header from untrusted hop must still fail.
+	rec = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodPut, "/api/v1/enforcement/policy", bytes.NewReader([]byte(body)))
+	req.Header.Set("X-ERA-Role", "admin")
+	req.Header.Set("X-ERA-Trusted-Proxy", "1")
+	req.RemoteAddr = "203.0.113.10:443"
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("header-only Trusted-Proxy want 401 got %d %s", rec.Code, rec.Body.String())
+	}
+	rec = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodPut, "/api/v1/enforcement/policy", bytes.NewReader([]byte(body)))
+	req.Header.Set("X-ERA-Role", "admin")
+	req.Header.Set("X-ERA-Trusted-Proxy", "1")
+	req.RemoteAddr = "127.0.0.1:12345"
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("trusted put: %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestAgentPolicyGetSpoofRejectedInProxyTrust(t *testing.T) {
+	t.Setenv("ERA_RBAC_TRUST", "proxy")
+	t.Setenv("ERA_TRUSTED_PROXY_CIDRS", "")
+	st := store.NewMemory()
+	srv := New(st, licensegate.DevAllEnabled())
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/enforcement/policy", nil)
+	req.Header.Set("X-ERA-Actor", "era-agent")
+	req.RemoteAddr = "203.0.113.10:443"
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("spoof agent want 401 got %d", rec.Code)
+	}
+	rec = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodGet, "/api/v1/enforcement/policy", nil)
+	req.Header.Set("X-ERA-Actor", "era-agent")
+	req.Header.Set("X-ERA-Trusted-Proxy", "1")
+	req.RemoteAddr = "127.0.0.1:9"
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("trusted agent: %d", rec.Code)
+	}
+}
+
+func TestAgentPolicyGetWithAPIKey(t *testing.T) {
+	t.Setenv("ERA_RBAC_TRUST", "api_key")
+	t.Setenv("ERA_API_KEY", "agent-secret")
+	t.Setenv("ERA_AGENT_TOKEN", "")
+	st := store.NewMemory()
+	srv := New(st, licensegate.DevAllEnabled())
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/enforcement/policy", nil)
+	req.Header.Set("X-ERA-Actor", "era-agent")
+	req.Header.Set("X-ERA-Role", "admin") // forge ignored
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("role forge want 401 got %d", rec.Code)
+	}
+	rec = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodGet, "/api/v1/enforcement/policy", nil)
+	req.Header.Set("X-ERA-Actor", "era-agent")
+	req.Header.Set("Authorization", "Bearer agent-secret")
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("bearer API key: %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestAgentTokenPolicyGetAllowedWritesForbidden(t *testing.T) {
+	t.Setenv("ERA_RBAC_TRUST", "api_key")
+	t.Setenv("ERA_API_KEY", "admin-secret")
+	t.Setenv("ERA_AGENT_TOKEN", "agent-secret")
+	st := store.NewMemory()
+	srv := New(st, licensegate.DevAllEnabled())
+
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/enforcement/policy", nil)
+	req.Header.Set("Authorization", "Bearer agent-secret")
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("agent GET policy want 200 got %d %s", rec.Code, rec.Body.String())
+	}
+
+	body := `{"version":"1.0.1","mode":"enforce","fail_mode":"open","app_rules":[],"device_rules":[],"virtual_patches":[]}`
+	rec = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodPut, "/api/v1/enforcement/policy", bytes.NewReader([]byte(body)))
+	req.Header.Set("Authorization", "Bearer agent-secret")
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("agent PUT policy want 403 got %d %s", rec.Code, rec.Body.String())
+	}
+
+	rec = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodGet, "/api/v1/enforcement/escrow/n1/C:", nil)
+	req.Header.Set("Authorization", "Bearer agent-secret")
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("agent escrow detail want 403 got %d %s", rec.Code, rec.Body.String())
+	}
+
+	rec = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodPut, "/api/v1/enforcement/policy", bytes.NewReader([]byte(body)))
+	req.Header.Set("Authorization", "Bearer admin-secret")
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("API key PUT policy want 200 got %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestAuditSpoofAdminRejectedInProxyTrust(t *testing.T) {
+	t.Setenv("ERA_RBAC_TRUST", "proxy")
+	t.Setenv("ERA_TRUSTED_PROXY_CIDRS", "")
+	st := store.NewMemory()
+	srv := New(st, licensegate.DevAllEnabled())
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/audit", nil)
+	req.Header.Set("X-ERA-Role", "admin")
+	req.RemoteAddr = "203.0.113.10:443"
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("spoof audit want 401 got %d", rec.Code)
+	}
+}

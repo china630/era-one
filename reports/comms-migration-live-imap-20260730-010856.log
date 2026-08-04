@@ -1,0 +1,8 @@
+2026-07-30T01:08:56.5324545+04:00 MIG-LIVE job 1: {"id":"20260729210856-mig-imap","source":"imap","mailbox":"lab1@mail.gov.az","status":"queued","items_total":0,"items_ok":0,"items_fail":0,"created_at":"2026-07-29T21:08:56.42577944Z"}
+
+2026-07-30T01:08:56.5813062+04:00 MIG-LIVE archive D:\My Projects\era-one\scripts\..\services\comms\migration\testdata\lab-fixture.mbox: {"id":"20260729210856-mig-imap","source":"imap","mailbox":"archive-lab@mail.gov.az","status":"done","items_total":1,"items_ok":1,"items_fail":0,"created_at":"2026-07-29T21:08:56.568654242Z"}
+
+2026-07-30T01:08:56.6008420+04:00 MIG-LIVE archive D:\My Projects\era-one\scripts\..\services\comms\migration\internal\importers\archive\testdata\lab-fixture.pst: {"id":"20260729210856-mig-imap","source":"imap","mailbox":"archive-lab@mail.gov.az","status":"done","items_total":2,"items_ok":2,"items_fail":0,"created_at":"2026-07-29T21:08:56.591424553Z"}
+
+2026-07-30T01:08:59.6832595+04:00 MIG-LIVE CH migration_job mailbox non-empty count: 4
+2026-07-30T01:08:59.6873814+04:00 MIG-LIVE PILOT LIVE IMAP LAB PASS — see D:\My Projects\era-one\scripts\..\reports\comms-migration-live-imap-20260730-010856.log

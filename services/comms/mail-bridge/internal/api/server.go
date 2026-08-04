@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
+	"era/services/comms/internal/httpauth"
 	"era/services/comms/mail-bridge/internal/audit"
 	bridgead "era/services/comms/mail-bridge/internal/autodiscover"
 	"era/services/comms/mail-bridge/internal/proxy"
@@ -46,12 +48,13 @@ func NewServer(gate *licensegate.Gate, router *upstream.Router, aud *audit.Recor
 }
 
 func (s *Server) Register(mux *http.ServeMux) {
+	auth := httpauth.FromEnv("ERA_BRIDGE_DEV", "")
 	mux.HandleFunc("/healthz", s.healthz)
 	mux.HandleFunc("/autodiscover/autodiscover.xml", s.autodiscover)
-	mux.Handle("/ews/Exchange.asmx", &proxy.EWS{Router: s.Router, Audit: s.Audit})
+	mux.Handle("/ews/Exchange.asmx", auth.WrapHandler(&proxy.EWS{Router: s.Router, Audit: s.Audit}))
 	cd := proxy.CalDAVFromEnv()
 	cd.Audit = s.Audit
-	mux.Handle("/caldav/", cd)
+	mux.Handle("/caldav/", auth.WrapHandler(cd))
 }
 
 func (s *Server) healthz(w http.ResponseWriter, _ *http.Request) {
@@ -59,7 +62,17 @@ func (s *Server) healthz(w http.ResponseWriter, _ *http.Request) {
 		http.Error(w, "license", http.StatusForbidden)
 		return
 	}
-	writeJSON(w, map[string]string{"status": "ok", "service": serviceName})
+	mode := "stub"
+	if os.Getenv("ERA_BRIDGE_SYNTHETIC") == "1" {
+		mode = "synthetic"
+	} else if u := os.Getenv("ERA_BRIDGE_UPSTREAM"); u != "" {
+		mode = strings.ToLower(u)
+	}
+	writeJSON(w, map[string]string{
+		"status":         "ok",
+		"service":        serviceName,
+		"upstream_mode":  mode,
+	})
 }
 
 func (s *Server) autodiscover(w http.ResponseWriter, r *http.Request) {

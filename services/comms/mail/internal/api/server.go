@@ -7,17 +7,18 @@ import (
 
 	"era/services/comms/calendar/caldav"
 	"era/services/comms/calendar/store"
+	"era/services/comms/mail/internal/activesync"
 	"era/services/comms/mail/internal/audit"
 	"era/services/comms/mail/internal/auditapi"
 	"era/services/comms/mail/internal/autodiscover"
 	"era/services/comms/mail/internal/calendaraudit"
 	"era/services/comms/mail/internal/carddav"
-	"era/services/comms/mail/internal/activesync"
 	"era/services/comms/mail/internal/coreclient"
 	"era/services/comms/mail/internal/ews"
 	"era/services/comms/mail/internal/internalapi"
 	"era/services/comms/mail/internal/policy"
 	"era/services/comms/mail/internal/repo"
+	"era/services/comms/internal/httpauth"
 	"era/services/platform/licensegate"
 	"era/services/platform/tenant"
 )
@@ -50,16 +51,23 @@ func NewServer(cfg Config) *Server {
 
 // Register монтирует маршруты на mux.
 func (s *Server) Register(mux *http.ServeMux) {
+	apiAuth := httpauth.FromEnv("ERA_MAIL_DEV", "")
+	intAuth := httpauth.FromEnv("ERA_MAIL_DEV", "")
+
 	mux.HandleFunc("/healthz", s.healthz)
 	mux.HandleFunc("/readyz", s.readyz)
 	mux.HandleFunc("/api/v1/status", s.status)
-	mux.HandleFunc("/api/v1/policy", s.getPolicy)
+	mux.HandleFunc("/api/v1/policy", apiAuth.Wrap(s.getPolicy))
 	mux.HandleFunc("/autodiscover/autodiscover.xml", s.autodiscover)
-	mux.Handle("/internal/v1/audit", &auditapi.Handler{Writer: s.cfg.Audit})
+	mux.Handle("/internal/v1/audit", intAuth.RequireInternalHandler(&auditapi.Handler{Writer: s.cfg.Audit}))
 
 	if s.cfg.Repo != nil {
-		(&internalapi.Handler{Repo: s.cfg.Repo}).Register(mux)
-		s.registerMailAPI(mux)
+		ih := &internalapi.Handler{Repo: s.cfg.Repo, Audit: s.cfg.Audit}
+		mux.HandleFunc("/internal/v1/mail/deliver", intAuth.RequireInternal(ih.DeliverHTTP))
+		mux.HandleFunc("/internal/v1/mail/list", intAuth.RequireInternal(ih.ListHTTP))
+		mux.HandleFunc("/internal/v1/auth/verify", intAuth.RequireInternal(ih.VerifyHTTP))
+		mux.HandleFunc("/internal/v1/mail/policy", intAuth.RequireInternal(ih.PolicyHTTP))
+		s.registerMailAPI(mux, apiAuth)
 	}
 
 	if s.cfg.CalStore != nil {
@@ -67,21 +75,21 @@ func (s *Server) Register(mux *http.ServeMux) {
 			Store:   s.cfg.CalStore,
 			Auditor: &calendaraudit.Recorder{Writer: s.cfg.Audit},
 		}
-		mux.Handle("/caldav/", calH)
-		mux.HandleFunc("/.well-known/caldav", caldav.WellKnown(s.cfg.CalStore))
+		mux.Handle("/caldav/", apiAuth.WrapHandler(calH))
+		mux.Handle("/.well-known/caldav", apiAuth.WrapHandler(caldav.WellKnown(s.cfg.CalStore)))
 	}
 	if s.cfg.Repo != nil && s.cfg.CalStore != nil {
-		mux.Handle("/ews/Exchange.asmx", &ews.Handler{
+		mux.Handle("/ews/Exchange.asmx", apiAuth.WrapHandler(&ews.Handler{
 			Repo: s.cfg.Repo,
 			Cal:  s.cfg.CalStore,
-		})
+		}))
 	}
 	if s.cfg.Repo != nil {
 		cardH := &carddav.Handler{Repo: s.cfg.Repo}
-		mux.Handle("/carddav/", cardH)
-		mux.HandleFunc("/.well-known/carddav", carddav.WellKnown)
+		mux.Handle("/carddav/", apiAuth.WrapHandler(cardH))
+		mux.Handle("/.well-known/carddav", apiAuth.WrapHandler(http.HandlerFunc(carddav.WellKnown)))
 		asH := &activesync.Handler{Repo: s.cfg.Repo}
-		mux.Handle("/Microsoft-Server-ActiveSync", asH)
+		mux.Handle("/Microsoft-Server-ActiveSync", apiAuth.WrapHandler(asH))
 	}
 }
 
@@ -97,9 +105,20 @@ func (s *Server) status(w http.ResponseWriter, _ *http.Request) {
 	coreStatus := s.cfg.Core.Status()
 	repoMode := "memory"
 	if s.cfg.Repo != nil {
-		if _, ok := s.cfg.Repo.(*repo.Postgres); ok {
+		switch s.cfg.Repo.(type) {
+		case *repo.Postgres:
 			repoMode = "postgres"
+		case *repo.Repository:
+			if r, ok := s.cfg.Repo.(*repo.Repository); ok {
+				if _, ok := r.Backend.(*repo.Postgres); ok {
+					repoMode = "postgres"
+				}
+			}
 		}
+	}
+	auditMode := "noop"
+	if s.cfg.Audit != nil && s.cfg.Audit.IsConfigured() {
+		auditMode = "clickhouse"
 	}
 	writeJSON(w, map[string]any{
 		"product":  "era-communications",
@@ -108,6 +127,7 @@ func (s *Server) status(w http.ResponseWriter, _ *http.Request) {
 		"licensed": s.cfg.Gate.Allow(licensegate.ModuleCommsMailServer),
 		"core":     coreStatus,
 		"storage":  repoMode,
+		"audit":    auditMode,
 		"protocols": map[string]string{
 			"smtp":       "auth-tls",
 			"imap":       "auth-tls",

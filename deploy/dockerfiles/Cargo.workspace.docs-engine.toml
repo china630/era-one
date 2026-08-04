@@ -1,0 +1,9 @@
+# ERA Office — trimmed Rust workspace for docs-engine Docker build.
+[workspace]
+resolver = "2"
+members = [
+    "crates/era-docs-core",
+    "crates/era-office-storage",
+    "services/platform/office-richtext",
+    "services/platform/docs-engine",
+]

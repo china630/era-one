@@ -1,0 +1,6 @@
+==> office stage gate O-FMT-2 20260801-001531
+[PASS] O-FMT-2/calc :: cargo test -p era-tables-engine avg_min_max_round --quiet
+[PASS] O-FMT-2/ui-tables :: go test -C ui/tables ./... -count=1
+[PASS] O-FMT-2/ui-docs :: go test -C ui/docs ./... -count=1
+[PASS] O-FMT-2/inventory :: powershell -NoProfile -Command "if ((Select-String -Path docs/Office-UI-Feature-Inventory.md -Pattern 'TBL-AVG-MIN-MAX-ROUND.*✅' -Quiet) -and (Select-String -Path docs/Office-UI-Feature-Inventory.md -Pattern 'DOC-RULER.*✅' -Quiet)) { exit 0 } else { exit 1 }"
+STAGE GATE PASS (O-FMT-2)

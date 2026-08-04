@@ -19,6 +19,10 @@ pub trait MailBackend: Send + Sync {
     fn list_mailbox(&self, mailbox: &str) -> Result<Vec<StoredMessage>>;
     fn message_count(&self) -> u64;
     fn verify_login(&self, mailbox: &str, password: &str) -> bool;
+    /// Optional tenant policy max message size (bytes). None → env/default.
+    fn max_message_bytes(&self, _mailbox: &str) -> Option<usize> {
+        None
+    }
 }
 
 /// Thread-safe in-memory store (unit tests, no ERA_MAIL_API_URL).

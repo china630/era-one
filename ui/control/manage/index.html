@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — Manage</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>Manage</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-banner">Enforce: decision + effect=telemetry_only (or LIVE user_land). Kernel OS block = WHQL ⏸. Do not claim TerminateProcess.</div>
+<div class="era-card"><h2>Asset detail</h2>
+<input id="node" placeholder="node_id"/><button class="era-btn" id="loadAsset">Load</button>
+<pre id="assetOut" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>Enforcement policy</h2>
+<p class="era-muted">Wizard fields + optional raw JSON. PUT requires admin.</p>
+<label>Mode <select id="mode"><option>monitor</option><option>enforce</option></select></label>
+<button class="era-btn secondary" id="getPol">GET</button>
+<button class="era-btn" id="putPol">PUT</button>
+<textarea id="pol"></textarea>
+<div id="polStatus" class="era-status"></div></div>
+<div class="era-card"><h2>Deploy / patch jobs</h2>
+<pre id="jobs" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>BitLocker escrow</h2>
+<button class="era-btn secondary" id="escrow">List escrow</button>
+<pre id="escrowOut" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("manage");
+var q=new URLSearchParams(location.search); if(q.get("node")) document.getElementById("node").value=q.get("node");
+document.getElementById("loadAsset").onclick=function(){
+  var id=document.getElementById("node").value.trim();
+  EraControl.api("/api/v1/assets/"+encodeURIComponent(id)).then(function(r){
+    document.getElementById("assetOut").textContent=JSON.stringify(r.json,null,2);
+  });
+};
+document.getElementById("getPol").onclick=function(){
+  EraControl.api("/api/v1/enforcement/policy").then(function(r){
+    document.getElementById("pol").value=JSON.stringify(r.json,null,2);
+    EraControl.setStatus(document.getElementById("polStatus"), r.ok?"loaded":"err "+r.status, r.ok?"ok":"err");
+  });
+};
+document.getElementById("putPol").onclick=function(){
+  var body=document.getElementById("pol").value;
+  try{ var o=JSON.parse(body); o.mode=document.getElementById("mode").value; body=JSON.stringify(o);}catch(e){}
+  EraControl.api("/api/v1/enforcement/policy",{method:"PUT",body:body}).then(function(r){
+    EraControl.setStatus(document.getElementById("polStatus"), r.ok?"saved":"forbidden/err "+r.status, r.ok?"ok":"err");
+  });
+};
+EraControl.api("/api/v1/manage/deploy/jobs").then(function(r){
+  document.getElementById("jobs").textContent=JSON.stringify(r.json,null,2);
+});
+document.getElementById("escrow").onclick=function(){
+  EraControl.api("/api/v1/enforcement/escrow").then(function(r){
+    document.getElementById("escrowOut").textContent=JSON.stringify(r.json,null,2);
+  });
+};
+if(q.get("node")) document.getElementById("loadAsset").click();
+document.getElementById("getPol").click();
+</script></body></html>

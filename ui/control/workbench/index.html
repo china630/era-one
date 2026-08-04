@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERA Control — Workbench</title>
+  <link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css" />
+</head>
+<body>
+<main>
+  <div class="era-topbar">
+    <h1>Workbench</h1>
+    <div class="era-meta"><span id="era-role-meta"></span></div>
+  </div>
+  <div class="era-card">
+    <h2>Case bundle</h2>
+    <p class="era-muted">case_id from query or input. Timeline + exposure via BFF.</p>
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
+      <input id="caseId" placeholder="case_id" style="flex:1" />
+      <button class="era-btn" id="load">Load</button>
+    </div>
+    <pre id="out" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre>
+  </div>
+  <div class="era-card">
+    <h2>Exposure top</h2>
+    <table class="era" id="exp"><thead><tr><th>Node</th><th>Score</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("workbench");
+var q = new URLSearchParams(location.search);
+if (q.get("case_id")) document.getElementById("caseId").value = q.get("case_id");
+function load() {
+  var id = document.getElementById("caseId").value.trim();
+  if (!id) { document.getElementById("out").textContent = "case_id required"; return; }
+  EraControl.api("/api/v1/workbench/case-bundle?case_id=" + encodeURIComponent(id)).then(function (r) {
+    document.getElementById("out").textContent = JSON.stringify(r.json, null, 2);
+  });
+}
+document.getElementById("load").onclick = load;
+if (q.get("case_id")) load();
+EraControl.api("/api/v1/exposure?top=10").then(function (r) {
+  var tb = document.querySelector("#exp tbody");
+  var top = (r.json && (r.json.top || r.json.assets)) || [];
+  top.slice(0, 10).forEach(function (a) {
+    var tr = document.createElement("tr");
+    var nid = a.node_id || "";
+    tr.innerHTML = "<td>" + nid + "</td><td>" + (a.score || 0) +
+      "</td><td><a href=\"/api/v1/exposure/" + encodeURIComponent(nid) + "\">detail</a></td>";
+    tb.appendChild(tr);
+  });
+});
+</script>
+</body>
+</html>

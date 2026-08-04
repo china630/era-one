@@ -1,0 +1,10 @@
+ok  	era/services/comms/mail/internal/audit	0.187s
+ok  	era/services/comms/mail/internal/auditapi	3.450s
+--- FAIL: TestPostgresBlobOffload (0.29s)
+    blob_integration_test.go:59: expected 1 message, got 2
+--- FAIL: TestPostgresRestartPersistence (0.25s)
+    postgres_integration_test.go:40: list after restart: <nil> len=2
+FAIL
+FAIL	era/services/comms/mail/internal/repo	1.301s
+ok  	era/services/comms/mail/internal/calendaraudit	0.223s
+FAIL

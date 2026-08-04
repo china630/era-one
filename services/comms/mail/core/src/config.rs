@@ -45,6 +45,11 @@ impl Config {
                 cfg.admin_port = p;
             }
         }
+        if let Ok(v) = env::var("ERA_MAIL_ADMIN_HOST") {
+            if !v.trim().is_empty() {
+                cfg.admin_host = v;
+            }
+        }
         cfg
     }
 

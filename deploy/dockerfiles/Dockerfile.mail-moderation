@@ -5,6 +5,7 @@ COPY deploy/dockerfiles/go.work.mail-moderation ./go.work
 COPY gen/go gen/go
 COPY services/license services/license
 COPY services/platform services/platform
+COPY services/comms/internal/httpauth services/comms/internal/httpauth
 COPY services/comms/mail-moderation services/comms/mail-moderation
 WORKDIR /src/services/comms/mail-moderation
 RUN go build -o /out/mail-moderation ./cmd/mail-moderation

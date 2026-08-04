@@ -64,14 +64,14 @@ FP-workflow не зафиксированы в одном решении. ADR-00
   полная algebra `condition`, field modifiers, aggregations — **не в scope MVP**.
 - Matcher — substring/contains на сериализованном payload, не полный Sigma backend
   (Chainsaw/SigmaHQ spec).
-- **MITRE-теги в YAML (`tags: attack.T1003`) не маппятся автоматически на алерт** —
-  поля `mitre_tactics` / `mitre_techniques` на detection заполняются из envelope агента,
-  коррелятора или AI-эвристики (см. ADR-0023).
+- **MITRE runtime (PP-1):** теги `attack.Txxxx` из правила маппятся на `mitre_techniques`
+  алерта (`sigma.Techniques` → processor → CH writer). Proof: `processor_mitre_test.go`.
+- Heatmap / FP UI coverage — отдельно (⏸), не блокирует PP-1 scaffold.
 
-**Целевое состояние (Фаза 2):**
-- Runtime-маппинг MITRE из тегов правила на каждый detection;
-- MITRE ATT&CK coverage heatmap в UI;
-- Регрессия через `data/mitre-eval/scenarios.json`.
+**Целевое состояние (Фаза 2 — частично):**
+- ~~Runtime-маппинг MITRE из тегов правила на каждый detection~~ ✅ PP-1
+- MITRE ATT&CK coverage heatmap в UI — ⏸
+- Регрессия через `data/mitre-eval/scenarios.json` — ✅ DC-3
 
 ### 3. Threat Intelligence в air-gap (без облачного TI)
 

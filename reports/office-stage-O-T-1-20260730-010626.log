@@ -1,0 +1,4 @@
+==> office stage gate O-T-1 20260730-010626
+[PASS] O-T-1/crate :: cmd /c "if exist services\platform\tables-engine\Cargo.toml (exit /b 0) else (exit /b 1)"
+[PASS] O-T-1/drive-bind :: cargo test -p era-tables-engine drive_bind --quiet
+STAGE GATE PASS (O-T-1)

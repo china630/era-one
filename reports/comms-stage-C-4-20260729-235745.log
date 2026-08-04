@@ -1,0 +1,5 @@
+==> stage gate C-4 20260729-235745
+[FAIL] F-C21/chat :: go test ./services/comms/chat/... -count=1
+[FAIL] F-C22/vcs :: go test ./services/comms/vcs/... -count=1
+[SKIP] F-C23/chat-vcs-audit :: go test -tags integration ./services/comms/auditch/... -count=1
+STAGE GATE FAIL (C-4)

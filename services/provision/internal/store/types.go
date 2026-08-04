@@ -4,20 +4,20 @@ import "time"
 
 // OSImage — образ в локальном репозитории (MinIO bucket ref).
 type OSImage struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Platform    string    `json:"platform"`
-	Version     string    `json:"version"`
-	MinIORef    string    `json:"minio_ref"`
-	Unattended  string    `json:"unattended_kind"` // kickstart | preseed | autounattend
-	CreatedAt   time.Time `json:"created_at"`
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	Platform   string    `json:"platform"`
+	Version    string    `json:"version"`
+	MinIORef   string    `json:"minio_ref"`
+	Unattended string    `json:"unattended_kind"` // kickstart | preseed | autounattend
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 // PXEConfig — boot-конфигурация для стенда (TFTP/PXE — simulated в MVP).
 type PXEConfig struct {
-	TFTPRoot   string            `json:"tftp_root"`
-	DefaultImage string          `json:"default_image"`
-	BootMenu   []PXEBootEntry    `json:"boot_menu"`
+	TFTPRoot     string         `json:"tftp_root"`
+	DefaultImage string         `json:"default_image"`
+	BootMenu     []PXEBootEntry `json:"boot_menu"`
 }
 
 type PXEBootEntry struct {
@@ -36,4 +36,16 @@ type EnrollRequest struct {
 	Platform     string `json:"platform"`
 	AgentVersion string `json:"agent_version"`
 	ImageID      string `json:"image_id,omitempty"`
+}
+
+// EnrollJob — запись о попытке enroll (lab audit).
+type EnrollJob struct {
+	ID        string    `json:"id"`
+	NodeID    string    `json:"node_id"`
+	Hostname  string    `json:"hostname"`
+	AgentID   string    `json:"agent_id"`
+	ImageID   string    `json:"image_id,omitempty"`
+	Status    string    `json:"status"` // enrolled | failed
+	Error     string    `json:"error,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 }

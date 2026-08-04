@@ -1,73 +1,52 @@
 # ERA Communications — Implementation Matrix (evidence-based)
 
-**Дата:** 29 июля 2026 г.  
-**Правила:** [`Comms-Evidence-Rules.md`](Comms-Evidence-Rules.md)  
-**Recovery:** `b1d066f` stash restore · Re-gate batch 2026-07-29
+**Дата:** 4 августа 2026 г. (Deepen D0–D4)  
+**Приёмка:** [`Comms-Acceptance-System.md`](products/Comms-Acceptance-System.md)  
+**Готовность продукта:** [`Comms-Product-Readiness-Matrix.md`](Comms-Product-Readiness-Matrix.md)  
+**Deepen:** [`Comms-Deepen-Spec.md`](Comms-Deepen-Spec.md)  
+**Канон:** [`ERA-Product-Acceptance-Standard.md`](products/ERA-Product-Acceptance-Standard.md)
 
-**Легенда:** `[x]` = git + PASS + лог · `[~]` = partial · `[ ]` = нет · Pilot-ready = RT/field only
+**Легенда:** ✅ proof · 🟡 partial · `[ ]` нет · ⏸ поле · **Pilot lab** ≠ **Pilot field**
 
 ---
 
 ## Сводка изданий
 
-| Издание | Disk | Scaffold gate | Pilot-ready | Edition |
-|---------|------|---------------|-------------|---------|
-| Mail Server | ✅ | C-1 PASS (CH SKIP) | [ ] RT-09 | **mvp** |
-| Mail Client webmail | ✅ `ui/mail` | C-3 PASS | [ ] | roadmap (desktop false) |
-| Mail Connect | ✅ | C-1.1 PASS | [ ] | roadmap |
-| Migration | ✅ | C-MIG PASS | [ ] field | **mvp** |
-| Outlook Bridge | ✅ | unit PASS | [ ] field | **mvp** |
-| Mail Moderation | ✅ | C-MM-H PASS | [ ] IceWarp | **mvp** |
-| Chat / Conf / AI | ✅ | C-4 / C-5 PASS | [ ] | roadmap (scaffold) |
+| Издание | Disk | Scaffold / Lab | Pilot lab | Pilot field | Edition |
+|---------|------|----------------|-----------|-------------|---------|
+| Mail Server | ✅ | ✅ AuthZ + protocols; core status via ERA_MAIL_CORE_ADDR | [x] staging RT-01…08 | [ ] RT-09 ⏸ | **mvp** |
+| Mail Client webmail | ✅ | ✅ OIDC/BFF + PKCE + Drive attach | [x] RT-05 lab | [ ] | roadmap |
+| Mail Connect | ✅ | ✅ AuthZ + mode=stub / live IMAP | [x] dovecot-lab / unit | [ ] RT-10 | **mvp** |
+| Migration | ✅ | ✅ AuthZ + metrics honesty | [~] | [ ] cutover | **mvp** |
+| Outlook Bridge | ✅ | ✅ AuthZ + upstream_mode | [~] | [ ] | **mvp** |
+| Mail Moderation | ✅ | ✅ admin AuthZ | [~] | ⏸ IceWarp | **mvp** |
+| Chat | ✅ | ✅ AuthZ | [~] | [ ] | **mvp** |
+| Conference | ✅ | ✅ AuthZ + mode | [~] | [ ] | **mvp** |
+| Comms AI | ✅ | ✅ AuthZ + degraded | [~] | [ ] | **mvp** |
 
 ---
 
-## Stage gates (re-proof 2026-07-29)
+## PRD AC-C*
 
-| Wave | Result | Log |
-|------|--------|-----|
-| C-1 | PASS (CH SKIP) | `reports/comms-stage-C-1-20260729-235925.log` |
-| C-1.1 | PASS | `reports/comms-stage-C-1.1-20260729-235840.log` |
-| C-2 | PASS | `reports/comms-stage-C-2-20260729-235843.log` |
-| C-3 | PASS | `reports/comms-stage-C-3-20260729-235850.log` |
-| C-4 | PASS | `reports/comms-stage-C-4-20260729-235903.log` |
-| C-5 | PASS | `reports/comms-stage-C-5-20260729-235914.log` |
-| C-MIG | PASS | `reports/comms-stage-C-MIG-20260729-235852.log` |
-| C-MM-H | PASS | `reports/comms-stage-C-MM-H-20260729-235857.log` |
-| BR unit | PASS | `go test -C services/comms/mail-bridge ./...` |
-| C-GA / RT-09 | [~] / SKIP | no customer field host |
+| AC | Proof | Scaffold | Pilot lab | Pilot field | Note |
+|----|-------|----------|-----------|-------------|------|
+| **AC-C1** | AuthZ; PG; core non-stub status; SMTP/IMAP TLS | ✅ | [x] | [ ] | D0-1 |
+| **AC-C2** | OIDC PKCE + staging token + BFF Bearer | ✅ | [x] | [ ] | D2 lab; browser IdP field open |
+| **AC-C3** | Autodiscover golden | ✅ | [x] | [ ] | staging RT-08 |
+| **AC-C4** | REST 413 + SMTP 552 | ✅ | [x] | [ ] | staging RT-07 |
+| **AC-C5** | Drive attach JWT + license deny | ✅ | [x] | [ ] | D0-2 |
+| **AC-C6** | Connect AuthZ + live IMAP / stub=0 | ✅ | [x] | [ ] | D4 lab |
+| **AC-C7** | CH require + readyz 503 if missing | ✅ | [x] | [ ] | D0-3 |
+| **AC-C8** | CalDAV AuthZ + staging | ✅ | [x] | [ ] | Outlook field open |
+| **AC-C9** | EWS AuthZ + staging | ✅ | [x] | [ ] | Outlook field open |
 
----
+### Upsell / roadmap
 
-## AC rows
+| Area | Scaffold | Pilot lab | Pilot field | Note |
+|------|----------|-----------|-------------|------|
+| AC-MIG | ✅ | [~] | [ ] | D5 |
+| Bridge | ✅ | [~] | [ ] | D6 |
+| AC-MM | ✅ | [~] | ⏸ | D7 / IceWarp DF |
+| Chat / Conf / AI | ✅ | [~] | [ ] | D8 |
 
-| AC | Package | Proof command | Last PASS | Scaffold | Pilot-ready |
-|----|---------|---------------|-----------|----------|-------------|
-| AC-C1 | mail + era-mail-core | gate C-1 | 2026-07-29 | [x] | [ ] |
-| AC-C2 | ui/mail | gate C-3 | 2026-07-29 | [x] | [ ] |
-| AC-C3 | autodiscover | gate C-1 | 2026-07-29 | [x] | [ ] |
-| AC-C4 | policy | gate C-1 | 2026-07-29 | [x] | [ ] |
-| AC-C5 | drive hook | gate C-3 | 2026-07-29 | [x] | [ ] |
-| AC-C6 | mail-connect | gate C-1.1 | 2026-07-29 | [x] | [ ] |
-| AC-C7 | audit + CH | gate C-1 / integration | SKIP CH local | [~] | [ ] |
-| AC-C8 | calendar | gate C-2 | 2026-07-29 | [x] | [ ] |
-| AC-C9 | ews | gate C-2 | 2026-07-29 | [x] | [ ] |
-| AC-MIG-* | migration | gate C-MIG | 2026-07-29 | [x] | [ ] |
-| AC-BR-* | mail-bridge | go test | 2026-07-29 | [x] | [ ] |
-| AC-MM-* + P1 | mail-moderation | C-MM-H | 2026-07-29 | [x] | [ ] field |
-
----
-
-## Field / RT
-
-| ID | Status | Evidence |
-|----|--------|----------|
-| RT-01…08 staging | [~] | `scripts/run-comms-pilot-staging.ps1` restored; needs compose up |
-| RT-09 customer | SKIP | `reports/comms-rt09-skip.md` — no field host |
-| MM IceWarp | SKIP | no `ERA_MM_ICEWARP_HOST` |
-
----
-
-## Phase 2 honesty
-
-C-4/C-5 gates PASS = **scaffold** (in-memory chat / Stub VCS / Heuristic AI). Prod backends = GAP-P2-01…03 — not `ga`.
+Partner / `ga`: [`reports/comms-rt09-skip.md`](../reports/comms-rt09-skip.md).

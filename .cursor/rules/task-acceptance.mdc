@@ -8,30 +8,45 @@ alwaysApply: true
 Любая реализованная функциональность считается «принятой» только после обновления
 её статуса в документации. Код без обновлённого статуса — НЕ завершён.
 
+**Канон:** [`docs/products/ERA-Product-Acceptance-Standard.md`](docs/products/ERA-Product-Acceptance-Standard.md) **v1.3+**
+
+## Какой продукт обновлять
+
+| Продукт | Acceptance-System | **Product Readiness (готовность)** | **AC Matrix (BE)** | Evidence |
+|---------|-------------------|------------------------------------|--------------------|----------|
+| ERA Control | `docs/products/Control-Acceptance-System.md` | `docs/Control-Product-Readiness-Matrix.md` | `docs/Control-Implementation-Matrix.md` | `docs/Control-Evidence-Rules.md` |
+| ERA Communications | `docs/products/Comms-Acceptance-System.md` | `docs/Comms-Product-Readiness-Matrix.md` | `docs/Comms-Implementation-Matrix.md` | `docs/Comms-Evidence-Rules.md` |
+| ERA Office | `docs/products/Office-Acceptance-System.md` | `docs/Office-Product-Readiness-Matrix.md` | `docs/Office-Implementation-Matrix.md` | `docs/Office-Evidence-Rules.md` |
+| Shared `platform/*` | `docs/products/Shared-Acceptance-System.md` | Drive UI → Office Readiness | ADR §0025 или consumer AC | Control Evidence + consumer |
+
+## Маршрутизация запросов (обязательно)
+
+| Запрос пользователя | Отвечать из |
+|---------------------|-------------|
+| «матрица готовности» / «готовность линейки» / «можно ли продавать/показывать» / «UI готов?» | **Product-Readiness-Matrix** (все колонки: Gate, BE, UI, Demo/TE, Pilot, Edition, Sell) |
+| «Scaffold / AC / backend matrix» | Implementation-Matrix |
+
+**Запрещено** на «готовность» отдавать только Implementation-Matrix (это BE-слой).
+
 ## Обязательные шаги при завершении задачи
 
-1. **MVP Sprint-1 Spec** (`docs/MVP-Sprint-1-Spec.md`): отметить пункт backlog
-   (`S1-N`) и соответствующий критерий приёмки (`AC-N`):
-   - `[ ]` → `[x]` для выполненного;
-   - указать факт по измеримым критериям (напр. «AC2: 12 000 ev/s — PASS»).
-2. **ADR**: если решение реализовано/изменено — обновить поле `Статус`
-   (`Proposed` → `Accepted` → `Implemented`/`Superseded`) и дату.
-3. **Blueprint** (`reports/ERA-XDR-Architecture-Blueprint.md`): для модулей в §5
-   обновить колонку фазы/статуса (`[скелет]` → `[реализован]`).
+1. **Gate / backlog:** Index → `gate[x]` с логом.
+2. **Implementation-Matrix:** Scaffold ✅ только по канону §3.2; иначе 🟡; Pilot-ready отдельно.
+3. **Product-Readiness-Matrix:** обновить колонки BE/UI/Demo/Pilot при любом изменении видимой готовности; rollup = worst слоёв.
+4. Шапка MVP-Spec / Index — копируют **Readiness** rollup, не «all ✅» при 🟡/❌.
+5. `editions-*.yaml` — единственный SSOT `ga`.
+6. `.\scripts\check-acceptance-consistency.ps1`.
+7. Quality-gates / acceptance-closeout skills при AuthZ или PR-ready.
+8. ADR — по необходимости.
 
 ## Формат статуса
 
-Используй явные маркеры: `[ ]` todo · `[~]` в работе · `[x]` готово ·
-`[blocked]` заблокировано (с причиной).
-
-## Правило «нет приёмки без доказательства»
-
-Критерий приёмки закрывается только при наличии доказательства: прошедший тест,
-лог прогона, скриншот дашборда или число метрики. Не помечай `[x]` «на веру».
+- Gate: `gate[x]` · AC Scaffold: ✅/🟡 · Readiness UI/Demo: ✅/🟡/❌ · Pilot: `[x]`/`[ ]`/⏸
+- **Scaffold-Green ≠ приёмка продукта.** **mvp ≠ UI ready ≠ ga.**
 
 ## Пример
 
 ```
-| S1-4 | Kafka-продюсер в gateway | [x] (PR #12, тесты зелёные) |
-| AC4  | Дедуп: 0 дублей по event_id | PASS — 1М событий, 0 дублей |
+| Readiness Documents | Gate ✅ | BE 🟡 | UI 🟡 | TE 🟡 | Pilot field [ ] | Sell: не Word |
+| AC-O3 Scaffold | 🟡 service-bind | (см. Implementation-Matrix) |
 ```

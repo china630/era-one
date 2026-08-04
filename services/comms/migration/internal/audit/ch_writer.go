@@ -62,7 +62,7 @@ func (w *CHWriter) Record(ev Event) error {
 		return err
 	}
 	defer batch.Abort()
-	if err := batch.Append(evID, time.Now().UTC(), ev.JobID, ev.Action, ev.SourceUID, "", meta); err != nil {
+	if err := batch.Append(evID, time.Now().UTC(), ev.JobID, ev.Action, ev.SourceUID, ev.Mailbox, meta); err != nil {
 		return err
 	}
 	return batch.Send()

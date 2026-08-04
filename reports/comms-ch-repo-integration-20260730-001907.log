@@ -1,0 +1,6 @@
+FAIL	era/services/comms/mail/internal/audit [setup failed]
+# era/services/comms/mail/internal/audit
+package era/services/comms/mail/internal/audit
+	imports era/services/comms/mail/internal/auditapi from audit_path_integration_test.go
+	imports era/services/comms/mail/internal/audit from handler.go: import cycle not allowed in test
+FAIL

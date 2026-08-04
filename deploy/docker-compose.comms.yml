@@ -1,6 +1,8 @@
-# ERA Communications — pilot compose (prod profile, R2-G)
+# ERA Communications — base compose (no ERA_*_DEV bypass flags; use .dev.yml for lab).
 # Usage: docker compose -f deploy/docker-compose.comms.yml up -d
-# Lab/dev overlay: docker compose -f deploy/docker-compose.comms.yml -f deploy/docker-compose.comms.dev.yml up -d
+# Lab/dev overlay: ... -f deploy/docker-compose.comms.dev.yml
+# Prod honesty: ALWAYS merge docker-compose.comms.prod.yml which sets ERA_MAIL_DEV/ERA_BRIDGE_DEV/ERA_MM_DEV to "0"
+# (compose merge does not unset keys — prod overlay must override explicitly).
 
 services:
   postgres:
@@ -27,7 +29,9 @@ services:
       sh -c "until pg_isready -h postgres -U era; do sleep 1; done;
       psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/001_initial.sql;
       psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/002_migration.sql;
-      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/003_mail_moderation.sql"
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/003_mail_moderation.sql;
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/004_moderation_quorum.sql;
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/005_chat.sql"
     depends_on:
       postgres:
         condition: service_healthy
@@ -85,6 +89,10 @@ services:
       ERA_CH_ADDR: clickhouse:9000
       ERA_CH_USER: era
       ERA_CH_PASSWORD: era_dev_only
+      ERA_MAIL_AUDIT_REQUIRE: "1"
+      ERA_INTERNAL_TOKEN: lab-internal-token
+      ERA_IDENTITY_JWT_SECRET: dev-only-change-in-prod
+      ERA_MAIL_CORE_ADDR: era-mail-core:8152
     ports:
       - "8150:8150"
     depends_on:
@@ -109,9 +117,13 @@ services:
       ERA_MAIL_SMTP_PORT: "2525"
       ERA_MAIL_IMAP_PORT: "1143"
       ERA_MAIL_AUDIT_URL: http://era-mail-api:8150/internal/v1/audit
+      ERA_INTERNAL_TOKEN: lab-internal-token
+      ERA_MAIL_ADMIN_HOST: "0.0.0.0"
+      ERA_MAIL_ADMIN_PORT: "8152"
     ports:
       - "2525:2525"
       - "1143:1143"
+      - "8152:8152"
     depends_on:
       era-mail-api:
         condition: service_healthy
@@ -167,7 +179,6 @@ services:
       context: ..
       dockerfile: deploy/dockerfiles/Dockerfile.mail-bridge
     environment:
-      ERA_BRIDGE_DEV: "1"
       ERA_BRIDGE_TLS: "1"
       ERA_CH_ADDR: clickhouse:9000
       ERA_CH_USER: era

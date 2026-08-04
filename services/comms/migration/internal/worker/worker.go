@@ -48,7 +48,7 @@ func (r *Runner) run(ctx context.Context, jobID string, req JobRequest) {
 	}
 	if err != nil {
 		r.Jobs.Fail(jobID, err.Error())
-		r.Audit.Record(audit.Event{JobID: jobID, Action: "MIGRATION_FAILED", Detail: err.Error()})
+		r.Audit.Record(audit.Event{JobID: jobID, Action: "MIGRATION_FAILED", Detail: err.Error(), Mailbox: req.Mailbox})
 		return
 	}
 	ok, fail := 0, 0
@@ -59,16 +59,16 @@ func (r *Runner) run(ctx context.Context, jobID string, req JobRequest) {
 		}
 		if err := req.Target.Write(msg); err != nil {
 			fail++
-			r.Audit.Record(audit.Event{JobID: jobID, Action: "MIGRATION_ITEM_FAIL", SourceUID: uidKey, Detail: err.Error()})
+			r.Audit.Record(audit.Event{JobID: jobID, Action: "MIGRATION_ITEM_FAIL", SourceUID: uidKey, Detail: err.Error(), Mailbox: req.Mailbox})
 			continue
 		}
 		r.Jobs.MarkSeen(uidKey)
 		ok++
-		r.Audit.Record(audit.Event{JobID: jobID, Action: "MIGRATION_ITEM_OK", SourceUID: uidKey})
+		r.Audit.Record(audit.Event{JobID: jobID, Action: "MIGRATION_ITEM_OK", SourceUID: uidKey, Mailbox: req.Mailbox})
 	}
 	_ = req.Target.Close()
 	r.Jobs.Complete(jobID, len(msgs), ok, fail)
-	r.Audit.Record(audit.Event{JobID: jobID, Action: "MIGRATION_JOB_DONE"})
+	r.Audit.Record(audit.Event{JobID: jobID, Action: "MIGRATION_JOB_DONE", Mailbox: req.Mailbox})
 }
 
 // ImportFileJob — legacy file-line import for golden tests.
@@ -81,7 +81,7 @@ func (r *Runner) ImportFileJob(source, mailbox, imapFile, archiveFile string) jo
 		}
 	}
 	j := r.Jobs.CreateDone(source, mailbox, total)
-	r.Audit.Record(audit.Event{JobID: j.ID, Action: "MIGRATION_JOB_CREATED"})
+	r.Audit.Record(audit.Event{JobID: j.ID, Action: "MIGRATION_JOB_CREATED", Mailbox: mailbox})
 	return j
 }
 

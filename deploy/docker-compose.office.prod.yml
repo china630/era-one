@@ -1,0 +1,23 @@
+# ERA Office — production overrides (no dev license bypass)
+# Usage: docker compose -f deploy/docker-compose.office.yml -f deploy/docker-compose.office.prod.yml up -d
+
+services:
+  drive-api:
+    environment:
+      ERA_OFFICE_DEV: ""
+    env_file:
+      - path: deploy/office.env.example
+        required: false
+
+  docs-engine:
+    environment:
+      ERA_OFFICE_DEV: ""
+      ERA_LICENSE_OFFICE_DOCUMENTS: ${ERA_LICENSE_OFFICE_DOCUMENTS:-0}
+    env_file:
+      - path: deploy/office.env.example
+        required: false
+
+  identity-api:
+    env_file:
+      - path: deploy/office.env.example
+        required: false

@@ -1,0 +1,4 @@
+?   	era/services/comms/chat/cmd/chat-api	[no test files]
+ok  	era/services/comms/chat/internal/api	0.045s
+?   	era/services/comms/chat/internal/audit	[no test files]
+ok  	era/services/comms/chat/internal/store	0.045s

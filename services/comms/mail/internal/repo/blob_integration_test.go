@@ -38,7 +38,7 @@ func TestPostgresBlobOffload(t *testing.T) {
 		t.Skipf("minio unavailable: %v", err)
 	}
 
-	email := "blob-int@mail.gov.az"
+	email := "blob-int-" + t.Name() + "@mail.gov.az"
 	_, _ = pg.CreateMailbox("t-demo", email, "blob-pass", 64<<20)
 
 	threshold := blobstore.ThresholdBytes()
@@ -55,10 +55,17 @@ func TestPostgresBlobOffload(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(msgs) != 1 {
-		t.Fatalf("expected 1 message, got %d", len(msgs))
+	var found *repo.Message
+	for _, m := range msgs {
+		if m != nil && m.ID == msg.ID {
+			found = m
+			break
+		}
 	}
-	if !bytes.Equal(msgs[0].Raw, body) {
-		t.Fatalf("hydrated body mismatch: got %d bytes want %d", len(msgs[0].Raw), len(body))
+	if found == nil {
+		t.Fatalf("expected delivered message id=%d among %d", msg.ID, len(msgs))
+	}
+	if !bytes.Equal(found.Raw, body) {
+		t.Fatalf("hydrated body mismatch: got %d bytes want %d", len(found.Raw), len(body))
 	}
 }

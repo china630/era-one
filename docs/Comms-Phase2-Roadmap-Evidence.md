@@ -1,21 +1,18 @@
 # ERA Comms — Phase 2 / Roadmap evidence note
 
-**Дата:** 29 июля 2026 г.
+**Дата:** 30 июля 2026 г.
 
-## Scaffold PASS (not product ga)
+## Scaffold → partial backends
 
-| Wave | Gate log | Honest product state |
-|------|----------|----------------------|
-| C-4 Chat/VCS | `reports/comms-stage-C-4-20260729-235903.log` | In-memory rooms / Stub LiveKit adapter — GAP-P2-01/02 |
-| C-5 Comms AI | `reports/comms-stage-C-5-20260729-235914.log` | Heuristic phishing/summary — GAP-P2-03 |
-| MM P2 | not started | DLP / quorum / multi-level / Outlook buttons / NLP |
-| Scale 60k / HA | scripts only | GAP-P2-05/06 |
+| Wave | Gate / proof | Honest product state |
+|------|--------------|----------------------|
+| C-4 Chat | gate + `store` persist test | `ERA_CHAT_DATA_DIR` JSON — GAP-P2-01 homeserver still open |
+| C-4 VCS | gate + LiveKit FromEnv unit | LiveKit when `ERA_LIVEKIT_URL`; else Stub — GAP-P2-02 field open |
+| C-5 Comms AI | gate + llm FromEnv test | Ollama if up; Heuristic CI — see Ollama runbook |
+| MM P2 | unit DLP/quorum | Spec [`Comms-Stage-CMM-P2-Spec.md`](Comms-Stage-CMM-P2-Spec.md); multi-level/Outlook/NLP open |
+| Scale 60k / HA | quick 500 PASS + HA notes | Full 60k on sizing host; [`Comms-HA-Notes.md`](Comms-HA-Notes.md) |
 
-## Next product waves (after Mail RT-09)
+## Edition
 
-1. Replace chat store with Matrix-layout or equivalent homeserver  
-2. LiveKit on-prem tokens + `ui/meet` real rooms  
-3. Bundled on-prem LLM ops for Comms AI  
-4. MM-P2 stage spec when Perimeter DLP handoff ready  
-
-Edition targets stay **`roadmap`** until those backends + field proof exist.
+Chat / Conference / AI remain **`roadmap`** until field backends + proof.  
+Do not promote on Heuristic/Stub alone.

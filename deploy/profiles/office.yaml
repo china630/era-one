@@ -1,16 +1,19 @@
-# ERA Office — deploy profile (roadmap)
+# ERA Office — deploy profile (Phase 1: O-0+O-1 Drive)
 # ADR-0025, ADR-0026 | PRD: docs/products/PRD-Office-MVP.md
+# Gates: docs/Office-Sprint-Index.md
 
 schema_version: "1.0"
 id: era-office
 product: era-office
 title: ERA Office
-status: roadmap
+status: mvp
 
 compose:
-  file: deploy/docker-compose.prod.yml
+  file: deploy/docker-compose.office.yml
   project_name: era-one-office
-  note: Shared platform + docs stub until engine MVP.
+  note: >
+    O-2 default = identity+drive+workspace. O-3 Documents = --profile docs (docs-engine).
+    Tables/Presentations/Projects = --profile office-engines.
 
 shared_platform:
   required: true
@@ -21,21 +24,42 @@ shared_platform:
     - platform/adminportal
     - platform/drive
     - platform/docs-engine
+    - platform/tables-engine
+    - platform/presentations-engine
     - platform/workspace
   services:
-    - admin-portal
+    - identity-api
+    - drive-api
+    - workspace
+    - docs-engine
+    - tables-engine
+    - presentations-engine
     - postgres
+    - minio
   compose_profiles:
     pg: [postgres]
+    docs: [docs-engine]
+    office-engines: [tables-engine, presentations-engine, docs-projects]
 
 infra:
   - minio
+  - postgres
+
+services:
+  - id: drive-api
+    cmd: services/platform/cmd/drive-api
+    port: 8175
+    health: /healthz
+    env:
+      ERA_OFFICE_DEV: "1"
+      ERA_DRIVE_HTTP_ADDR: ":8175"
 
 stub_services:
   - id: docs
     cmd: services/docs/cmd/docs
     port: 8142
     health: /healthz
+    note: Roadmap stub until docs-engine O-3
 
 workspace:
   url: https://app.customer.local
@@ -49,5 +73,7 @@ service_stub: services/docs
 docs:
   - docs/products/ERA-Office-Vision.md
   - docs/products/PRD-Office-MVP.md
+  - docs/products/Office-Acceptance-System.md
+  - docs/Office-Sprint-Index.md
   - docs/adr/0025-era-one-shared-platform.md
   - docs/adr/0026-sovereign-office-engine.md

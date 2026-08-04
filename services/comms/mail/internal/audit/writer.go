@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	erav1 "era/contracts/gen/era/v1"
@@ -23,16 +24,33 @@ type Writer struct {
 }
 
 // NewFromEnv подключается к ClickHouse если ERA_CH_ADDR задан; иначе noop.
+// When ERA_MAIL_AUDIT_REQUIRE=1, missing/unreachable CH returns an error (G1-5).
 func NewFromEnv() *Writer {
-	addr := os.Getenv("ERA_CH_ADDR")
-	if addr == "" {
-		return NewNoop()
-	}
-	w, err := New(addr)
+	w, err := NewFromEnvStrict()
 	if err != nil {
 		return NewNoop()
 	}
 	return w
+}
+
+// NewFromEnvStrict fails when audit is required but ClickHouse is unavailable.
+func NewFromEnvStrict() (*Writer, error) {
+	require := os.Getenv("ERA_MAIL_AUDIT_REQUIRE") == "1"
+	addr := strings.TrimSpace(os.Getenv("ERA_CH_ADDR"))
+	if addr == "" {
+		if require {
+			return nil, fmt.Errorf("ERA_CH_ADDR required when ERA_MAIL_AUDIT_REQUIRE=1")
+		}
+		return NewNoop(), nil
+	}
+	w, err := New(addr)
+	if err != nil {
+		if require {
+			return nil, fmt.Errorf("clickhouse audit: %w", err)
+		}
+		return NewNoop(), nil
+	}
+	return w, nil
 }
 
 // New создаёт writer с подключением к ClickHouse.
@@ -103,6 +121,10 @@ func (w *Writer) Insert(ctx context.Context, ev *erav1.MailAuditEvent) error {
 	defer batch.Abort()
 
 	action := ev.Action.String()
+	srcIP := strings.TrimSpace(ev.SrcIp)
+	if srcIP == "" {
+		srcIP = "0.0.0.0"
+	}
 	if err := batch.Append(
 		ev.EventId,
 		ev.SchemaVersion,
@@ -111,7 +133,7 @@ func (w *Writer) Insert(ctx context.Context, ev *erav1.MailAuditEvent) error {
 		ev.Mailbox,
 		action,
 		ev.MessageId,
-		ev.SrcIp,
+		srcIP,
 		ev.Metadata,
 	); err != nil {
 		return err

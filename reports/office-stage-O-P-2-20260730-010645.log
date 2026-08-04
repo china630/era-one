@@ -1,0 +1,3 @@
+==> office stage gate O-P-2 20260730-010645
+[PASS] O-P-2/golden :: cargo test -p era-presentations-engine golden_pptx --quiet
+STAGE GATE PASS (O-P-2)

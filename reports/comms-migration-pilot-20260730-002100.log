@@ -1,0 +1,8 @@
+2026-07-30T00:21:00.8669406+04:00 PILOT discover CG source
+2026-07-30T00:21:00.9176146+04:00 PILOT discover skip (lab CG unavailable): Response status code does not indicate success: 502 (Bad Gateway).
+2026-07-30T00:21:00.9291863+04:00 PILOT job 1 skip: Response status code does not indicate success: 400 (Bad Request).
+2026-07-30T00:21:01.0722573+04:00 PILOT job 2 skip: Response status code does not indicate success: 400 (Bad Request).
+2026-07-30T00:21:01.1897007+04:00 PILOT job 3 skip: Response status code does not indicate success: 400 (Bad Request).
+2026-07-30T00:21:01.3117691+04:00 PILOT job 4 skip: Response status code does not indicate success: 400 (Bad Request).
+2026-07-30T00:21:01.4355888+04:00 PILOT job 5 skip: Response status code does not indicate success: 400 (Bad Request).
+2026-07-30T00:21:01.5439171+04:00 PILOT PILOT queued 0 / 5 jobs — log D:\My Projects\era-one\scripts\..\reports\comms-migration-pilot-20260730-002100.log

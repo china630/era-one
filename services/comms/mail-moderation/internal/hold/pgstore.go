@@ -62,13 +62,17 @@ func (s *PGStore) Put(r Record) (Record, error) {
 	if r.ExpiresAt.IsZero() {
 		r.ExpiresAt = now.Add(72 * time.Hour)
 	}
+	if r.ApprovedBy == nil {
+		r.ApprovedBy = []string{}
+	}
 	rcpt, _ := json.Marshal(r.Recipients)
 	mods, _ := json.Marshal(r.Moderators)
+	appr, _ := json.Marshal(r.ApprovedBy)
 	_, err := s.db.Exec(`INSERT INTO moderation_holds
-		(id, status, rule_id, sender, recipients, subject, moderators, raw_bytes, comment, expires_at, created_at, updated_at)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+		(id, status, rule_id, sender, recipients, subject, moderators, raw_bytes, comment, expires_at, created_at, updated_at, require_all, approved_by, level)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
 		r.ID, string(r.Status), r.RuleID, r.Sender, string(rcpt), r.Subject, string(mods), r.Raw, r.Comment,
-		r.ExpiresAt.UTC(), r.CreatedAt.UTC(), r.UpdatedAt.UTC())
+		r.ExpiresAt.UTC(), r.CreatedAt.UTC(), r.UpdatedAt.UTC(), r.RequireAll, string(appr), r.Level)
 	if err != nil {
 		return Record{}, err
 	}
@@ -76,7 +80,8 @@ func (s *PGStore) Put(r Record) (Record, error) {
 }
 
 func (s *PGStore) Get(id string) (Record, bool) {
-	r, err := s.scanOne(`SELECT id, status, rule_id, sender, recipients, subject, moderators, raw_bytes, comment, expires_at, created_at, updated_at
+	r, err := s.scanOne(`SELECT id, status, rule_id, sender, recipients, subject, moderators, raw_bytes, comment, expires_at, created_at, updated_at,
+		COALESCE(require_all,false), COALESCE(approved_by::text,'[]'), COALESCE(level,0)
 		FROM moderation_holds WHERE id=$1`, id)
 	if err != nil {
 		return Record{}, false
@@ -85,7 +90,50 @@ func (s *PGStore) Get(id string) (Record, bool) {
 }
 
 func (s *PGStore) Approve(id, moderator string) (Record, error) {
-	return s.act(id, moderator, StatusApproved, "")
+	r, ok := s.Get(id)
+	if !ok {
+		return Record{}, fmt.Errorf("hold %s not found", id)
+	}
+	if r.Status != StatusPending {
+		return Record{}, fmt.Errorf("hold %s status %s", id, r.Status)
+	}
+	if !isModerator(r.Moderators, moderator) && moderator != "admin" {
+		return Record{}, fmt.Errorf("moderator %s not allowed", moderator)
+	}
+	now := s.now().UTC()
+	if r.RequireAll && moderator != "admin" {
+		if !containsFold(r.ApprovedBy, moderator) {
+			r.ApprovedBy = append(r.ApprovedBy, moderator)
+		}
+		appr, _ := json.Marshal(r.ApprovedBy)
+		if !allApproved(r.Moderators, r.ApprovedBy) {
+			_, err := s.db.Exec(`UPDATE moderation_holds SET approved_by=$1::jsonb, updated_at=$2 WHERE id=$3`,
+				string(appr), now, id)
+			if err != nil {
+				return Record{}, err
+			}
+			r.UpdatedAt = now
+			return r, nil
+		}
+		_, err := s.db.Exec(`UPDATE moderation_holds SET status=$1, approved_by=$2::jsonb, updated_at=$3 WHERE id=$4`,
+			string(StatusApproved), string(appr), now, id)
+		if err != nil {
+			return Record{}, err
+		}
+		r.Status = StatusApproved
+		r.ConsumedBy = moderator
+		r.UpdatedAt = now
+		return r, nil
+	}
+	_, err := s.db.Exec(`UPDATE moderation_holds SET status=$1, updated_at=$2 WHERE id=$3`,
+		string(StatusApproved), now, id)
+	if err != nil {
+		return Record{}, err
+	}
+	r.Status = StatusApproved
+	r.ConsumedBy = moderator
+	r.UpdatedAt = now
+	return r, nil
 }
 
 func (s *PGStore) Reject(id, moderator, comment string) (Record, error) {
@@ -151,7 +199,8 @@ func (s *PGStore) ExpirePending(autoApprove bool) []Record {
 }
 
 func (s *PGStore) ListPending() []Record {
-	rows, err := s.db.Query(`SELECT id, status, rule_id, sender, recipients, subject, moderators, raw_bytes, comment, expires_at, created_at, updated_at
+	rows, err := s.db.Query(`SELECT id, status, rule_id, sender, recipients, subject, moderators, raw_bytes, comment, expires_at, created_at, updated_at,
+		COALESCE(require_all,false), COALESCE(approved_by::text,'[]'), COALESCE(level,0)
 		FROM moderation_holds WHERE status='pending' ORDER BY created_at`)
 	if err != nil {
 		return nil
@@ -178,15 +227,17 @@ func (s *PGStore) scanOne(q string, args ...any) (Record, error) {
 
 func scanRow(row rowScanner) (Record, error) {
 	var r Record
-	var status, rcpt, mods string
+	var status, rcpt, mods, appr string
 	var raw []byte
-	if err := row.Scan(&r.ID, &status, &r.RuleID, &r.Sender, &rcpt, &r.Subject, &mods, &raw, &r.Comment, &r.ExpiresAt, &r.CreatedAt, &r.UpdatedAt); err != nil {
+	if err := row.Scan(&r.ID, &status, &r.RuleID, &r.Sender, &rcpt, &r.Subject, &mods, &raw, &r.Comment, &r.ExpiresAt, &r.CreatedAt, &r.UpdatedAt,
+		&r.RequireAll, &appr, &r.Level); err != nil {
 		return Record{}, err
 	}
 	r.Status = Status(status)
 	r.Raw = raw
 	_ = json.Unmarshal([]byte(rcpt), &r.Recipients)
 	_ = json.Unmarshal([]byte(mods), &r.Moderators)
+	_ = json.Unmarshal([]byte(appr), &r.ApprovedBy)
 	return r, nil
 }
 

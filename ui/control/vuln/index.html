@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — Vuln</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>Vuln</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-card"><h2>Scan jobs / findings</h2>
+<button class="era-btn" id="scan">Run scan</button>
+<button class="era-btn secondary" id="jobs">List jobs</button>
+<button class="era-btn secondary" id="find">Findings</button>
+<pre id="out" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>Schedules</h2>
+<button class="era-btn secondary" id="sched">List</button>
+<pre id="schedOut" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("vuln");
+document.getElementById("scan").onclick=function(){
+  EraControl.x("vm","/api/v1/vm/scan",{method:"POST",body:JSON.stringify({targets:["lab"]})}).then(function(r){
+    document.getElementById("out").textContent=JSON.stringify(r.json,null,2);
+  });
+};
+document.getElementById("jobs").onclick=function(){
+  EraControl.x("vm","/api/v1/vm/jobs").then(function(r){document.getElementById("out").textContent=JSON.stringify(r.json,null,2);});
+};
+document.getElementById("find").onclick=function(){
+  EraControl.x("vm","/api/v1/vm/findings").then(function(r){document.getElementById("out").textContent=JSON.stringify(r.json,null,2);});
+};
+document.getElementById("sched").onclick=function(){
+  EraControl.x("vm","/api/v1/scans/schedule").then(function(r){document.getElementById("schedOut").textContent=JSON.stringify(r.json,null,2);});
+};
+</script></body></html>

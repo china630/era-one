@@ -1,0 +1,4 @@
+==> office stage gate O-T-3 20260730-010629
+[PASS] O-T-3/xlsx :: cargo test -p era-tables-engine golden_xlsx --quiet
+[PASS] O-T-3/fuzz :: cargo test -p era-tables-engine fuzz_xlsx --quiet
+STAGE GATE PASS (O-T-3)

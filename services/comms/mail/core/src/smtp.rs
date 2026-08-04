@@ -12,11 +12,27 @@ use tracing::{debug, warn};
 
 const DEFAULT_MAX_MESSAGE_BYTES: usize = 25 * 1024 * 1024;
 
-fn max_message_bytes() -> usize {
+fn max_message_bytes_env() -> usize {
     std::env::var("ERA_MAIL_MAX_MESSAGE_BYTES")
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(DEFAULT_MAX_MESSAGE_BYTES)
+}
+
+/// Policy-aware limit: backend tenant policy → env → default (G1-4).
+fn max_message_bytes_for(store: &Arc<dyn MailBackend>, mailbox: &str) -> usize {
+    store
+        .max_message_bytes(mailbox)
+        .unwrap_or_else(max_message_bytes_env)
+}
+
+fn map_deliver_err(e: anyhow::Error) -> &'static [u8] {
+    let msg = e.to_string().to_lowercase();
+    if msg.contains("too large") || msg.contains("quota") {
+        b"552 message too large\r\n"
+    } else {
+        b"550 deliver failed\r\n"
+    }
 }
 
 pub async fn serve(addr: &str, store: Arc<dyn MailBackend>, audit: AuditHook) -> Result<()> {
@@ -76,13 +92,19 @@ async fn handle_plain_session(
             if line == "." {
                 if rcpt_to.is_empty() {
                     writer.write_all(b"550 no recipient\r\n").await?;
-                } else if data_buf.len() > max_message_bytes() {
+                } else if data_buf.len() > max_message_bytes_for(&store, &rcpt_to) {
                     writer.write_all(b"552 message too large\r\n").await?;
                 } else {
-                    store.deliver(&rcpt_to, &data_buf)?;
-                    audit.notify_send(&rcpt_to, &mail_from);
-                    debug!(to = %rcpt_to, bytes = data_buf.len(), "message stored");
-                    writer.write_all(b"250 OK\r\n").await?;
+                    match store.deliver(&rcpt_to, &data_buf) {
+                        Ok(_) => {
+                            audit.notify_send(&rcpt_to, &mail_from);
+                            debug!(to = %rcpt_to, bytes = data_buf.len(), "message stored");
+                            writer.write_all(b"250 OK\r\n").await?;
+                        }
+                        Err(e) => {
+                            writer.write_all(map_deliver_err(e)).await?;
+                        }
+                    }
                 }
                 in_data = false;
                 data_buf.clear();
@@ -156,12 +178,18 @@ where
             if line == "." {
                 if rcpt_to.is_empty() {
                     writer.write_all(b"550 no recipient\r\n").await?;
-                } else if data_buf.len() > max_message_bytes() {
+                } else if data_buf.len() > max_message_bytes_for(&store, &rcpt_to) {
                     writer.write_all(b"552 message too large\r\n").await?;
                 } else {
-                    store.deliver(&rcpt_to, &data_buf)?;
-                    audit.notify_send(&rcpt_to, &mail_from);
-                    writer.write_all(b"250 OK\r\n").await?;
+                    match store.deliver(&rcpt_to, &data_buf) {
+                        Ok(_) => {
+                            audit.notify_send(&rcpt_to, &mail_from);
+                            writer.write_all(b"250 OK\r\n").await?;
+                        }
+                        Err(e) => {
+                            writer.write_all(map_deliver_err(e)).await?;
+                        }
+                    }
                 }
                 in_data = false;
                 data_buf.clear();

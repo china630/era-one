@@ -12,7 +12,7 @@ import (
 
 func main() {
 	mux := http.NewServeMux()
-	api.NewServer(store.New(), audit.NewRecorder()).Register(mux)
+	api.NewServer(store.NewFromEnv(), audit.NewRecorder()).Register(mux)
 	log.Print("era-chat listening :8260")
 	if err := httpserver.Listen(":8260", mux); err != nil {
 		log.Fatal(err)

@@ -188,3 +188,19 @@ func TestPriority_StaticOverrideWins(t *testing.T) {
 		t.Fatalf("want static moderator")
 	}
 }
+
+func TestDLPTriggerHold(t *testing.T) {
+	doc := policy.Document{Rules: []policy.Rule{{
+		ID:       "dlp",
+		Priority: 1,
+		Conditions: policy.Conditions{
+			DLPTrigger: []string{"passport"},
+		},
+		Moderator: policy.ModeratorSpec{Mode: policy.ModStatic, Static: []string{"dlp@c.local"}},
+	}}}
+	msg := policy.Message{From: "a@c.local", To: []string{"b@out.com"}, Subject: "docs", Body: "my passport number"}
+	res := policy.Evaluate(doc.Rules, msg, policy.EvalContext{LocalDomains: []string{"c.local"}})
+	if res.Decision != policy.DecisionHold || res.RuleID != "dlp" {
+		t.Fatalf("want dlp hold, got %s/%s", res.Decision, res.RuleID)
+	}
+}

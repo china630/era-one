@@ -1,0 +1,9 @@
+go 1.26.4
+
+use (
+	./gen/go
+	./services/license
+	./services/platform
+	./ui/docs
+	./ui/drive
+)

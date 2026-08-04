@@ -2,7 +2,7 @@
 
 use crate::config::Config;
 use crate::{
-    envelope, AuthEvent, Envelope, EventCategory, FileEvent, NetworkEvent, OcsfMeta, Platform,
+    envelope, AuthEvent, DnsEvent, Envelope, EventCategory, FileEvent, NetworkEvent, OcsfMeta, Platform,
     ProcessEvent, RawEvent, Severity, Source,
 };
 use prost_types::Timestamp;
@@ -96,6 +96,22 @@ pub fn file_envelope(cfg: &Config, path: &str) -> Envelope {
             ..Default::default()
         },
     ))
+}
+
+/// DNS Trace emitter (Resolve Phase 2) — best-effort Windows ETW / Linux stub → ingest.
+pub fn dns_envelope(cfg: &Config, query: &str, qtype: &str, answers: &[String], pid: u64) -> Envelope {
+    base_envelope(
+        cfg,
+        EventCategory::Dns,
+        Severity::Low,
+        4003,
+        envelope::Payload::Dns(DnsEvent {
+            query: query.into(),
+            query_type: qtype.into(),
+            answers: answers.to_vec(),
+            pid,
+        }),
+    )
 }
 
 pub fn tamper_alert_envelope(cfg: &Config) -> Envelope {

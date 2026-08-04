@@ -78,8 +78,11 @@ test('webmail smoke with mocked token and APIs', async ({ page }) => {
   );
 
   await page.goto('/mail');
+  await expect(page.locator('body')).toHaveAttribute('data-line', 'comms');
+  await expect(page.locator('body')).toHaveAttribute('data-sku', 'mail');
   await expect(page.getByRole('heading', { name: 'ERA Webmail' })).toBeVisible();
-  await expect(page.locator('#user')).toHaveText('alice@mail.gov.az');
+  await expect(page.locator('#user')).toContainText('alice@mail.gov.az');
+  await expect(page.locator('.era-product-switcher')).toBeVisible();
   await expect(page.locator('#policy')).toContainText('512 MB');
 
   await page.locator('#inbox li').first().click();

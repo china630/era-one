@@ -28,6 +28,7 @@ const (
 	DocumentFormat_DOCUMENT_FORMAT_ERAD        DocumentFormat = 1
 	DocumentFormat_DOCUMENT_FORMAT_ERAT        DocumentFormat = 2
 	DocumentFormat_DOCUMENT_FORMAT_ERAP        DocumentFormat = 3
+	DocumentFormat_DOCUMENT_FORMAT_ERAJ        DocumentFormat = 4
 )
 
 // Enum value maps for DocumentFormat.
@@ -37,12 +38,14 @@ var (
 		1: "DOCUMENT_FORMAT_ERAD",
 		2: "DOCUMENT_FORMAT_ERAT",
 		3: "DOCUMENT_FORMAT_ERAP",
+		4: "DOCUMENT_FORMAT_ERAJ",
 	}
 	DocumentFormat_value = map[string]int32{
 		"DOCUMENT_FORMAT_UNSPECIFIED": 0,
 		"DOCUMENT_FORMAT_ERAD":        1,
 		"DOCUMENT_FORMAT_ERAT":        2,
 		"DOCUMENT_FORMAT_ERAP":        3,
+		"DOCUMENT_FORMAT_ERAJ":        4,
 	}
 )
 
@@ -227,6 +230,55 @@ func (x DocOpType) Number() protoreflect.EnumNumber {
 // Deprecated: Use DocOpType.Descriptor instead.
 func (DocOpType) EnumDescriptor() ([]byte, []int) {
 	return file_era_v1_office_proto_rawDescGZIP(), []int{3}
+}
+
+type SheetOpType int32
+
+const (
+	SheetOpType_SHEET_OP_TYPE_UNSPECIFIED SheetOpType = 0
+	SheetOpType_SHEET_OP_TYPE_SET_CELL    SheetOpType = 1
+	SheetOpType_SHEET_OP_TYPE_CLEAR_CELL  SheetOpType = 2
+)
+
+// Enum value maps for SheetOpType.
+var (
+	SheetOpType_name = map[int32]string{
+		0: "SHEET_OP_TYPE_UNSPECIFIED",
+		1: "SHEET_OP_TYPE_SET_CELL",
+		2: "SHEET_OP_TYPE_CLEAR_CELL",
+	}
+	SheetOpType_value = map[string]int32{
+		"SHEET_OP_TYPE_UNSPECIFIED": 0,
+		"SHEET_OP_TYPE_SET_CELL":    1,
+		"SHEET_OP_TYPE_CLEAR_CELL":  2,
+	}
+)
+
+func (x SheetOpType) Enum() *SheetOpType {
+	p := new(SheetOpType)
+	*p = x
+	return p
+}
+
+func (x SheetOpType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SheetOpType) Descriptor() protoreflect.EnumDescriptor {
+	return file_era_v1_office_proto_enumTypes[4].Descriptor()
+}
+
+func (SheetOpType) Type() protoreflect.EnumType {
+	return &file_era_v1_office_proto_enumTypes[4]
+}
+
+func (x SheetOpType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SheetOpType.Descriptor instead.
+func (SheetOpType) EnumDescriptor() ([]byte, []int) {
+	return file_era_v1_office_proto_rawDescGZIP(), []int{4}
 }
 
 type InlineSpan struct {
@@ -609,6 +661,402 @@ func (x *DocSessionOp) GetBlock() *Block {
 	return nil
 }
 
+type EratCell struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Addr          string                 `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`       // A1 notation
+	Value         string                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`     // display / numeric literal
+	Formula       string                 `protobuf:"bytes,3,opt,name=formula,proto3" json:"formula,omitempty"` // optional, e.g. =SUM(A1:A3)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EratCell) Reset() {
+	*x = EratCell{}
+	mi := &file_era_v1_office_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EratCell) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EratCell) ProtoMessage() {}
+
+func (x *EratCell) ProtoReflect() protoreflect.Message {
+	mi := &file_era_v1_office_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EratCell.ProtoReflect.Descriptor instead.
+func (*EratCell) Descriptor() ([]byte, []int) {
+	return file_era_v1_office_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *EratCell) GetAddr() string {
+	if x != nil {
+		return x.Addr
+	}
+	return ""
+}
+
+func (x *EratCell) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+func (x *EratCell) GetFormula() string {
+	if x != nil {
+		return x.Formula
+	}
+	return ""
+}
+
+type EratSheet struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	DriveObjectId string                 `protobuf:"bytes,3,opt,name=drive_object_id,json=driveObjectId,proto3" json:"drive_object_id,omitempty"`
+	Format        DocumentFormat         `protobuf:"varint,4,opt,name=format,proto3,enum=era.v1.DocumentFormat" json:"format,omitempty"` // DOCUMENT_FORMAT_ERAT
+	Name          string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	Rows          uint32                 `protobuf:"varint,6,opt,name=rows,proto3" json:"rows,omitempty"`
+	Cols          uint32                 `protobuf:"varint,7,opt,name=cols,proto3" json:"cols,omitempty"`
+	Cells         []*EratCell            `protobuf:"bytes,8,rep,name=cells,proto3" json:"cells,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EratSheet) Reset() {
+	*x = EratSheet{}
+	mi := &file_era_v1_office_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EratSheet) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EratSheet) ProtoMessage() {}
+
+func (x *EratSheet) ProtoReflect() protoreflect.Message {
+	mi := &file_era_v1_office_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EratSheet.ProtoReflect.Descriptor instead.
+func (*EratSheet) Descriptor() ([]byte, []int) {
+	return file_era_v1_office_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *EratSheet) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *EratSheet) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+func (x *EratSheet) GetDriveObjectId() string {
+	if x != nil {
+		return x.DriveObjectId
+	}
+	return ""
+}
+
+func (x *EratSheet) GetFormat() DocumentFormat {
+	if x != nil {
+		return x.Format
+	}
+	return DocumentFormat_DOCUMENT_FORMAT_UNSPECIFIED
+}
+
+func (x *EratSheet) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *EratSheet) GetRows() uint32 {
+	if x != nil {
+		return x.Rows
+	}
+	return 0
+}
+
+func (x *EratSheet) GetCols() uint32 {
+	if x != nil {
+		return x.Cols
+	}
+	return 0
+}
+
+func (x *EratSheet) GetCells() []*EratCell {
+	if x != nil {
+		return x.Cells
+	}
+	return nil
+}
+
+type SheetSessionOp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Version       uint64                 `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
+	SessionId     string                 `protobuf:"bytes,2,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	AuthorId      string                 `protobuf:"bytes,3,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`
+	OpType        SheetOpType            `protobuf:"varint,4,opt,name=op_type,json=opType,proto3,enum=era.v1.SheetOpType" json:"op_type,omitempty"`
+	Addr          string                 `protobuf:"bytes,5,opt,name=addr,proto3" json:"addr,omitempty"`
+	Value         string                 `protobuf:"bytes,6,opt,name=value,proto3" json:"value,omitempty"`
+	Formula       string                 `protobuf:"bytes,7,opt,name=formula,proto3" json:"formula,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SheetSessionOp) Reset() {
+	*x = SheetSessionOp{}
+	mi := &file_era_v1_office_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SheetSessionOp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SheetSessionOp) ProtoMessage() {}
+
+func (x *SheetSessionOp) ProtoReflect() protoreflect.Message {
+	mi := &file_era_v1_office_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SheetSessionOp.ProtoReflect.Descriptor instead.
+func (*SheetSessionOp) Descriptor() ([]byte, []int) {
+	return file_era_v1_office_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SheetSessionOp) GetVersion() uint64 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *SheetSessionOp) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *SheetSessionOp) GetAuthorId() string {
+	if x != nil {
+		return x.AuthorId
+	}
+	return ""
+}
+
+func (x *SheetSessionOp) GetOpType() SheetOpType {
+	if x != nil {
+		return x.OpType
+	}
+	return SheetOpType_SHEET_OP_TYPE_UNSPECIFIED
+}
+
+func (x *SheetSessionOp) GetAddr() string {
+	if x != nil {
+		return x.Addr
+	}
+	return ""
+}
+
+func (x *SheetSessionOp) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+func (x *SheetSessionOp) GetFormula() string {
+	if x != nil {
+		return x.Formula
+	}
+	return ""
+}
+
+type ErapSlide struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Body          string                 `protobuf:"bytes,3,opt,name=body,proto3" json:"body,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ErapSlide) Reset() {
+	*x = ErapSlide{}
+	mi := &file_era_v1_office_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ErapSlide) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ErapSlide) ProtoMessage() {}
+
+func (x *ErapSlide) ProtoReflect() protoreflect.Message {
+	mi := &file_era_v1_office_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ErapSlide.ProtoReflect.Descriptor instead.
+func (*ErapSlide) Descriptor() ([]byte, []int) {
+	return file_era_v1_office_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ErapSlide) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ErapSlide) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *ErapSlide) GetBody() string {
+	if x != nil {
+		return x.Body
+	}
+	return ""
+}
+
+type ErapDeck struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId      string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	DriveObjectId string                 `protobuf:"bytes,3,opt,name=drive_object_id,json=driveObjectId,proto3" json:"drive_object_id,omitempty"`
+	Format        DocumentFormat         `protobuf:"varint,4,opt,name=format,proto3,enum=era.v1.DocumentFormat" json:"format,omitempty"` // DOCUMENT_FORMAT_ERAP
+	Name          string                 `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
+	Slides        []*ErapSlide           `protobuf:"bytes,6,rep,name=slides,proto3" json:"slides,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ErapDeck) Reset() {
+	*x = ErapDeck{}
+	mi := &file_era_v1_office_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ErapDeck) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ErapDeck) ProtoMessage() {}
+
+func (x *ErapDeck) ProtoReflect() protoreflect.Message {
+	mi := &file_era_v1_office_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ErapDeck.ProtoReflect.Descriptor instead.
+func (*ErapDeck) Descriptor() ([]byte, []int) {
+	return file_era_v1_office_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ErapDeck) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ErapDeck) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+func (x *ErapDeck) GetDriveObjectId() string {
+	if x != nil {
+		return x.DriveObjectId
+	}
+	return ""
+}
+
+func (x *ErapDeck) GetFormat() DocumentFormat {
+	if x != nil {
+		return x.Format
+	}
+	return DocumentFormat_DOCUMENT_FORMAT_UNSPECIFIED
+}
+
+func (x *ErapDeck) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ErapDeck) GetSlides() []*ErapSlide {
+	if x != nil {
+		return x.Slides
+	}
+	return nil
+}
+
 var File_era_v1_office_proto protoreflect.FileDescriptor
 
 const file_era_v1_office_proto_rawDesc = "" +
@@ -648,7 +1096,40 @@ const file_era_v1_office_proto_rawDesc = "" +
 	"\x04text\x18\b \x01(\tR\x04text\x12(\n" +
 	"\x05attrs\x18\t \x01(\v2\x12.era.v1.BlockAttrsR\x05attrs\x12#\n" +
 	"\x05block\x18\n" +
-	" \x01(\v2\r.era.v1.BlockR\x05block*\x7f\n" +
+	" \x01(\v2\r.era.v1.BlockR\x05block\"N\n" +
+	"\bEratCell\x12\x12\n" +
+	"\x04addr\x18\x01 \x01(\tR\x04addr\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value\x12\x18\n" +
+	"\aformula\x18\x03 \x01(\tR\aformula\"\xf4\x01\n" +
+	"\tEratSheet\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
+	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12&\n" +
+	"\x0fdrive_object_id\x18\x03 \x01(\tR\rdriveObjectId\x12.\n" +
+	"\x06format\x18\x04 \x01(\x0e2\x16.era.v1.DocumentFormatR\x06format\x12\x12\n" +
+	"\x04name\x18\x05 \x01(\tR\x04name\x12\x12\n" +
+	"\x04rows\x18\x06 \x01(\rR\x04rows\x12\x12\n" +
+	"\x04cols\x18\a \x01(\rR\x04cols\x12&\n" +
+	"\x05cells\x18\b \x03(\v2\x10.era.v1.EratCellR\x05cells\"\xd8\x01\n" +
+	"\x0eSheetSessionOp\x12\x18\n" +
+	"\aversion\x18\x01 \x01(\x04R\aversion\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x02 \x01(\tR\tsessionId\x12\x1b\n" +
+	"\tauthor_id\x18\x03 \x01(\tR\bauthorId\x12,\n" +
+	"\aop_type\x18\x04 \x01(\x0e2\x13.era.v1.SheetOpTypeR\x06opType\x12\x12\n" +
+	"\x04addr\x18\x05 \x01(\tR\x04addr\x12\x14\n" +
+	"\x05value\x18\x06 \x01(\tR\x05value\x12\x18\n" +
+	"\aformula\x18\a \x01(\tR\aformula\"E\n" +
+	"\tErapSlide\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12\x12\n" +
+	"\x04body\x18\x03 \x01(\tR\x04body\"\xce\x01\n" +
+	"\bErapDeck\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
+	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12&\n" +
+	"\x0fdrive_object_id\x18\x03 \x01(\tR\rdriveObjectId\x12.\n" +
+	"\x06format\x18\x04 \x01(\x0e2\x16.era.v1.DocumentFormatR\x06format\x12\x12\n" +
+	"\x04name\x18\x05 \x01(\tR\x04name\x12)\n" +
+	"\x06slides\x18\x06 \x03(\v2\x11.era.v1.ErapSlideR\x06slides*\x7f\n" +
 	"\x0eDocumentFormat\x12\x1f\n" +
 	"\x1bDOCUMENT_FORMAT_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14DOCUMENT_FORMAT_ERAD\x10\x01\x12\x18\n" +
@@ -668,7 +1149,11 @@ const file_era_v1_office_proto_rawDesc = "" +
 	"\x17DOC_OP_TYPE_INSERT_TEXT\x10\x01\x12\x1c\n" +
 	"\x18DOC_OP_TYPE_DELETE_RANGE\x10\x02\x12\x1e\n" +
 	"\x1aDOC_OP_TYPE_SET_BLOCK_TYPE\x10\x03\x12\x1c\n" +
-	"\x18DOC_OP_TYPE_INSERT_BLOCK\x10\x04B Z\x1eera/contracts/gen/era/v1;erav1b\x06proto3"
+	"\x18DOC_OP_TYPE_INSERT_BLOCK\x10\x04*f\n" +
+	"\vSheetOpType\x12\x1d\n" +
+	"\x19SHEET_OP_TYPE_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16SHEET_OP_TYPE_SET_CELL\x10\x01\x12\x1c\n" +
+	"\x18SHEET_OP_TYPE_CLEAR_CELL\x10\x02B Z\x1eera/contracts/gen/era/v1;erav1b\x06proto3"
 
 var (
 	file_era_v1_office_proto_rawDescOnce sync.Once
@@ -682,34 +1167,45 @@ func file_era_v1_office_proto_rawDescGZIP() []byte {
 	return file_era_v1_office_proto_rawDescData
 }
 
-var file_era_v1_office_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_era_v1_office_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_era_v1_office_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_era_v1_office_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_era_v1_office_proto_goTypes = []any{
-	(DocumentFormat)(0),  // 0: era.v1.DocumentFormat
-	(BlockType)(0),       // 1: era.v1.BlockType
-	(ListType)(0),        // 2: era.v1.ListType
-	(DocOpType)(0),       // 3: era.v1.DocOpType
-	(*InlineSpan)(nil),   // 4: era.v1.InlineSpan
-	(*BlockAttrs)(nil),   // 5: era.v1.BlockAttrs
-	(*Block)(nil),        // 6: era.v1.Block
-	(*EradDocument)(nil), // 7: era.v1.EradDocument
-	(*DocSessionOp)(nil), // 8: era.v1.DocSessionOp
+	(DocumentFormat)(0),    // 0: era.v1.DocumentFormat
+	(BlockType)(0),         // 1: era.v1.BlockType
+	(ListType)(0),          // 2: era.v1.ListType
+	(DocOpType)(0),         // 3: era.v1.DocOpType
+	(SheetOpType)(0),       // 4: era.v1.SheetOpType
+	(*InlineSpan)(nil),     // 5: era.v1.InlineSpan
+	(*BlockAttrs)(nil),     // 6: era.v1.BlockAttrs
+	(*Block)(nil),          // 7: era.v1.Block
+	(*EradDocument)(nil),   // 8: era.v1.EradDocument
+	(*DocSessionOp)(nil),   // 9: era.v1.DocSessionOp
+	(*EratCell)(nil),       // 10: era.v1.EratCell
+	(*EratSheet)(nil),      // 11: era.v1.EratSheet
+	(*SheetSessionOp)(nil), // 12: era.v1.SheetSessionOp
+	(*ErapSlide)(nil),      // 13: era.v1.ErapSlide
+	(*ErapDeck)(nil),       // 14: era.v1.ErapDeck
 }
 var file_era_v1_office_proto_depIdxs = []int32{
-	1, // 0: era.v1.BlockAttrs.block_type:type_name -> era.v1.BlockType
-	2, // 1: era.v1.BlockAttrs.list_type:type_name -> era.v1.ListType
-	5, // 2: era.v1.Block.attrs:type_name -> era.v1.BlockAttrs
-	4, // 3: era.v1.Block.inlines:type_name -> era.v1.InlineSpan
-	0, // 4: era.v1.EradDocument.format:type_name -> era.v1.DocumentFormat
-	6, // 5: era.v1.EradDocument.blocks:type_name -> era.v1.Block
-	3, // 6: era.v1.DocSessionOp.op_type:type_name -> era.v1.DocOpType
-	5, // 7: era.v1.DocSessionOp.attrs:type_name -> era.v1.BlockAttrs
-	6, // 8: era.v1.DocSessionOp.block:type_name -> era.v1.Block
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	1,  // 0: era.v1.BlockAttrs.block_type:type_name -> era.v1.BlockType
+	2,  // 1: era.v1.BlockAttrs.list_type:type_name -> era.v1.ListType
+	6,  // 2: era.v1.Block.attrs:type_name -> era.v1.BlockAttrs
+	5,  // 3: era.v1.Block.inlines:type_name -> era.v1.InlineSpan
+	0,  // 4: era.v1.EradDocument.format:type_name -> era.v1.DocumentFormat
+	7,  // 5: era.v1.EradDocument.blocks:type_name -> era.v1.Block
+	3,  // 6: era.v1.DocSessionOp.op_type:type_name -> era.v1.DocOpType
+	6,  // 7: era.v1.DocSessionOp.attrs:type_name -> era.v1.BlockAttrs
+	7,  // 8: era.v1.DocSessionOp.block:type_name -> era.v1.Block
+	0,  // 9: era.v1.EratSheet.format:type_name -> era.v1.DocumentFormat
+	10, // 10: era.v1.EratSheet.cells:type_name -> era.v1.EratCell
+	4,  // 11: era.v1.SheetSessionOp.op_type:type_name -> era.v1.SheetOpType
+	0,  // 12: era.v1.ErapDeck.format:type_name -> era.v1.DocumentFormat
+	13, // 13: era.v1.ErapDeck.slides:type_name -> era.v1.ErapSlide
+	14, // [14:14] is the sub-list for method output_type
+	14, // [14:14] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_era_v1_office_proto_init() }
@@ -722,8 +1218,8 @@ func file_era_v1_office_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_era_v1_office_proto_rawDesc), len(file_era_v1_office_proto_rawDesc)),
-			NumEnums:      4,
-			NumMessages:   5,
+			NumEnums:      5,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

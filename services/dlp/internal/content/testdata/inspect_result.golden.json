@@ -1,0 +1,17 @@
+{
+  "blocked": true,
+  "findings": [
+    {
+      "rule_id": "era-dlp-ssn",
+      "category": "pii",
+      "severity": "high",
+      "snippet": "123-45-6789"
+    },
+    {
+      "rule_id": "era-dlp-secret",
+      "category": "secret",
+      "severity": "critical",
+      "snippet": "api_key=sk-live-abc"
+    }
+  ]
+}

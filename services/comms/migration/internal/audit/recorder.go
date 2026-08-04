@@ -7,6 +7,7 @@ type Event struct {
 	Action    string
 	SourceUID string
 	Detail    string
+	Mailbox   string
 }
 
 // Recorder stores migration audit events (memory + optional ClickHouse).
@@ -42,6 +43,15 @@ func (r *MemoryRecorder) Count() int {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	return len(r.events)
+}
+
+// Events returns a copy of recorded events (tests / CH mailbox honesty).
+func (r *MemoryRecorder) Events() []Event {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	out := make([]Event, len(r.events))
+	copy(out, r.events)
+	return out
 }
 
 // Composite forwards to memory and ClickHouse.

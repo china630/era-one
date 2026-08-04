@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — Response</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>Response (SOAR)</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-banner">isolate/block may be simulated unless webhook/script env set — check action detail.</div>
+<div class="era-card"><h2>Playbooks</h2>
+<table class="era" id="pb"><thead><tr><th>Name</th><th></th></tr></thead><tbody></tbody></table></div>
+<div class="era-card"><h2>Actions</h2>
+<button class="era-btn secondary" id="ref">Refresh</button>
+<table class="era" id="act"><thead><tr><th>ID</th><th>Playbook</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+<pre id="adet" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("response");
+function loadPb(){
+  EraControl.x("soar","/api/v1/playbooks").then(function(r){
+    var tb=document.querySelector("#pb tbody"); tb.innerHTML="";
+    var list=(r.json&&(r.json.playbooks||r.json.items))||["isolate_host","block_ip","create_ticket"];
+    if(list.length&&typeof list[0]==="string") list=list.map(function(n){return {name:n};});
+    list.forEach(function(p){
+      var n=p.name||p.id;
+      var tr=document.createElement("tr");
+      tr.innerHTML="<td>"+n+"</td><td><button data-n=\""+n+"\">Run</button></td>";
+      tb.appendChild(tr);
+    });
+    tb.querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){
+        EraControl.x("soar","/api/v1/playbooks/"+b.getAttribute("data-n"),{method:"POST",body:JSON.stringify({node_id:"lab-node",ip:"10.0.0.1"})}).then(loadAct);
+      };
+    });
+  });
+}
+function loadAct(){
+  EraControl.x("soar","/api/v1/actions").then(function(r){
+    var tb=document.querySelector("#act tbody"); tb.innerHTML="";
+    var list=(r.json&&(r.json.actions||r.json))||[];
+    if(!Array.isArray(list)) list=[];
+    list.forEach(function(a){
+      var id=a.id||"";
+      var tr=document.createElement("tr");
+      tr.innerHTML="<td>"+id+"</td><td>"+(a.playbook||a.name||"")+"</td><td>"+(a.status||"")+"</td><td><button data-id=\""+id+"\">open</button></td>";
+      tb.appendChild(tr);
+    });
+    tb.querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){
+        EraControl.x("soar","/api/v1/actions/"+b.getAttribute("data-id")).then(function(r){
+          document.getElementById("adet").textContent=JSON.stringify(r.json,null,2);
+        });
+      };
+    });
+  });
+}
+document.getElementById("ref").onclick=loadAct;
+loadPb(); loadAct();
+</script></body></html>

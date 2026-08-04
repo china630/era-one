@@ -1,0 +1,7 @@
+# ERA Office — trimmed Rust workspace for presentations-engine Docker build.
+[workspace]
+resolver = "2"
+members = [
+    "services/platform/office-richtext",
+    "services/platform/presentations-engine",
+]

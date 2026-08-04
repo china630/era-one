@@ -5,17 +5,21 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"era/services/detection-engine/internal/chwriter"
 	"era/services/detection-engine/internal/exposure"
+	"era/services/detection-engine/internal/mitre"
+	"era/services/detection-engine/internal/sigma"
 	"era/services/platform/cpclient"
 	"era/services/platform/metrics"
 )
 
 type ExposureServer struct {
-	CH *chwriter.Writer
-	CP *cpclient.Client
+	CH    *chwriter.Writer
+	CP    *cpclient.Client
+	Rules []*sigma.Rule
 }
 
 func (s *ExposureServer) Routes() http.Handler {
@@ -26,7 +30,22 @@ func (s *ExposureServer) Routes() http.Handler {
 	})
 	mux.Handle("/metrics", metrics.Handler())
 	mux.HandleFunc("/api/v1/exposure", s.handleExposure)
+	mux.HandleFunc("/api/v1/exposure/", s.handleExposureAsset)
+	mux.HandleFunc("/api/v1/mitre/coverage", s.handleMitreCoverage)
 	return mux
+}
+
+func (s *ExposureServer) handleMitreCoverage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	cov := mitre.CorpusCoverage(s.Rules)
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"techniques": cov,
+		"source":     "corpus",
+	})
 }
 
 func (s *ExposureServer) handleExposure(w http.ResponseWriter, r *http.Request) {
@@ -59,12 +78,45 @@ func (s *ExposureServer) handleExposure(w http.ResponseWriter, r *http.Request) 
 	}
 	meta := s.assetMeta()
 	assets := exposure.BuildAssets(detCounts, cveCounts, meta)
+	if aid := r.URL.Query().Get("asset_id"); aid != "" {
+		for _, a := range assets {
+			if a.NodeID == aid {
+				w.Header().Set("Content-Type", "application/json")
+				_ = json.NewEncoder(w).Encode(map[string]any{"asset": a})
+				return
+			}
+		}
+		// Fallback synthetic when CH empty (lab UI).
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"asset": map[string]any{
+				"node_id": aid, "score": 0, "note": "no exposure rows yet",
+			},
+		})
+		return
+	}
 	top := exposure.TopN(assets, topN)
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{
 		"assets": assets,
 		"top":    top,
 	})
+}
+
+func (s *ExposureServer) handleExposureAsset(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/exposure/"), "/")
+	if id == "" {
+		http.NotFound(w, r)
+		return
+	}
+	q := r.URL.Query()
+	q.Set("asset_id", id)
+	r.URL.RawQuery = q.Encode()
+	s.handleExposure(w, r)
 }
 
 func (s *ExposureServer) assetMeta() map[string]exposure.AssetMeta {

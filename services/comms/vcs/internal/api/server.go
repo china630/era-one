@@ -3,9 +3,10 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
+	"os"
 	"time"
 
+	"era/services/comms/internal/httpauth"
 	"era/services/comms/vcs/internal/adapter"
 	"era/services/comms/vcs/internal/audit"
 	"era/services/comms/vcs/internal/store"
@@ -22,27 +23,30 @@ func NewServer(st *store.Store, lk adapter.LiveKitAdapter, aud *audit.Recorder) 
 }
 
 func (s *Server) Register(mux *http.ServeMux) {
+	// Lab: ERA_VCS_DEV or ERA_MAIL_DEV; prod: JWT/internal required (fail-closed).
+	devKey := "ERA_VCS_DEV"
+	if os.Getenv("ERA_VCS_DEV") != "1" && os.Getenv("ERA_MAIL_DEV") == "1" {
+		devKey = "ERA_MAIL_DEV"
+	}
+	auth := httpauth.FromEnv(devKey, "vcs.user")
 	mux.HandleFunc("/healthz", s.healthz)
-	mux.HandleFunc("/api/v1/vcs/rooms", s.withRBAC(s.createRoom))
-	mux.HandleFunc("/api/v1/vcs/token", s.withRBAC(s.issueToken))
+	mux.HandleFunc("/api/v1/vcs/rooms", auth.Wrap(s.createRoom))
+	mux.HandleFunc("/api/v1/vcs/token", auth.Wrap(s.issueToken))
 }
 
 func (s *Server) healthz(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, map[string]string{"status": "ok", "service": "era-conference"})
-}
-
-func (s *Server) withRBAC(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if !authorize(r) {
-			http.Error(w, "forbidden", http.StatusForbidden)
-			return
-		}
-		next(w, r)
+	mode := "stub"
+	if os.Getenv("ERA_LIVEKIT_URL") != "" {
+		mode = "livekit"
 	}
+	writeJSON(w, map[string]string{"status": "ok", "service": "era-conference", "mode": mode})
 }
 
-func authorize(r *http.Request) bool {
-	return r.Header.Get("X-ERA-Tenant") != "" && strings.Contains(r.Header.Get("X-ERA-Role"), "vcs.user")
+func tenantID(r *http.Request) string {
+	if p, ok := httpauth.FromContext(r.Context()); ok && p.TenantID != "" {
+		return p.TenantID
+	}
+	return ""
 }
 
 func (s *Server) createRoom(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +61,11 @@ func (s *Server) createRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	tenant := r.Header.Get("X-ERA-Tenant")
+	tenant := tenantID(r)
+	if tenant == "" {
+		http.Error(w, "tenant required", http.StatusUnauthorized)
+		return
+	}
 	lkRoom, err := s.Adapter.CreateRoom(body.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -87,7 +95,7 @@ func (s *Server) issueToken(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	tenant := r.Header.Get("X-ERA-Tenant")
+	tenant := tenantID(r)
 	room, ok := s.Store.Get(body.RoomID)
 	if !ok || room.TenantID != tenant {
 		http.Error(w, "room not found", http.StatusNotFound)

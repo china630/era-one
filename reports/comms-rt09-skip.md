@@ -1,22 +1,16 @@
-# RT-09 Field Sign-off — SKIP (2026-07-29)
+# RT-09 Field Sign-off — SKIP (updated 2026-08-04)
 
-**Wave:** C-GA / P3-FIELD  
-**Result:** SKIP  
-**Reason:** No customer/air-gap field host available in this environment.
+**Wave:** Deepen DF / C-GA  
+**Result:** SKIP (customer/partner field)  
+**Lab:** Deepen D0–D9 partner-free — see [`Comms-Deepen-Spec.md`](../docs/Comms-Deepen-Spec.md)
 
-## Preconditions (scaffold) — PASS
+## Still blocked for edition `ga`
 
-- Stash restore committed (`b1d066f`)
-- Stage gates C-1…C-5, C-MIG, C-MM-H PASS (see `reports/comms-stage-*-20260729-*.log`)
-- Pilot scripts restored: `scripts/run-comms-pilot-field.ps1`, `run-comms-pilot-staging.ps1`
-
-## Blocked until
-
-1. Staging compose with PG+MinIO+CH (`run-comms-pilot-staging.ps1` → RT-01…08 logs)
-2. Customer site air-gap + Outlook/Thunderbird matrix
+1. Customer/partner air-gap host
+2. `.\scripts\run-comms-pilot-field.ps1 -Customer X -ValidateStaging` then `-SignOff`
 3. Signed checklist in [`Comms-Customer-Field-RT09.md`](../docs/Comms-Customer-Field-RT09.md)
+4. Outlook/iOS field parity; IceWarp MM; Exchange Bridge field; Connect RT-10 / Mig RT-11 customer
 
 ## Edition impact
 
-Mail Server / Migration / Bridge / Moderation remain **`mvp`** until RT-09 or partner field sign-off.  
-Do **not** set `ga` from this SKIP.
+**All Comms editions stay `mvp` / desktop `exists:false`.** Do **not** set `ga` from this SKIP.

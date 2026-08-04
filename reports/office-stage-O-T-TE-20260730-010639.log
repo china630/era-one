@@ -1,0 +1,5 @@
+==> office stage gate O-T-TE 20260730-010639
+[PASS] O-T-TE/calc :: cargo test -p era-tables-engine calc --quiet
+[PASS] O-T-TE/ws :: cargo test -p era-tables-engine --test ws_sheet_coedit --quiet
+[PASS] O-T-TE/ui :: go test -C ui/tables ./... -count=1
+STAGE GATE PASS (O-T-TE)

@@ -1,0 +1,1 @@
+{"domain":"enforcement","kind":"would_block","plugin":"appcontrol","hook":"simulated","kernel_hook":"unavailable","enforce_mode":"monitor","effect":"telemetry_only","image_path":"C:\\Temp\\malware.exe","would_block":true,"blocked":false}

@@ -1,17 +1,15 @@
 
 1.0.00123456789abcdef2€øôÐB)
-t1"n1*host12byo-edr-collector:0.1.0HPZÑš‰
-era.byo-edr.genericr
+t1"n1*host12byo-edr-collector:0.1.0HPZÑš“
+era.byo-edr.generic|
 
 categoryauth
 
 
 event_typealert
-
-src_ip
-10.1.2.3
+
+src_ip[redacted:ip]
 
 summaryfailed logon
-
-user
-svc_backupð
+
+user[redacted:user]ð

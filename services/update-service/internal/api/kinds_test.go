@@ -23,6 +23,7 @@ func TestBundleKindsRoundTrip(t *testing.T) {
 		{bundle.KindCVEFeed, "cve.json", "ERA_CVE_FEED_DIR"},
 		{bundle.KindConnector, "conn.yaml", "ERA_CONNECTOR_DIR"},
 		{bundle.KindAIPack, "pack.yaml", "ERA_AI_PACK_DIR"},
+		{bundle.KindAtlasPack, "atlas.json", "ERA_ATLAS_PACK_DIR"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.kind, func(t *testing.T) {

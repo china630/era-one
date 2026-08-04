@@ -1,0 +1,11 @@
+# Gov lab checklist evidence — 2026-07-30 (G3)
+
+PASS (unit, not field Outlook/iOS):
+
+```
+go test -C services/comms/mail ./internal/ews/ ./internal/carddav/ ./internal/activesync/ ./internal/autodiscover/ ./internal/caladapter/ -count=1
+go test -C services/comms/calendar ./... -count=1
+```
+
+All packages ok. Field Pilot-ready remains open until customer clients (G7).
+See docs/Comms-Gov-Lab-Checklist.md

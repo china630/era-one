@@ -13,11 +13,19 @@ type Repository interface {
 	UpdateIncident(id string, fn func(*Incident)) (*Incident, bool)
 	ListIncidents() []*Incident
 	CreateRequest(r *ServiceRequest)
+	GetRequest(id string) (*ServiceRequest, bool)
+	UpdateRequest(id string, fn func(*ServiceRequest)) (*ServiceRequest, bool)
 	ListRequests() []*ServiceRequest
 	CreateProblem(p *Problem)
+	GetProblem(id string) (*Problem, bool)
+	UpdateProblem(id string, fn func(*Problem)) (*Problem, bool)
 	ListProblems() []*Problem
 	CreateChange(c *Change)
+	GetChange(id string) (*Change, bool)
+	UpdateChange(id string, fn func(*Change)) (*Change, bool)
 	ListChanges() []*Change
+	AddComment(c *Comment)
+	ListComments(kind TicketKind, ticketID string) []*Comment
 }
 
 func nowUTC() time.Time { return time.Now().UTC() }

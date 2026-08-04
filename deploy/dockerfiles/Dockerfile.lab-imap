@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.26.4-alpine AS build
+WORKDIR /src
+COPY services/comms/internal/imapclient services/comms/internal/imapclient
+COPY services/comms/cmd/lab-imap services/comms/cmd/lab-imap
+WORKDIR /src/services/comms/cmd/lab-imap
+RUN go build -o /out/lab-imap .
+
+FROM alpine:3.20
+COPY --from=build /out/lab-imap /usr/local/bin/era-lab-imap
+EXPOSE 143
+ENV ERA_LAB_IMAP_ADDR=:143
+ENTRYPOINT ["/usr/local/bin/era-lab-imap"]

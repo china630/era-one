@@ -1,0 +1,18 @@
+# Gov lab Deepen D3 evidence — 2026-08-04 (partner-free unit)
+
+PASS (unit, not field Outlook/Thunderbird/iOS):
+
+```
+go test -C services/comms/mail ./internal/ews/ ./internal/carddav/ ./internal/activesync/ ./internal/autodiscover/ -count=1
+# ok era/services/comms/mail/internal/ews
+# ok era/services/comms/mail/internal/carddav
+# ok era/services/comms/mail/internal/activesync
+# ok era/services/comms/mail/internal/autodiscover
+
+go test -C services/comms/calendar ./... -count=1
+# ok era/services/comms/calendar/caldav
+# ok era/services/comms/calendar/ical
+```
+
+Checklist (Outlook/TB/iOS lab steps): docs/Comms-Gov-Lab-Checklist.md
+Field Pilot-ready remains open until customer clients (RT-09 / partner).

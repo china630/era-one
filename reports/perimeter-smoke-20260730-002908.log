@@ -1,0 +1,8 @@
+==> Perimeter smoke
+waf tests: PASS
+ngfw tests: PASS
+dlp tests: PASS
+waf live: not running (optional: compose --profile perimeter)
+ngfw live: not running (optional: compose --profile perimeter)
+dlp live: not running (optional: compose --profile perimeter)
+Perimeter smoke PASS — log D:\My Projects\era-one\reports\perimeter-smoke-20260730-002908.log

@@ -47,6 +47,7 @@ optional_profiles:
   observe: [observe]
   connected: [cloud-portal, update-service]
   perimeter: [waf, ngfw, dlp]
+  resolve: [resolve]
   ctem: [ctem]
 
 editions_ref: editions-control.yaml

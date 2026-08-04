@@ -1,0 +1,3 @@
+==> office stage gate O-PR-1 20260730-010757
+[PASS] O-PR-1/cmd :: cmd /c "if exist services\platform\cmd\docs-projects\main.go (exit /b 0) else (exit /b 1)"
+STAGE GATE PASS (O-PR-1)

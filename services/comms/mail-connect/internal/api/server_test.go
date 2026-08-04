@@ -22,13 +22,13 @@ func newMux() (*http.ServeMux, *audit.Recorder) {
 }
 
 func TestRegisterAndSync(t *testing.T) {
+	t.Setenv("ERA_MAIL_DEV", "1")
 	mux, aud := newMux()
 
 	body, _ := json.Marshal(map[string]string{
 		"tenant_id":    "t-demo",
 		"email":        "alice@mail.gov.az",
 		"provider":     "imap",
-		"address":      "legacy.local:993",
 		"username":     "alice",
 		"password_ref": "vault://alice",
 	})
@@ -65,6 +65,19 @@ func TestRegisterAndSync(t *testing.T) {
 	}
 }
 
+func TestRegisterAndSyncUnauthorized(t *testing.T) {
+	t.Setenv("ERA_MAIL_DEV", "")
+	t.Setenv("ERA_CONNECT_DEV", "")
+	t.Setenv("ERA_IDENTITY_JWT_SECRET", "test-secret-32bytes-minimum!!")
+	mux, _ := newMux()
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/connect/mailboxes", strings.NewReader(`{}`))
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("want 401, got %d", rec.Code)
+	}
+}
+
 func TestConnectAutodiscover(t *testing.T) {
 	mux, _ := newMux()
 	rec := httptest.NewRecorder()
@@ -77,3 +90,4 @@ func TestConnectAutodiscover(t *testing.T) {
 		t.Fatalf("missing CONNECT protocol: %s", rec.Body.String())
 	}
 }
+

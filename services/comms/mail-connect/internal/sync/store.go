@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"strconv"
 	"sync"
 	"time"
 )
@@ -20,9 +19,11 @@ type Job struct {
 	Mailbox    string    `json:"mailbox"`
 	TenantID   string    `json:"tenant_id"`
 	Status     string    `json:"status"`
+	Mode       string    `json:"mode"` // live | stub (G0-7 honesty)
 	ItemsTotal int       `json:"items_total"`
 	ItemsOK    int       `json:"items_ok"`
 	ItemsFail  int       `json:"items_fail"`
+	Error      string    `json:"error,omitempty"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
@@ -30,6 +31,7 @@ type Store struct {
 	mu       sync.RWMutex
 	mailbox  map[string]Mailbox
 	jobs     map[string]Job
+	cursors  map[string]uint32
 	sequence int
 }
 
@@ -37,7 +39,14 @@ func NewStore() *Store {
 	return &Store{
 		mailbox: make(map[string]Mailbox),
 		jobs:    make(map[string]Job),
+		cursors: make(map[string]uint32),
 	}
+}
+
+func (s *Store) Cursor(tenantID, mailbox, folder string) uint32 {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.cursors[key(tenantID, mailbox)+":"+folder]
 }
 
 func key(tenantID, email string) string {
@@ -55,25 +64,6 @@ func (s *Store) GetMailbox(tenantID, email string) (Mailbox, bool) {
 	defer s.mu.RUnlock()
 	m, ok := s.mailbox[key(tenantID, email)]
 	return m, ok
-}
-
-func (s *Store) StartSync(tenantID, mailbox string) Job {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.sequence++
-	id := "sync-" + time.Now().UTC().Format("20060102150405") + "-" + strconv.Itoa(s.sequence)
-	j := Job{
-		ID:         id,
-		Mailbox:    mailbox,
-		TenantID:   tenantID,
-		Status:     "done",
-		ItemsTotal: 12,
-		ItemsOK:    12,
-		ItemsFail:  0,
-		CreatedAt:  time.Now().UTC(),
-	}
-	s.jobs[j.ID] = j
-	return j
 }
 
 func (s *Store) GetJob(id string) (Job, bool) {

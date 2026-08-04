@@ -20,6 +20,8 @@ type Config struct {
 	Gate             *licensegate.Gate
 	WorkspaceBaseURL string
 	JWTSecret        []byte
+	// ServiceToken enables engine→Drive acting-as via X-ERA-* only when Bearer matches.
+	ServiceToken string
 }
 
 // Server serves REST /api/v1/drive/*.
@@ -39,6 +41,8 @@ func (s *Server) Register(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v1/drive/objects/", s.withAuth(s.handleObjectSub))
 	mux.HandleFunc("/api/v1/drive/folders", s.withAuth(s.handleFolders))
 	mux.HandleFunc("/api/v1/drive/folders/", s.withAuth(s.handleFolderSub))
+	mux.HandleFunc("/api/v1/drive/search", s.withAuth(s.handleSearch))
+	mux.HandleFunc("/api/v1/drive/trash", s.withAuth(s.handleTrash))
 	mux.HandleFunc("/api/v1/drive/links/attachment", s.withAuth(s.handleAttachmentLink))
 }
 
@@ -69,19 +73,23 @@ func (s *Server) licenseOK() bool {
 }
 
 func (s *Server) principal(r *http.Request) (drive.Principal, error) {
-	if tid := strings.TrimSpace(r.Header.Get("X-ERA-Tenant")); tid != "" {
-		uid := strings.TrimSpace(r.Header.Get("X-ERA-User"))
-		if uid == "" {
-			uid = "dev-user"
-		}
-		groups := splitCSV(r.Header.Get("X-ERA-Groups"))
-		return drive.Principal{TenantID: tid, UserID: uid, Groups: groups}, nil
-	}
 	auth := r.Header.Get("Authorization")
 	if auth == "" || !strings.HasPrefix(auth, "Bearer ") {
 		return drive.Principal{}, fmt.Errorf("missing auth")
 	}
 	tokStr := strings.TrimSpace(strings.TrimPrefix(auth, "Bearer "))
+
+	// Service identity: Bearer == ERA_DRIVE_SERVICE_TOKEN → acting-as via X-ERA-* (engines only).
+	if s.cfg.ServiceToken != "" && tokStr == s.cfg.ServiceToken {
+		tid := strings.TrimSpace(r.Header.Get("X-ERA-Tenant"))
+		uid := strings.TrimSpace(r.Header.Get("X-ERA-User"))
+		if tid == "" || uid == "" {
+			return drive.Principal{}, fmt.Errorf("service token requires X-ERA-Tenant and X-ERA-User")
+		}
+		groups := splitCSV(r.Header.Get("X-ERA-Groups"))
+		return drive.Principal{TenantID: tid, UserID: uid, Groups: groups}, nil
+	}
+
 	if len(s.cfg.JWTSecret) == 0 {
 		return drive.Principal{}, fmt.Errorf("jwt not configured")
 	}
@@ -92,7 +100,7 @@ func (s *Server) principal(r *http.Request) (drive.Principal, error) {
 		return s.cfg.JWTSecret, nil
 	}, jwt.WithValidMethods([]string{"HS256"}))
 	if err != nil || !tok.Valid {
-		return drive.Principal{}, err
+		return drive.Principal{}, fmt.Errorf("invalid jwt")
 	}
 	claims, ok := tok.Claims.(jwt.MapClaims)
 	if !ok {
@@ -189,43 +197,179 @@ func (s *Server) handleObjectSub(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			s.downloadObject(w, r, p, id)
+		case http.MethodPatch:
+			s.patchObject(w, r, p, id)
+		case http.MethodDelete:
+			obj, err := s.cfg.Store.TrashObject(r.Context(), p.TenantID, id, p)
+			if err != nil {
+				writeDriveErr(w, err)
+				return
+			}
+			writeJSON(w, obj)
 		default:
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		}
 		return
 	}
 	switch parts[1] {
-	case "versions":
-		if r.Method != http.MethodGet {
+	case "trash":
+		if r.Method != http.MethodPost {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		vs, err := s.cfg.Store.ListVersions(r.Context(), p.TenantID, id, p)
+		obj, err := s.cfg.Store.TrashObject(r.Context(), p.TenantID, id, p)
 		if err != nil {
 			writeDriveErr(w, err)
 			return
 		}
-		writeJSON(w, map[string]any{"versions": vs})
-	case "acl":
-		if r.Method != http.MethodPatch {
+		writeJSON(w, obj)
+	case "restore":
+		if r.Method != http.MethodPost {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		var body struct {
-			Entries []drive.ACLEntry `json:"entries"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if err := s.cfg.Store.UpdateACL(r.Context(), p.TenantID, id, p, body.Entries); err != nil {
+		obj, err := s.cfg.Store.RestoreObject(r.Context(), p.TenantID, id, p)
+		if err != nil {
 			writeDriveErr(w, err)
 			return
 		}
-		writeJSON(w, map[string]string{"status": "ok"})
+		writeJSON(w, obj)
+	case "versions":
+		switch r.Method {
+		case http.MethodGet:
+			vs, err := s.cfg.Store.ListVersions(r.Context(), p.TenantID, id, p)
+			if err != nil {
+				writeDriveErr(w, err)
+				return
+			}
+			writeJSON(w, map[string]any{"versions": vs})
+		case http.MethodPost:
+			s.putObjectVersion(w, r, p, id)
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		}
+	case "meta":
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		obj, err := s.cfg.Store.GetObject(r.Context(), p.TenantID, id, p)
+		if err != nil {
+			writeDriveErr(w, err)
+			return
+		}
+		meta := map[string]any{
+			"id":            obj.ID,
+			"name":          obj.Name,
+			"folder_id":     obj.FolderID,
+			"size_bytes":    obj.SizeBytes,
+			"content_type":  obj.ContentType,
+			"version":       obj.Version,
+			"owner_user_id": obj.OwnerUserID,
+			"acl":           obj.ACL,
+			"updated_at":    obj.UpdatedAt,
+			"locked_by":     obj.LockedBy,
+		}
+		if obj.LockedAt != nil {
+			meta["locked_at"] = obj.LockedAt
+		} else {
+			meta["locked_at"] = nil
+		}
+		writeJSON(w, meta)
+	case "acl":
+		switch r.Method {
+		case http.MethodGet:
+			obj, err := s.cfg.Store.GetObject(r.Context(), p.TenantID, id, p)
+			if err != nil {
+				writeDriveErr(w, err)
+				return
+			}
+			writeJSON(w, map[string]any{"entries": obj.ACL})
+		case http.MethodPatch:
+			var body struct {
+				Entries []drive.ACLEntry `json:"entries"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			if err := s.cfg.Store.UpdateACL(r.Context(), p.TenantID, id, p, body.Entries); err != nil {
+				writeDriveErr(w, err)
+				return
+			}
+			writeJSON(w, map[string]string{"status": "ok"})
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		}
 	default:
 		http.NotFound(w, r)
 	}
+}
+
+func (s *Server) putObjectVersion(w http.ResponseWriter, r *http.Request, p drive.Principal, id string) {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	contentType := strings.TrimSpace(r.FormValue("content_type"))
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "file required", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+	data, err := io.ReadAll(file)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	blobKey := ""
+	if s.cfg.Blobs != nil {
+		blobKey, err = s.cfg.Blobs.Put(data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+	obj, err := s.cfg.Store.PutVersion(r.Context(), p.TenantID, id, p, drive.PutVersionInput{
+		Data:        data,
+		ContentType: contentType,
+	}, blobKey)
+	if err != nil {
+		writeDriveErr(w, err)
+		return
+	}
+	writeJSON(w, obj)
+}
+
+func (s *Server) patchObject(w http.ResponseWriter, r *http.Request, p drive.Principal, id string) {
+	var body drive.ObjectPatch
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if body.Name == nil && body.FolderID == nil && body.Locked == nil && body.Trashed == nil {
+		http.Error(w, "name, folder_id, locked, or trashed required", http.StatusBadRequest)
+		return
+	}
+	obj, err := s.cfg.Store.UpdateObject(r.Context(), p.TenantID, id, p, body)
+	if err != nil {
+		writeDriveErr(w, err)
+		return
+	}
+	out := map[string]any{
+		"id":        obj.ID,
+		"name":      obj.Name,
+		"folder_id": obj.FolderID,
+		"version":   obj.Version,
+		"locked_by": obj.LockedBy,
+	}
+	if obj.LockedAt != nil {
+		out["locked_at"] = obj.LockedAt
+	} else {
+		out["locked_at"] = nil
+	}
+	writeJSON(w, out)
 }
 
 func (s *Server) downloadObject(w http.ResponseWriter, r *http.Request, p drive.Principal, id string) {
@@ -274,7 +418,7 @@ func (s *Server) handleFolderSub(w http.ResponseWriter, r *http.Request) {
 	p := principalFrom(r.Context())
 	path := strings.TrimPrefix(r.URL.Path, "/api/v1/drive/folders/")
 	parts := strings.Split(strings.Trim(path, "/"), "/")
-	if len(parts) != 2 || parts[1] != "children" || r.Method != http.MethodGet {
+	if len(parts) == 0 || parts[0] == "" {
 		http.NotFound(w, r)
 		return
 	}
@@ -282,10 +426,136 @@ func (s *Server) handleFolderSub(w http.ResponseWriter, r *http.Request) {
 	if folderID == "_root" {
 		folderID = ""
 	}
-	folders, objects, err := s.cfg.Store.ListChildren(r.Context(), p.TenantID, folderID, p)
+	if len(parts) == 1 {
+		switch r.Method {
+		case http.MethodPatch:
+			if folderID == "" {
+				http.Error(w, "cannot patch root", http.StatusBadRequest)
+				return
+			}
+			var body drive.FolderPatch
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			if body.Name == nil && body.ParentID == nil && body.Trashed == nil {
+				http.Error(w, "name, parent_id, or trashed required", http.StatusBadRequest)
+				return
+			}
+			f, err := s.cfg.Store.UpdateFolder(r.Context(), p.TenantID, folderID, p, body)
+			if err != nil {
+				writeDriveErr(w, err)
+				return
+			}
+			writeJSON(w, map[string]any{
+				"id":        f.ID,
+				"name":      f.Name,
+				"parent_id": f.ParentID,
+			})
+		case http.MethodDelete:
+			if folderID == "" {
+				http.Error(w, "cannot trash root", http.StatusBadRequest)
+				return
+			}
+			f, err := s.cfg.Store.TrashFolder(r.Context(), p.TenantID, folderID, p)
+			if err != nil {
+				writeDriveErr(w, err)
+				return
+			}
+			writeJSON(w, f)
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		}
+		return
+	}
+	if len(parts) == 2 {
+		switch parts[1] {
+		case "children":
+			if r.Method != http.MethodGet {
+				http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+				return
+			}
+			folders, objects, err := s.cfg.Store.ListChildren(r.Context(), p.TenantID, folderID, p)
+			if err != nil {
+				writeDriveErr(w, err)
+				return
+			}
+			writeJSON(w, map[string]any{"folders": folders, "objects": objects})
+		case "trash":
+			if r.Method != http.MethodPost {
+				http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+				return
+			}
+			if folderID == "" {
+				http.Error(w, "cannot trash root", http.StatusBadRequest)
+				return
+			}
+			f, err := s.cfg.Store.TrashFolder(r.Context(), p.TenantID, folderID, p)
+			if err != nil {
+				writeDriveErr(w, err)
+				return
+			}
+			writeJSON(w, f)
+		case "restore":
+			if r.Method != http.MethodPost {
+				http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+				return
+			}
+			if folderID == "" {
+				http.Error(w, "cannot restore root", http.StatusBadRequest)
+				return
+			}
+			f, err := s.cfg.Store.RestoreFolder(r.Context(), p.TenantID, folderID, p)
+			if err != nil {
+				writeDriveErr(w, err)
+				return
+			}
+			writeJSON(w, f)
+		default:
+			http.NotFound(w, r)
+		}
+		return
+	}
+	http.NotFound(w, r)
+}
+
+func (s *Server) handleTrash(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	p := principalFrom(r.Context())
+	folders, objects, err := s.cfg.Store.ListTrash(r.Context(), p.TenantID, p)
 	if err != nil {
 		writeDriveErr(w, err)
 		return
+	}
+	if folders == nil {
+		folders = []drive.Folder{}
+	}
+	if objects == nil {
+		objects = []drive.Object{}
+	}
+	writeJSON(w, map[string]any{"folders": folders, "objects": objects})
+}
+
+func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	p := principalFrom(r.Context())
+	q := strings.TrimSpace(r.URL.Query().Get("q"))
+	folders, objects, err := s.cfg.Store.Search(r.Context(), p.TenantID, q, p)
+	if err != nil {
+		writeDriveErr(w, err)
+		return
+	}
+	if folders == nil {
+		folders = []drive.Folder{}
+	}
+	if objects == nil {
+		objects = []drive.Object{}
 	}
 	writeJSON(w, map[string]any{"folders": folders, "objects": objects})
 }
@@ -307,11 +577,15 @@ func (s *Server) handleAttachmentLink(w http.ResponseWriter, r *http.Request) {
 	if req.TenantID == "" {
 		req.TenantID = p.TenantID
 	}
+	if req.TenantID != p.TenantID {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
 	if req.ObjectID == "" {
 		http.Error(w, "object_id required", http.StatusBadRequest)
 		return
 	}
-	if _, err := s.cfg.Store.LookupObject(r.Context(), req.TenantID, req.ObjectID); err != nil {
+	if _, err := s.cfg.Store.GetObject(r.Context(), req.TenantID, req.ObjectID, p); err != nil {
 		writeDriveErr(w, err)
 		return
 	}
@@ -331,6 +605,10 @@ func writeDriveErr(w http.ResponseWriter, err error) {
 		http.Error(w, err.Error(), http.StatusForbidden)
 	case drive.ErrDuplicate:
 		http.Error(w, err.Error(), http.StatusConflict)
+	case drive.ErrLocked:
+		http.Error(w, err.Error(), http.StatusConflict)
+	case drive.ErrInvalidInput:
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	default:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

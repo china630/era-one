@@ -1,0 +1,3 @@
+==> office stage gate O-H-3 20260730-010606
+[PASS] O-H-3/syft :: pwsh -NoProfile -File ./scripts/office-sbom-cyclonedx.ps1
+STAGE GATE PASS (O-H-3)

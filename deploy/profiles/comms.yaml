@@ -9,8 +9,14 @@ status: implemented
 
 compose:
   file: deploy/docker-compose.comms.yml
+  overlays:
+    - deploy/docker-compose.comms.dev.yml   # lab DEV=1
+    - deploy/docker-compose.comms.prod.yml  # TLS + DEV=0 + license modules
   project_name: era-one-comms
-  note: Standalone; не требует ERA Core agent.
+  note: >
+    One-shot lab: docker compose -f deploy/docker-compose.comms.yml up -d --wait
+    Prod smoke: add -f deploy/docker-compose.comms.prod.yml (Refs: GAP-P0-30, Deepen D1)
+  status: implemented
 
 shared_platform:
   required: true

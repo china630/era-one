@@ -1,0 +1,5 @@
+==> stage gate C-2 20260729-235744
+[FAIL] F-C12/caldav :: go test ./services/comms/calendar/... -count=1
+[FAIL] F-C13/ews :: go test ./services/comms/mail/internal/ews/... -count=1
+[FAIL] F-C13b/calendar-audit :: go test -tags integration ./services/comms/mail/internal/calendaraudit/... -count=1
+STAGE GATE FAIL (C-2)

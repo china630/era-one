@@ -34,6 +34,12 @@ func manifestForKind(kind string) (*bundle.Manifest, error) {
 			root = "../../data/ai-packs"
 		}
 		return build.ScanDir(root, ".yaml", ".yml", ".json")
+	case bundle.KindAtlasPack:
+		root := os.Getenv("ERA_ATLAS_PACK_DIR")
+		if root == "" {
+			root = "../../data/atlas-packs"
+		}
+		return build.ScanDir(root, ".json")
 	default:
 		return nil, fmt.Errorf("unknown bundle kind: %s", kind)
 	}

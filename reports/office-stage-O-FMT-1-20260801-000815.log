@@ -1,0 +1,6 @@
+==> office stage gate O-FMT-1 20260801-000815
+[PASS] O-FMT-1/model :: powershell -NoProfile -Command "if ((Select-String -Path services/platform/docs-engine/src/model.rs -Pattern 'list_level' -Quiet) -and (Select-String -Path services/platform/docs-engine/src/model.rs -Pattern 'superscript' -Quiet)) { exit 0 } else { exit 1 }"
+[PASS] O-FMT-1/engine :: cargo test -p era-docs-engine fmt_enrichment --quiet
+[PASS] O-FMT-1/ui :: go test -C ui/docs ./... -count=1
+[PASS] O-FMT-1/inventory :: powershell -NoProfile -Command "if (Select-String -Path docs/Office-UI-Feature-Inventory.md -Pattern 'DOC-FORMAT-PAINTER.*✅' -Quiet) { exit 0 } else { exit 1 }"
+STAGE GATE PASS (O-FMT-1)

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERA Control — SOC</title>
+  <link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css" />
+</head>
+<body>
+<main>
+  <div class="era-topbar">
+    <h1>SOC Home</h1>
+    <div class="era-meta"><span id="era-role-meta">…</span><span class="era-badge">lab</span></div>
+  </div>
+  <div class="era-kpi-row" id="kpis">
+    <div class="era-kpi"><div class="label">Assets coverage</div><div class="value" id="k-cov">—</div></div>
+    <div class="era-kpi"><div class="label">Open cases</div><div class="value" id="k-cases">—</div></div>
+    <div class="era-kpi"><div class="label">Ingest</div><div class="value" id="k-ing">—</div></div>
+  </div>
+  <div class="era-card">
+    <h2>Cases</h2>
+    <p class="era-muted">Open a case → Workbench timeline. AuthZ via shell / Trusted-Proxy.</p>
+    <table class="era" id="cases"><thead><tr><th>ID</th><th>Title</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="era-card">
+    <h2>Assets</h2>
+    <table class="era" id="assets"><thead><tr><th>Node</th><th>Host</th><th>Platform</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("soc");
+EraControl.api("/api/v1/assets").then(function (r) {
+  if (!r.ok) return;
+  document.getElementById("k-cov").textContent = ((r.json.coverage || 0) * 100).toFixed(0) + "%";
+  var tb = document.querySelector("#assets tbody");
+  (r.json.assets || []).forEach(function (a) {
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + a.node_id + "</td><td>" + (a.hostname || "") + "</td><td>" + (a.platform || "") +
+      "</td><td><a href=\"/ui/control/manage/?node=" + encodeURIComponent(a.node_id) + "\">detail</a></td>";
+    tb.appendChild(tr);
+  });
+});
+EraControl.api("/api/v1/cases").then(function (r) {
+  if (!r.ok) return;
+  var list = r.json.cases || r.json || [];
+  if (!Array.isArray(list)) list = [];
+  document.getElementById("k-cases").textContent = list.length;
+  var tb = document.querySelector("#cases tbody");
+  list.forEach(function (c) {
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + c.id + "</td><td>" + (c.title || "") + "</td><td>" + (c.status || "") +
+      "</td><td><a href=\"/ui/control/workbench/?case_id=" + encodeURIComponent(c.id) + "\">workbench</a></td>";
+    tb.appendChild(tr);
+  });
+});
+EraControl.api("/api/proxy/ingest/healthz").then(function (r) {
+  document.getElementById("k-ing").textContent = r.ok ? "ok" : "down";
+});
+</script>
+</body>
+</html>

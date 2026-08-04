@@ -1,0 +1,15 @@
+{
+  "productName": "ERA Presentations",
+  "identifier": "az.era.office.presentations",
+  "app": {
+    "windows": [{ "label": "main", "title": "ERA Presentations" }]
+  },
+  "bundle": {
+    "shortDescription": "ERA Presentations Solo — local .erap slides",
+    "fileAssociations": [
+      { "ext": ["erap"], "name": "ERA Presentation", "mimeType": "application/vnd.era.erap", "role": "Editor" },
+      { "ext": ["pptx"], "name": "PowerPoint", "mimeType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "role": "Editor" }
+    ],
+    "icon": ["icons/sku-pres.png", "icons/sku-pres.ico", "icons/icon.png", "icons/icon.ico"]
+  }
+}

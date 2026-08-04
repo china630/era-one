@@ -96,12 +96,46 @@ func (e *Engine) IsBlocked(ip string) bool {
 	return e.blocked[ip]
 }
 
+const maxActions = 256
+
 func (e *Engine) Actions() []Action {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	out := make([]Action, len(e.actions))
 	copy(out, e.actions)
 	return out
+}
+
+// ActionByID returns a recorded action or false if unknown.
+func (e *Engine) ActionByID(id string) (Action, bool) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	for i := range e.actions {
+		if e.actions[i].ID == id {
+			return e.actions[i], true
+		}
+	}
+	return Action{}, false
+}
+
+// Retry marks the original action as retried and appends a new simulated run.
+func (e *Engine) Retry(id string) (Action, bool) {
+	e.mu.Lock()
+	var orig Action
+	found := false
+	for i := range e.actions {
+		if e.actions[i].ID == id {
+			orig = e.actions[i]
+			e.actions[i].Status = "retried"
+			found = true
+			break
+		}
+	}
+	e.mu.Unlock()
+	if !found {
+		return Action{}, false
+	}
+	return e.record(orig.Playbook, fmt.Sprintf("retry of %s: %s", id, orig.Detail)), true
 }
 
 func (e *Engine) record(playbook, detail string) Action {
@@ -112,6 +146,9 @@ func (e *Engine) record(playbook, detail string) Action {
 		Detail: detail, CreatedAt: time.Now().UTC(),
 	}
 	e.actions = append(e.actions, a)
+	if len(e.actions) > maxActions {
+		e.actions = e.actions[len(e.actions)-maxActions:]
+	}
 	return a
 }
 
@@ -123,6 +160,9 @@ func (e *Engine) recordFailed(playbook, detail string) Action {
 		Detail: detail, CreatedAt: time.Now().UTC(),
 	}
 	e.actions = append(e.actions, a)
+	if len(e.actions) > maxActions {
+		e.actions = e.actions[len(e.actions)-maxActions:]
+	}
 	return a
 }
 

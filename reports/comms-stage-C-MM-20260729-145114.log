@@ -1,0 +1,4 @@
+==> stage gate C-MM 20260729-145114
+[FAIL] F-MM/mail-moderation :: go test ./services/comms/mail-moderation/... -count=1
+[FAIL] CM-MM-12/licensegate :: go test ./services/platform/licensegate/... -count=1
+STAGE GATE FAIL (C-MM)

@@ -106,9 +106,26 @@ func topicForCategory(cat erav1.EventCategory) (string, error) {
 		return "xdr.auth", nil
 	case erav1.EventCategory_EVENT_CATEGORY_FILE:
 		return "xdr.file", nil
+	case erav1.EventCategory_EVENT_CATEGORY_DNS:
+		return "xdr.dns", nil
 	default:
 		return "xdr.raw", nil
 	}
+}
+
+func DnsEvent(query, qtype string, answers []string) *erav1.Envelope {
+	return &erav1.Envelope{
+		Category: erav1.EventCategory_EVENT_CATEGORY_DNS,
+		Severity: erav1.Severity_SEVERITY_INFO,
+		Payload: &erav1.Envelope_Dns{
+			Dns: &erav1.DnsEvent{Query: query, QueryType: qtype, Answers: answers},
+		},
+	}
+}
+
+// PublishDns helper.
+func (p *Publisher) PublishDns(ctx context.Context, query, qtype string, answers []string) error {
+	return p.Publish(ctx, DnsEvent(query, qtype, answers))
 }
 
 func NetworkEvent(srcIP, dstIP, protocol, direction string, dstPort uint32) *erav1.Envelope {

@@ -1,0 +1,97 @@
+/* ERA Control shell — layout + components (dark ops).
+ * Tokens: ui/shared-tokens → web/tokens/ (Theme Matrix Phase D).
+ * SSOT: docs/ERA-UI-Shell-Theme-Matrix.md */
+@import url("tokens/era-tokens-base.css");
+@import url("tokens/era-theme-control.css");
+@import url("era-chrome.css");
+
+* { box-sizing: border-box; }
+body.era-control {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--era-font);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+}
+.era-sidebar {
+  width: var(--nav-w);
+  flex-shrink: 0;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+.era-brand {
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.35rem 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.5rem;
+}
+.era-brand span { color: var(--muted); font-weight: 500; font-size: 0.75rem; display: block; }
+.era-nav a {
+  display: block;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+.era-nav a:hover { color: var(--accent); }
+.era-nav a.active { color: var(--text); background: var(--bg); }
+.era-nav .group { font-size: 0.65rem; text-transform: uppercase; color: var(--muted); padding: 0.75rem 0.6rem 0.25rem; letter-spacing: 0.04em; }
+.era-main { flex: 1; padding: 1.25rem 1.5rem; max-width: 1200px; }
+.era-topbar {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;
+  min-height: var(--era-topbar-h);
+}
+.era-topbar h1 { margin: 0; font-size: 1.15rem; font-weight: 600; }
+.era-meta { margin-left: auto; font-size: 0.8rem; color: var(--muted); display: flex; gap: 0.75rem; align-items: center; }
+.era-badge {
+  display: inline-block; padding: 0.15rem 0.45rem; border-radius: 4px;
+  font-size: 0.75rem; font-weight: 600; background: var(--era-accent-soft); color: var(--accent);
+}
+.era-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem 1.25rem; margin-bottom: 1rem;
+}
+.era-card h2 { margin: 0 0 0.75rem; font-size: 1.05rem; }
+.era-muted { color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+table.era { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+table.era th, table.era td { padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--border); text-align: left; }
+table.era th { color: var(--muted); font-weight: 500; }
+.era-btn {
+  background: #238636; border: none; color: #fff; padding: 0.45rem 0.9rem;
+  border-radius: 6px; cursor: pointer; font-size: 0.875rem;
+}
+.era-btn.secondary { background: #21262d; border: 1px solid var(--border); color: var(--text); }
+.era-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.era-status.ok { color: var(--ok); }
+.era-status.err { color: var(--bad); }
+.era-status.warn { color: var(--warn); }
+input, select, textarea {
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  padding: 0.4rem 0.55rem; border-radius: 4px; font: inherit;
+}
+textarea { width: 100%; min-height: 120px; font-family: ui-monospace, monospace; font-size: 0.8rem; }
+.era-banner {
+  background: #d2992233; border: 1px solid var(--warn); color: var(--warn);
+  padding: 0.65rem 0.85rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.85rem;
+}
+.era-kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+.era-kpi { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+.era-kpi .label { font-size: 0.75rem; color: var(--muted); }
+.era-kpi .value { font-size: 1.35rem; font-weight: 600; margin-top: 0.2rem; }
+.hidden { display: none !important; }
+@media (max-width: 800px) {
+  body.era-control { flex-direction: column; }
+  .era-sidebar { width: 100%; min-height: auto; position: static; }
+  .era-nav { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+}
+
