@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /legacy-portal.html
+Disallow: /login.html
+Disallow: /register.html
+Disallow: /edition.html
+Disallow: /datasheets/
+
+Sitemap: https://www.era-one.solutions/sitemap.xml

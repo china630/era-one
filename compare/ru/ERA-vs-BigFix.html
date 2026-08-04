@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ERA One vs HCL BigFix</title>
+<link rel="stylesheet" href="../../datasheets/assets/datasheet-common.css">
+</head>
+<body>
+<div class="page page-stretch">
+  <div class="hdr"><img class="logo-full" src="../../datasheets/assets/era-one-logo-banner.png" alt="ERA One"></div>
+  <div class="body">
+    <h1>ERA One vs HCL BigFix</h1>
+    <p class="lead">HCL BigFix (ранее IBM) — зрелая платформа патчинга и управления конечными точками. ERA Control объединяет UEM, XDR и SecOps в одном агенте в контуре заказчика, с опцией Sovereign Hybrid.</p>
+    <table class="cmp">
+      <tr><th>Функция / слой</th><th>HCL BigFix</th><th>ERA Control</th></tr>
+      <tr><td>Модель</td><td>Клиент-сервер, зрелый patch/UEM стек</td><td><span class="win">Один агент + модульные издания</span></td></tr>
+      <tr><td>Развёртывание</td><td>On-prem; облачные опции HCL</td><td><span class="win">Air-gap first + Sovereign Hybrid</span></td></tr>
+      <tr><td>Патчи / compliance</td><td><span class="win">Отраслевой этalon patch management</span></td><td>ERA Manage (patch, deploy, compliance)</td></tr>
+      <tr><td>Инвентарь / ITAM</td><td>BigFix Inventory</td><td>ERA Manage</td></tr>
+      <tr><td>OS provisioning</td><td>Ограничено / add-ons</td><td>ERA Provision (PXE/imaging)</td></tr>
+      <tr><td>XDR / SOC</td><td><span class="gap">Не нативно; интеграции</span></td><td><span class="win">ERA Core + AI + Response</span></td></tr>
+      <tr><td>Детекция MITRE</td><td><span class="gap">Ограничено</span></td><td><span class="win">Sigma + MITRE в контуре</span></td></tr>
+      <tr><td>SOAR / response</td><td><span class="gap">Вне scope</span></td><td><span class="win">ERA Response</span></td></tr>
+      <tr><td>VM / CVE</td><td>Fixlet-based visibility</td><td>ERA Vuln + ERA Exposure</td></tr>
+      <tr><td>PAM</td><td><span class="gap">Отдельные продукты</span></td><td>ERA PAM</td></tr>
+      <tr><td>ITSM</td><td>Интеграции (ServiceNow и др.)</td><td>ERA Service (в контуре)</td></tr>
+      <tr><td>Сеть / Observe</td><td>Ограничено</td><td>ERA Observe</td></tr>
+      <tr><td>Air-gap / гос</td><td>Возможно, но сложная эксплуатация</td><td><span class="win">Штатный сценарий ERA</span></td></tr>
+      <tr><td>Единый SecOps + IT-Ops</td><td><span class="gap">Patch/UEM фокус</span></td><td><span class="win">Один агент, одна платформа</span></td></tr>
+    </table>
+    <div class="summary">
+      <b>Итог:</b> BigFix силён в patch/compliance и крупных legacy-контурах. ERA Control выигрывает там, где нужен
+      <b>единый суверенный стек</b>: патчи и UEM плюс XDR, SOAR и AI в одном агенте, без phone-home.
+      Sovereign Hybrid закрывает аргумент «удобства облака» без выноса данных и расследований.
+    </div>
+  </div>
+  <div class="ftr">
+    <div class="ftr-contact">
+      <div class="col"><b>Contact</b><a href="mailto:sales@era-one.solutions">sales@era-one.solutions</a></div>
+    </div>
+    <div class="ftr-brand"><img class="logo-ftr" src="../../datasheets/assets/era-one-logo-banner.png" alt="ERA One"></div>
+  </div>
+</div>
+<script src="../../datasheets/assets/datasheet-common.js"></script>
+</body>
+</html>
