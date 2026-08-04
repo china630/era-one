@@ -1,0 +1,31 @@
+---
+description: Quality gates, Cursor hooks and scanners for ERA One
+alwaysApply: true
+---
+
+# Quality tooling (агент)
+
+Канон приёмки: `docs/products/ERA-Product-Acceptance-Standard.md` §8.1.
+
+## Перед «готово» / PR
+
+1. `pwsh -File scripts/check-acceptance-consistency.ps1`
+2. При коде безопасности/AuthZ/license: `pwsh -File scripts/run-quality-gates.ps1` (или skill `quality-gates`)
+3. Matrix: не ставить Scaffold ✅ без negative path; не писать false `all ✅`
+
+## Запреты shell (также в hooks)
+
+- `git push --force`, `git reset --hard`, `git clean -f` без явной просьбы пользователя
+- `git stash` без явной просьбы (site-commit-isolation)
+- DROP/TRUNCATE БД; wipe volumes у `*prod*` compose
+
+## Инструменты
+
+| Что | Где |
+|-----|-----|
+| Hooks | `.cursor/hooks.json` |
+| Skills | `.cursor/skills/acceptance-closeout`, `quality-gates` |
+| CI | `.github/workflows/ci.yml` jobs: acceptance-consistency, secrets, lint, vuln, e2e-office-smoke |
+| Dep graph | `scripts/export-dep-graph.ps1` |
+
+Air-gap: не добавлять phone-home telemetry SaaS в рантайм продукта. Scanners — offline/local/CI.

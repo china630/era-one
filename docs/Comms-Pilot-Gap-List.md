@@ -1,16 +1,16 @@
 # ERA Communications — Gap-лист до реального пилота
 
-**Версия:** 1.0  
-**Дата:** 7 июля 2026 г.  
-**Статус:** Active — исполняемый backlog до field pilot  
-**Связано:** [`Comms-Pilot-Readiness-Checklist.md`](Comms-Pilot-Readiness-Checklist.md) · [`Comms-Stage-CGA-Spec.md`](Comms-Stage-CGA-Spec.md) · [`Comms-Implementation-Matrix.md`](Comms-Implementation-Matrix.md) · [`products/PRD-Comms-Gov-Protocols.md`](products/PRD-Comms-Gov-Protocols.md)
+**Версия:** 1.1  
+**Дата:** 30 июля 2026 г.  
+**Статус:** Active — исполняемый backlog до field pilot (+ Matrix AC honesty)  
+**Связано:** [`Comms-Pilot-Readiness-Checklist.md`](Comms-Pilot-Readiness-Checklist.md) · [`Comms-Stage-CGA-Spec.md`](Comms-Stage-CGA-Spec.md) · [`Comms-Implementation-Matrix.md`](Comms-Implementation-Matrix.md) · [`products/PRD-Comms-Gov-Protocols.md`](products/PRD-Comms-Gov-Protocols.md) · приёмка [`Comms-Acceptance-System.md`](products/Comms-Acceptance-System.md) · канон [`ERA-Product-Acceptance-Standard.md`](products/ERA-Product-Acceptance-Standard.md)
 
 ---
 
 ## 1. Резюме
 
-**8 волн программы (C-1…C-5, C-MIG, C-GA)** закрыты на уровне **scaffold + auto-gate** (unit/smoke, in-memory stores, dev-bypass лицензий). Это **не** эквивалент реального пилота у заказчика.
-
+**8 волн программы (C-1…C-5, C-MIG, C-GA)** закрыты на уровне **scaffold + auto-gate** (unit/smoke, in-memory stores, dev-bypass лицензий). Это **не** эквивалент реального пилота у заказчика.  
+**Honesty (канон v1.2):** AC rollup SSOT = [`Comms-Implementation-Matrix.md`](Comms-Implementation-Matrix.md) — edition/AC mixed (C3/C4/C6/C8/C9 часто ✅; **C1/C2/C5/C7 🟡**); Index `gate[x]` ≠ AC ✅; editions остаются **mvp** до RT-09.
 **Правило до пилота:** полевые и «реальные» acceptance-тесты **не запускаются**, пока не закрыты пункты **P0** и **P0-GOV** этого документа. Текущие `run-comms-stage-gate.ps1` остаются **regression scaffold gates**, не pilot sign-off.
 
 | Контур пилота | Издание | Целевой scope |
@@ -33,7 +33,7 @@
 | Identity | Header RBAC (`X-ERA-Tenant`) | `platform/identity` OIDC end-to-end |
 | CalDAV/EWS (AC-C8/C9) | In-memory calendar/EWS scaffold | **P0-GOV:** persistent + Outlook field parity |
 | CardDAV contacts | Нет | **P0-GOV:** CardDAV + EWS Contacts |
-| ActiveSync mobile | Blocked CM5-9 | **P0-GOV:** ActiveSync subset (gov must-have) |
+| ActiveSync mobile | [~] subset lab | **P0-GOV:** field iOS/Android |
 | EWS Notes/Tasks | Нет | **P0-GOV:** EWS subset (не MAPI) |
 | Mail Connect (AC-C6) | Fake sync (`ItemsOK: 12`) | Real IMAP/JMAP client, creds vault |
 | Migration (AC-MIG) | File-line importer | Network IMAP + write to mail store |
@@ -50,68 +50,70 @@
 
 ### P0-1. Персистентность почты и календаря
 
-| ID | Задача | Модуль | Критерий готовности |
-|----|--------|--------|---------------------|
-| GAP-P0-01 | Persistent mail store (не in-memory) | `mail/core`, `mail/internal` | Рестарт процесса — письма на месте; backup/restore smoke |
-| GAP-P0-02 | Mailbox provisioning API/CLI | `mail-api` | Создание ящика `alice@domain`, пароль, квота |
-| GAP-P0-03 | Persistent CalDAV store | `calendar/store` | Событие переживает рестарт; Outlook CalDAV smoke |
-| GAP-P0-04 | EWS mail store persistent | `mail/internal/ews/mstore` | Send/receive через EWS после рестарта |
+| ID | Задача | Модуль | Критерий готовности | Статус |
+|----|--------|--------|---------------------|--------|
+| GAP-P0-01 | Persistent mail store (не in-memory) | `mail/core`, `mail/internal` | PG default; `ERA_MAIL_STORE=memory` only; restart script | [x] lab |
+| GAP-P0-02 | Mailbox provisioning API/CLI | `mail-api` | Создание ящика переживает restart | [x] lab |
+| GAP-P0-03 | Persistent CalDAV store | `caladapter` + repo | Событие в repo; unit round-trip | [x] lab |
+| GAP-P0-04 | EWS mail store persistent | `ews` + repo | CreateItem against repo; staging RT-02 | [x] lab |
 
 ### P0-2. Протоколы и безопасность
 
-| ID | Задача | Модуль | Критерий готовности |
-|----|--------|--------|---------------------|
-| GAP-P0-10 | SMTP AUTH + STARTTLS | `mail/core/smtp.rs` | Thunderbird/Outlook SMTP submit с TLS |
-| GAP-P0-11 | IMAP AUTH + TLS | `mail/core/imap.rs` | LOGIN с реальным паролем; не fake LOGIN |
-| GAP-P0-12 | IMAP subset расширить | `mail/core/imap.rs` | UID FETCH, SEARCH, LIST folders, >1 message |
-| GAP-P0-13 | HTTP/TLS mail-api | `mail/cmd/mail-api` | mTLS или TLS termination; не plain :8150 в prod |
-| GAP-P0-14 | Policy enforcement | `policy` + core bridge | Превышение quota/size → отказ SMTP/API |
+| ID | Задача | Модуль | Критерий готовности | Статус |
+|----|--------|--------|---------------------|--------|
+| GAP-P0-10 | SMTP AUTH + STARTTLS | `mail/core/smtp.rs` | AUTH + TLS e2e; policy 552 | [x] lab |
+| GAP-P0-11 | IMAP AUTH + TLS | `mail/core/imap.rs` | LOGIN; insecure only `ERA_IMAP_INSECURE=1` | [x] lab |
+| GAP-P0-12 | IMAP subset расширить | `mail/core/imap.rs` | UID FETCH/LIST lab | [x] lab |
+| GAP-P0-13 | HTTP/TLS mail-api | prod overlay | `docker-compose.comms.prod.yml` + TLS | [x] lab |
+| GAP-P0-14 | Policy enforcement | policy + SMTP bridge | REST 413 + SMTP policy store → 552 | [x] lab |
 
 ### P0-3. Webmail и identity (AC-C2)
 
-| ID | Задача | Модуль | Критерий готовности |
-|----|--------|--------|---------------------|
-| GAP-P0-20 | OIDC login в webmail | `ui/mail` + `platform/identity` | Browser redirect → session → `/mail` |
-| GAP-P0-21 | Inbox UI (list/read) | `ui/mail` | IMAP/API poll → отображение писем |
-| GAP-P0-22 | Compose → send | `ui/mail` → `mail-api` → core | Alice send → Bob inbox в UI и IMAP |
-| GAP-P0-23 | Policy UI | `ui/mail` | Quota/limit из `/api/v1/policy` |
-| GAP-P0-24 | Drive hook (if licensed) | `ui/mail` + `platform/drive` | AC-C5 на стенде с Drive license |
+| ID | Задача | Модуль | Критерий готовности | Статус |
+|----|--------|--------|---------------------|--------|
+| GAP-P0-20 | OIDC login в webmail | `ui/mail` + identity | PKCE + staging token; Bearer→mail-api | [x] lab |
+| GAP-P0-21 | Inbox UI (list/read) | `ui/mail` | JWT BFF messages | [x] lab |
+| GAP-P0-22 | Compose → send | `ui/mail` → mail-api | RT-05 OIDC send+list | [x] lab |
+| GAP-P0-23 | Policy UI | `ui/mail` | `/mail/api/policy` | [x] lab |
+| GAP-P0-24 | Drive hook (if licensed) | `ui/mail` + drive | AC-C5 deny without module | [x] lab |
 
-Спека C-3 требует OIDC/SPA — сейчас реализован только RBAC-shell ([`ui/mail/server.go`](../ui/mail/server.go)).
+Спека C-3: OIDC machine + browser PKCE в `ui/mail/web/app.js`; field Outlook — отдельно (RT-09).
 
 ## 3b. P0-GOV — протоколы Outlook / mobile (госсектор)
 
 **PRD:** [`PRD-Comms-Gov-Protocols.md`](products/PRD-Comms-Gov-Protocols.md). Без закрытия **P0-GOV** госсектор не заходит в пилот.
 
-| ID | Задача | Модуль | Критерий |
-|----|--------|--------|----------|
-| GAP-GOV-01 | Autodiscover EXCH + TLS/SCP | `mail/autodiscover` | Outlook → Exchange profile |
-| GAP-GOV-02 | EWS façade v2 (mail+calendar) | `mail/ews` | FindFolder, SyncFolderItems, Create/Update/Delete |
-| GAP-GOV-03 | CalDAV production + invitations | `calendar/caldav` | AC-C8 field + Apple/Thunderbird |
-| GAP-GOV-04 | CardDAV contacts | `calendar/carddav` or `contacts/` | AC-GOV-3 field |
-| GAP-GOV-05 | EWS Contacts subset | `mail/ews` | Outlook contacts sync |
-| GAP-GOV-06 | EWS Notes/Tasks subset | `mail/ews` | Tender-dependent field matrix |
-| GAP-GOV-07 | ActiveSync subset | `mail/activesync` | iOS/Android mail+calendar+contacts |
-| GAP-GOV-08 | **Explicit:** no MAPI, no Outlook Connector | docs/RFQ | ADR + RFQ wording |
+| ID | Задача | Модуль | Критерий | Статус |
+|----|--------|--------|----------|--------|
+| GAP-GOV-01 | Autodiscover EXCH + TLS/SCP | `mail/autodiscover` | unit golden + staging RT-08 | [x] lab |
+| GAP-GOV-02 | EWS façade v2 (mail+calendar) | `mail/ews` | unit + staging CreateItem | [x] lab |
+| GAP-GOV-03 | CalDAV production + invitations | `calendar/caldav` | unit + staging RT-04 | [x] lab |
+| GAP-GOV-04 | CardDAV contacts | `carddav` | unit + staging RT-04b | [x] lab |
+| GAP-GOV-05 | EWS Contacts subset | `mail/ews` | unit | [x] lab |
+| GAP-GOV-06 | EWS Notes/Tasks subset | `mail/ews` | unit golden | [x] lab |
+| GAP-GOV-07 | ActiveSync subset | `mail/activesync` | unit + staging Provision | [x] lab |
+| GAP-GOV-08 | **Explicit:** no MAPI, no Outlook Connector | docs/RFQ | ADR + RFQ wording | [x] |
+
+Field Outlook/iOS Pilot-ready — ⏸ until RT-09 / partner.
 
 ### P0-4. Deploy и операции
 
-| ID | Задача | Модуль | Критерий готовности |
-|----|--------|--------|---------------------|
-| GAP-P0-30 | Prod compose profile `comms` | `deploy/` | `docker compose --profile comms up` — mail-core, mail-api, CH, PG |
-| GAP-P0-31 | Init DDL all comms tables | `deploy/clickhouse/` | 004…006 применяются автоматически |
-| GAP-P0-32 | Health/readiness probes | all comms services | K8s/compose health для пилота |
-| GAP-P0-33 | Offline license activation | `licensegate` + install | Без `ERA_MAIL_DEV`; модуль `comms-mail-server` |
-| GAP-P0-34 | Runbook пилота | `docs/` | Install, rollback, backup, типовые инциденты |
-| GAP-P0-35 | Честный pilot checklist | `Comms-Pilot-Readiness-Checklist.md` | Сброс преждевременных `[x]`; заполнение на поле |
+| ID | Задача | Модуль | Критерий готовности | Статус |
+|----|--------|--------|---------------------|--------|
+| GAP-P0-30 | Prod compose profile `comms` | `deploy/` | profile + compose (+ prod overlay) | [x] lab D1 |
+| GAP-P0-31 | Init DDL all comms tables | `deploy/clickhouse/` | 004…006 / migrate service | [x] lab |
+| GAP-P0-32 | Health/readiness probes | all comms services | healthz/readyz (+ CH require) | [x] lab D0 |
+| GAP-P0-33 | Offline license activation | licensegate + prod overlay | `ERA_*_DEV=0` + modules | [x] lab |
+| GAP-P0-34 | Runbook пилота | `docs/` | [`Comms-Pilot-Runbook.md`](Comms-Pilot-Runbook.md) + staging scripts | [x] lab |
+| GAP-P0-35 | Честный pilot checklist | Checklist | [`Comms-Pilot-Readiness-Checklist.md`](Comms-Pilot-Readiness-Checklist.md) без soft field `[x]` | [x] lab |
 
 ### P0-5. Документация и статус (честность)
 
-| ID | Задача | Файл | Критерий |
-|----|--------|------|----------|
-| GAP-P0-40 | Перевести C-GA в `[~]` до поля | `Comms-Sprint-Index.md`, CGA spec | CM-GA-3, CM-GA-5 = field pending |
-| GAP-P0-41 | Матрица: scaffold vs pilot-ready | `Comms-Implementation-Matrix.md` | Колонка «Pilot-ready» |
-| GAP-P0-42 | MVP-spec: убрать soft-close | `Comms-MVP-Spec.md` | F-C6 не `[x]` до поля |
+| ID | Задача | Файл | Критерий | Статус |
+|----|--------|------|----------|--------|
+| GAP-P0-40 | Перевести C-GA в `[~]` до поля | `Comms-Sprint-Index.md`, CGA spec | CM-GA-3, CM-GA-5 = field pending | [x] |
+| GAP-P0-41 | Матрица: scaffold vs pilot-ready | `Comms-Implementation-Matrix.md` | колонки + Acceptance Honesty Audit | [x] |
+| GAP-P0-42 | Убрать soft-close / keep mvp | Index/Matrix (нет soft Comms-MVP-Spec) | C-GA / RT-09 keep edition **mvp**; F-C* soft ≠ field | [x] lab D1 |
 
 ---
 
@@ -123,10 +125,10 @@
 
 | ID | Задача | Сейчас | Критерий |
 |----|--------|--------|----------|
-| GAP-P1-01 | Real IMAP sync client | `StartSync` возвращает fake 12 items | Реальный FETCH с внешнего IMAP |
-| GAP-P1-02 | Credential vault | `password_ref` не используется | TPM/keystore ref, не plaintext |
-| GAP-P1-03 | Autodiscover Connect field | golden only | Outlook → external server через Connect |
-| GAP-P1-04 | Edition `exists: true` | `editions-comms.yaml` false | licensegate + pricing |
+| GAP-P1-01 | Real IMAP sync client | [x] lab IMAP when Address+vault; stub items_ok=0 | Реальный FETCH с внешнего IMAP |
+| GAP-P1-02 | Credential vault | [~] lab `vault://` → `ERA_CONNECT_SECRET_*` (env) | TPM/keystore ref, не plaintext (field) |
+| GAP-P1-03 | Autodiscover Connect field | golden only; field open | Outlook → external server через Connect |
+| GAP-P1-04 | Edition `exists: true` | [x] exists true; status **mvp** 2026-07-30 | licensegate + pricing |
 
 ### P1-2. ERA Comms Migration (C-MIG)
 
@@ -147,12 +149,12 @@
 
 | ID | Компонент | Сейчас | До «реального» edition |
 |----|-----------|--------|----------------------|
-| GAP-P2-01 | ERA Chat | In-memory rooms | Matrix-layout homeserver или эквивалент |
-| GAP-P2-02 | ERA Conference | `adapter.Stub` | LiveKit on-prem deploy + real tokens |
-| GAP-P2-03 | ERA Comms AI | `Heuristic` default | Bundled on-prem model + Ollama ops |
-| GAP-P2-04 | ActiveSync | `[blocked]` CM5-9 | Отдельный PRD + реализация |
-| GAP-P2-05 | 60k scale field | CI 1000 mailboxes | `loadgen-mailboxes -mailboxes 60000` на sizing-сервере |
-| GAP-P2-06 | HA / multi-node | нет | Kafka RF, mail replication (Vision) |
+| GAP-P2-01 | ERA Chat | [~] JSON persist `ERA_CHAT_DATA_DIR` | Matrix-layout homeserver или эквивалент |
+| GAP-P2-02 | ERA Conference | [~] `FromEnv` LiveKit HTTP / Stub | LiveKit on-prem + real tokens field |
+| GAP-P2-03 | ERA Comms AI | [~] Ollama FromEnv + Heuristic fallback | Bundled model + field LLM smoke |
+| GAP-P2-04 | ActiveSync | [~] subset lab + [`PRD-ActiveSync-Subset.md`](products/PRD-ActiveSync-Subset.md) | Field iOS/Android parity |
+| GAP-P2-05 | 60k scale field | [~] quick 500 PASS | `loadgen-mailboxes -mailboxes 60000` на sizing-host |
+| GAP-P2-06 | HA / multi-node | [~] [`Comms-HA-Notes.md`](Comms-HA-Notes.md) | Kafka RF, mail replication field |
 
 ---
 
@@ -240,17 +242,18 @@ flowchart TD
 
 Все пункты обязательны:
 
-- [ ] P0-01…P0-04 — persistence PASS
-- [ ] P0-10…P0-14 — SMTP/IMAP/TLS/policy PASS на staging
-- [ ] P0-20…P0-22 — webmail send/receive PASS
-- [ ] P0-30…P0-33 — prod compose + offline license PASS
-- [ ] RT-01…RT-08 — staging integration PASS (логи в `reports/`)
-- [ ] Runbook и rollback проверены на staging
-- [ ] `Comms-Pilot-Readiness-Checklist` — честное заполнение, без DEV bypass
+- [x] lab P0-01…P0-04 — persistence PASS (Deepen / Honesty)
+- [x] lab P0-10…P0-14 — SMTP/IMAP/TLS/policy PASS на staging
+- [x] lab P0-20…P0-22 — webmail send/receive PASS (RT-05)
+- [x] lab P0-30…P0-33 — prod compose + offline license path
+- [x] lab RT-01…RT-08 — staging PASS (`reports/comms-pilot-staging.log` / deepen-d9)
+- [x] lab Runbook и rollback scripts на staging
+- [x] lab `Comms-Pilot-Readiness-Checklist` — честное заполнение, без DEV как field
 - [ ] PO approval на выезд
+- [ ] RT-09 customer SignOff (DF / partner)
 
 **Не требуется для gov pilot:** Chat, Conference, Comms AI, 60k field (если не в контракте).  
-**Обязательно для gov pilot:** P0-GOV (EWS, CalDAV, CardDAV, ActiveSync subset).
+**Обязательно для gov pilot:** P0-GOV lab [x]; field Outlook/iOS — RT-09.
 
 ---
 

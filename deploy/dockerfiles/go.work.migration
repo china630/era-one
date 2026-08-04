@@ -1,0 +1,10 @@
+go 1.26.4
+
+use (
+	./gen/go
+	./services/comms/internal/httpauth
+	./services/comms/internal/imapclient
+	./services/comms/migration
+	./services/license
+	./services/platform
+)

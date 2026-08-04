@@ -133,6 +133,16 @@ PAM custody и AI custody — **единый механизм**, разные `r
 2. Срок хранения investigation records vs retention lake (ADR-0004)?
 3. Нужен ли отдельный модуль `ai-governance` или достаточно расширения `ai-core`?
 
+## Phase 3 lite — Agentic SOC (human-on-loop) — Implemented 2026-07-29
+
+| Capability | Status |
+|---|---|
+| `recommended_actions[]` on investigate | ✅ |
+| `POST /api/v1/investigate/{id}/confirm\|reject` + custody audit | ✅ |
+| SOAR draft handoff (`ERA_SOAR_DRAFT_URL`, no auto-execute) | ✅ |
+| Workbench Accept/Reject | ✅ |
+| Autonomous incident close | ❌ non-claim |
+
 ## Связано
 
 - [`ADR-0022`](0022-detection-content-governance.md) — MITRE на детекциях

@@ -1,0 +1,8 @@
+==> office stage gate O-2 20260730-002109
+[PASS] O-2/identity-cmd :: cmd /c "if exist services\platform\cmd\identity-api\main.go (exit /b 0) else (exit /b 1)"
+[PASS] O-2/oidc-dockerfile :: cmd /c "if exist deploy\dockerfiles\Dockerfile.identity-api (exit /b 0) else (exit /b 1)"
+[PASS] O-2/oidc-tests :: go test -C services/platform ./internal/oidc/... -count=1
+[PASS] O-2/workspace :: go test -C services/platform ./workspace/... ./cmd/workspace/... -count=1
+[PASS] O-2/ui-drive :: go test -C ui/drive ./... -count=1
+[PASS] O-2/compose :: docker compose -f deploy/docker-compose.office.yml config
+STAGE GATE PASS (O-2)

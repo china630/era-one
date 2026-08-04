@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — Provision</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>Provision</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-banner">Field PXE rollout ⏸ — lab image/PXE/enroll APIs.</div>
+<div class="era-card"><h2>Images</h2>
+<button class="era-btn secondary" id="img">List</button>
+<button class="era-btn" id="add">Create lab image</button>
+<pre id="out" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>PXE / Enroll jobs</h2>
+<button class="era-btn secondary" id="pxe">PXE config</button>
+<button class="era-btn secondary" id="jobs">Enroll jobs</button>
+<pre id="px" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("provision");
+document.getElementById("img").onclick=function(){EraControl.x("provision","/api/v1/images").then(function(r){document.getElementById("out").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("add").onclick=function(){EraControl.x("provision","/api/v1/images",{method:"POST",body:JSON.stringify({name:"lab-image",os:"linux"})}).then(function(r){document.getElementById("out").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("pxe").onclick=function(){EraControl.x("provision","/api/v1/pxe/config").then(function(r){document.getElementById("px").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("jobs").onclick=function(){EraControl.x("provision","/api/v1/enroll/jobs").then(function(r){document.getElementById("px").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("img").click();
+</script></body></html>

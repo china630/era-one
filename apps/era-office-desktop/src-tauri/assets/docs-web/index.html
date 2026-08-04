@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERA Documents</title>
+  <link rel="stylesheet" href="/office-assets/office.css"/>
+  <link rel="stylesheet" href="/office-assets/menubar.css"/>
+</head>
+<body class="era-app era-docs-app">
+  <header class="era-topbar">
+    <a class="era-brand" href="/drive/" data-icon="brand">
+      <span class="era-brand-mark">ERA Office</span>
+      <span class="era-brand-mod">Documents</span>
+    </a>
+        <nav class="era-nav" aria-label="Office modules">
+      <a href="/drive/" data-mod="drive">Drive</a>
+      <a href="/docs/" data-mod="docs">Documents</a>
+      <a href="/tables/" data-mod="tables">Tables</a>
+      <a href="/presentations/" data-mod="pres">Presentations</a>
+      <a href="/projects/" data-mod="projects">Projects</a>
+      <a href="/office-ai/" data-mod="ai">Office AI</a>
+      <a href="/mail/" data-mod="mail">Mail</a>
+    </nav>
+    <div class="era-topbar-right">
+      <span id="userChip" class="era-user-chip" title="Signed-in user"><span class="era-user-lamp on" aria-hidden="true"></span><span class="era-user-label">—</span></span>
+    </div>
+  </header>
+
+  <div class="era-doc-header">
+    <div class="era-doc-header-main">
+      <input id="docTitle" class="era-doc-title" type="text" value="Untitled" data-fallback="Untitled" aria-label="Document title" disabled/>
+      <div class="era-doc-header-meta">
+        <span id="docMeta">Opening…</span>
+        <div class="era-presence" id="presence" title="Live peer presence">
+          <span class="chip" id="presenceYou">You</span>
+          <span id="presencePeers">Peers: —</span>
+        </div>
+      </div>
+    </div>
+    <div class="era-doc-header-actions">
+      <span id="savePill" class="era-save-pill" data-state="idle">All changes saved</span>
+      <button id="commentsToggleBtn" type="button" class="era-btn" data-icon="comment" title="Comments" aria-pressed="true">Comments</button>
+      <button id="shareBtn" type="button" class="era-btn era-btn-primary" data-icon="share" title="Share">Share</button>
+    </div>
+  </div>
+
+  <nav id="menubar" class="era-menubar" aria-label="Document menus">
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">File</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="file.new"><span>New</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.open"><span>Open</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.import"><span>Import</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.share"><span>Share</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-icon="download" aria-haspopup="true"><span>Download</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="file.export"><span>Microsoft Word (.docx)</span></button>
+            <button type="button" class="era-menu-item" data-cmd="file.pdf"><span>Print / Save as PDF…</span></button>
+            <button type="button" class="era-menu-item era-plus" data-cmd="file.odt" title="ERA+ — OpenDocument Text"><span>OpenDocument (.odt)</span><span class="era-badge">ERA+</span></button>
+            <button type="button" class="era-menu-item" data-cmd="file.rtf"><span>Rich Text (.rtf)</span></button>
+          </div>
+        </div>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="file.pageSetup"><span>Page setup</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.versions"><span>Version history</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.print"><span>Print</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="file.save"><span>Save</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Edit</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="edit.undo"><span>Undo</span><span class="hint">Ctrl+Z</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.redo"><span>Redo</span><span class="hint">Ctrl+Y</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="edit.cut"><span>Cut</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.copy"><span>Copy</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.paste"><span>Paste</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.pastePlain"><span>Paste without formatting</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="edit.selectAll"><span>Select all</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.find"><span>Find</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.replace"><span>Find and replace</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="edit.formatPainter"><span>Format Painter</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">View</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="view.printLayout"><span>Print layout</span></button>
+        <button type="button" class="era-menu-item" data-cmd="view.wordCount"><span>Word count</span></button>
+        <button type="button" class="era-menu-item" data-cmd="view.lineNumbers"><span>Line numbers</span></button>
+        <button type="button" class="era-menu-item" data-cmd="view.showMarks"><span>Show formatting marks</span></button>
+        <button type="button" class="era-menu-item" data-cmd="view.suggest"><span>Suggesting mode</span></button>
+        <button type="button" class="era-menu-item" data-cmd="view.fullscreen"><span>Full screen</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Insert</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="insert.image"><span>Image</span></button>
+        <button type="button" class="era-menu-item" data-cmd="insert.table"><span>Table</span></button>
+        <button type="button" class="era-menu-item" data-cmd="insert.toc"><span>Table of contents</span></button>
+        <button type="button" class="era-menu-item" data-cmd="insert.bookmark"><span>Bookmark</span></button>
+        <button type="button" class="era-menu-item" data-cmd="insert.textbox"><span>Text box</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-icon="file" aria-haspopup="true"><span>Headers &amp; footers</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="insert.header"><span>Header</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.footer"><span>Footer</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.pageNumbers"><span>Page numbers</span></button>
+          </div>
+        </div>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-icon="file" aria-haspopup="true"><span>Break</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="insert.pageBreak"><span>Page break</span></button>
+            <button type="button" class="era-menu-item era-plus" data-cmd="insert.section" title="ERA+ — section break"><span>Section break</span><span class="era-badge">ERA+</span></button>
+          </div>
+        </div>
+        <button type="button" class="era-menu-item era-plus" data-cmd="insert.footnote" title="ERA+ — footnotes"><span>Footnote</span><span class="era-badge">ERA+</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="insert.link"><span>Link</span></button>
+        <button type="button" class="era-menu-item" data-cmd="insert.comment"><span>Comment</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="insert.symbol"><span>Symbol</span></button>
+        <button type="button" class="era-menu-item" data-cmd="insert.hr"><span>Horizontal line</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Format</button>
+      <div class="era-menu-panel" role="menu">
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-cmd="format.textMenu" data-icon="bold" aria-haspopup="true"><span>Text</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="format.bold"><span>Bold</span><span class="hint">Ctrl+B</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.italic"><span>Italic</span><span class="hint">Ctrl+I</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.underline"><span>Underline</span><span class="hint">Ctrl+U</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.strike"><span>Strikethrough</span><span class="hint">Alt+Shift+5</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.super"><span>Superscript</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.sub"><span>Subscript</span></button>
+            <div class="era-menu-sep" role="separator"></div>
+            <button type="button" class="era-menu-item" data-cmd="format.font"><span>Font</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.size"><span>Size</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.color"><span>Text color</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.highlight"><span>Highlight color</span></button>
+            <div class="era-menu-sep" role="separator"></div>
+            <button type="button" class="era-menu-item" data-cmd="format.clear"><span>Clear formatting</span></button>
+          </div>
+        </div>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-cmd="format.stylesMenu" data-icon="list" aria-haspopup="true"><span>Paragraph styles</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="format.normal"><span>Normal</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.quote"><span>Quote</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.caption"><span>Caption</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.title"><span>Title</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.h1"><span>Heading 1</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.h2"><span>Heading 2</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.h3"><span>Heading 3</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.h4"><span>Heading 4</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.h5"><span>Heading 5</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.h6"><span>Heading 6</span></button>
+            <div class="era-menu-sep" role="separator"></div>
+            <button type="button" class="era-menu-item era-plus" data-cmd="format.styles" title="ERA+ — manage styles"><span>Manage styles</span><span class="era-badge">ERA+</span></button>
+          </div>
+        </div>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-cmd="format.alignMenu" data-icon="alignLeft" aria-haspopup="true"><span>Align &amp; indent</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="format.alignLeft"><span>Left</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.alignCenter"><span>Center</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.alignRight"><span>Right</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.alignJustify"><span>Justified</span></button>
+            <div class="era-menu-sep" role="separator"></div>
+            <button type="button" class="era-menu-item" data-cmd="format.indentDec"><span>Decrease indent</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.indentInc"><span>Increase indent</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.lineSpacing"><span>Line spacing…</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.paraSpacing"><span>Paragraph spacing…</span></button>
+          </div>
+        </div>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-icon="list" aria-haspopup="true"><span>Bullets &amp; numbering</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="format.bullet"><span>Bulleted list</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.numbered"><span>Numbered list</span></button>
+            <div class="era-menu-sep" role="separator"></div>
+            <button type="button" class="era-menu-item" data-cmd="format.listLevelDec"><span>Decrease list level</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.listLevelInc"><span>Increase list level</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.listMarker"><span>Change list marker…</span></button>
+            <button type="button" class="era-menu-item" data-cmd="format.listRestart"><span>Restart numbering</span></button>
+          </div>
+        </div>
+        <button type="button" class="era-menu-item" data-cmd="format.columns"><span>Columns</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.language"><span>Language</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Tools</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="tools.spelling"><span>Spelling</span></button>
+        <button type="button" class="era-menu-item" data-cmd="tools.wordCount"><span>Word count</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="tools.review"><span>Review suggested edits</span></button>
+        <button type="button" class="era-menu-item" data-cmd="tools.compare"><span>Compare documents</span></button>
+        <button type="button" class="era-menu-item" data-cmd="tools.merge"><span>Mail merge</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="tools.summarize"><span>Summarize with AI</span></button>
+        <button type="button" class="era-menu-item" data-cmd="tools.rewrite"><span>Rewrite with AI</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Help</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="help.shortcuts"><span>Keyboard shortcuts</span></button>
+        <button type="button" class="era-menu-item" data-cmd="help.about"><span>About ERA Documents</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="era-main era-main-fluid">
+    <p id="authStatus" class="era-status" role="status" aria-live="polite"></p>
+    <div id="teBanner" class="era-banner-warn" role="note">
+      <span>ERA Documents — collaborative editing in your contour (not Microsoft Word). Scope notes in Help → About.</span>
+      <button type="button" class="era-banner-dismiss" data-dismiss="1" aria-label="Dismiss">✕</button>
+    </div>
+    <div id="banner" class="era-banner-warn" style="display:none" role="note">
+      <span>Some legacy docx features were dropped on import. ERA Documents is collaborative text editing — not Microsoft Word.</span>
+    </div>
+    <p id="saveStatus" class="era-hint" hidden>Autosave when you edit · snapshots go to Drive</p>
+
+    <div id="headerStrip" class="era-header-footer-strip" hidden>
+      <label class="era-header-footer-field">Header
+        <input id="headerInput" class="era-input" placeholder="Header text" autocomplete="off"/>
+      </label>
+      <label class="era-header-footer-field">Footer
+        <input id="footerInput" class="era-input" placeholder="Footer text" autocomplete="off"/>
+      </label>
+      <label class="era-header-footer-check"><input id="pageNumbersChk" type="checkbox"/> Page numbers</label>
+    </div>
+
+    <div class="era-toolbar-rail">
+    <div id="toolbar" class="era-toolbar era-menubar-toolbar" role="toolbar" aria-label="Formatting">
+      <div class="era-toolbar-group era-toolbar-file">
+        <button id="newDocBtn" type="button" class="era-icon-btn" data-icon="add" title="New document" aria-label="New document"></button>
+        <button id="snapshotBtn" type="button" class="era-icon-btn" data-icon="save" title="Save" aria-label="Save"></button>
+        <button id="importBtn" type="button" class="era-icon-btn" data-icon="upload" title="Import" aria-label="Import"></button>
+        <button id="exportBtn" type="button" class="era-icon-btn" data-icon="download" title="Export" aria-label="Export"></button>
+      </div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="era-toolbar-group">
+        <button id="undoBtn" type="button" class="era-icon-btn" data-icon="undo" title="Undo" aria-label="Undo"></button>
+        <button id="redoBtn" type="button" class="era-icon-btn" data-icon="redo" title="Redo" aria-label="Redo"></button>
+        <button id="printBtn" type="button" class="era-icon-btn" data-icon="print" title="Print" aria-label="Print"></button>
+        <button id="spellBtn" type="button" class="era-icon-btn" data-icon="spell" title="Spelling check" aria-label="Spelling"></button>
+        <button id="formatPainterBtn" type="button" class="era-icon-btn" data-icon="formatPainter" title="Paint format" aria-label="Paint format"></button>
+        <select id="zoomSelect" class="era-input" aria-label="Zoom" title="Zoom">
+          <option value="100">100%</option>
+          <option value="75">75%</option>
+          <option value="90">90%</option>
+          <option value="110">110%</option>
+          <option value="125">125%</option>
+          <option value="150">150%</option>
+        </select>
+      </div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="era-toolbar-group">
+        <select id="styleSelect" class="era-input" aria-label="Paragraph style" title="Styles">
+          <option value="p">Normal text</option>
+          <option value="quote">Quote</option>
+          <option value="caption">Caption</option>
+          <option value="title">Title</option>
+          <option value="h1">Heading 1</option>
+          <option value="h2">Heading 2</option>
+          <option value="h3">Heading 3</option>
+          <option value="h4">Heading 4</option>
+          <option value="h5">Heading 5</option>
+          <option value="h6">Heading 6</option>
+        </select>
+        <select id="fontSelect" class="era-input era-font-select" aria-label="Font" data-tip="Font">
+          <option value="Arial" selected>Arial</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Tahoma">Tahoma</option>
+          <option value="Trebuchet MS">Trebuchet MS</option>
+          <option value="Comic Sans MS">Comic Sans MS</option>
+          <option value="Impact">Impact</option>
+          <option value="Segoe UI">Segoe UI</option>
+        </select>
+        <div class="era-font-size-stepper" title="Font size">
+          <button id="fontDecTbBtn" type="button" class="era-icon-btn" data-tip="Decrease font size" aria-label="Decrease font size">-</button>
+          <select id="sizeSelect" class="era-input era-font-size" aria-label="Font size" data-tip="Font size">
+            <option value="10">10</option>
+            <option value="11" selected>11</option>
+            <option value="12">12</option>
+            <option value="14">14</option>
+            <option value="16">16</option>
+            <option value="18">18</option>
+            <option value="24">24</option>
+            <option value="36">36</option>
+          </select>
+          <button id="fontIncTbBtn" type="button" class="era-icon-btn" data-tip="Increase font size" aria-label="Increase font size">+</button>
+        </div>
+      </div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="era-toolbar-group">
+        <button id="boldBtn" type="button" class="era-icon-btn" data-icon="bold" data-tip="Bold" data-shortcut="Ctrl+B" aria-label="Bold"></button>
+        <button id="italicBtn" type="button" class="era-icon-btn" data-icon="italic" data-tip="Italic" data-shortcut="Ctrl+I" aria-label="Italic"></button>
+        <button id="underlineBtn" type="button" class="era-icon-btn" data-icon="underline" data-tip="Underline" data-shortcut="Ctrl+U" aria-label="Underline"></button>
+        <button id="strikeBtn" type="button" class="era-icon-btn" data-icon="strike" data-tip="Strikethrough" data-shortcut="Alt+Shift+5" aria-label="Strikethrough"></button>
+        <input id="colorInput" type="color" value="#c62828" data-tip="Text color" aria-label="Text color"/>
+        <input id="highlightInput" type="color" value="#fff59d" data-tip="Highlight color" aria-label="Highlight"/>
+      </div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="era-toolbar-group">
+        <button id="linkBtn" type="button" class="era-icon-btn" data-icon="link" data-tip="Insert link" data-shortcut="Ctrl+K" aria-label="Insert link"></button>
+        <button id="commentBtn" type="button" class="era-icon-btn" data-icon="comment" data-tip="Add comment" data-shortcut="Ctrl+Alt+M" aria-label="Add comment"></button>
+        <button id="imageTbBtn" type="button" class="era-icon-btn" data-icon="image" data-tip="Insert image" aria-label="Insert image"></button>
+      </div>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="era-toolbar-group">
+        <div class="era-btn-menu" id="alignMenu">
+          <button type="button" class="era-icon-btn era-btn-menu-trigger" data-icon="alignLeft" data-tip="Align" aria-label="Align">
+            <span class="era-btn-menu-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="era-btn-menu-panel era-menu-row" role="menu">
+            <button id="alignLeftBtn" type="button" class="era-icon-btn" data-icon="alignLeft" data-tip="Align left" aria-label="Align left"></button>
+            <button id="alignCenterBtn" type="button" class="era-icon-btn" data-icon="alignCenter" data-tip="Align center" aria-label="Align center"></button>
+            <button id="alignRightBtn" type="button" class="era-icon-btn" data-icon="alignRight" data-tip="Align right" aria-label="Align right"></button>
+            <button id="alignJustifyBtn" type="button" class="era-icon-btn" data-icon="alignJustify" data-tip="Justify" aria-label="Justify"></button>
+          </div>
+        </div>
+        <select id="lineSpacingSelect" class="era-input" aria-label="Line spacing" data-tip="Line &amp; paragraph spacing">
+          <option value="">Spacing</option>
+          <option value="1.0">Single</option>
+          <option value="1.15">1.15</option>
+          <option value="1.5">1.5</option>
+          <option value="2.0">Double</option>
+        </select>
+        <div class="era-btn-menu" id="bulletMenu">
+          <button id="listBtn" type="button" class="era-icon-btn" data-icon="list" data-tip="Bulleted list" aria-label="Bulleted list"></button>
+          <button type="button" class="era-icon-btn era-btn-menu-trigger" data-tip="List styles" aria-label="Bulleted list styles"><span class="era-btn-menu-caret" aria-hidden="true">▾</span></button>
+          <div class="era-btn-menu-panel era-menu-grid-2" role="menu">
+            <button type="button" class="era-menu-preset" data-list="bullet" data-marker="•"><span class="era-menu-preset-preview">• • •</span>Bullet</button>
+            <button type="button" class="era-menu-preset" data-list="bullet" data-marker="–"><span class="era-menu-preset-preview">– – –</span>Dash</button>
+            <button type="button" class="era-menu-preset" data-list="bullet" data-marker="○"><span class="era-menu-preset-preview">○ ○ ○</span>Hollow</button>
+            <button type="button" class="era-menu-preset" data-list="bullet" data-marker="■"><span class="era-menu-preset-preview">■ ■ ■</span>Square</button>
+          </div>
+        </div>
+        <div class="era-btn-menu" id="numberMenu">
+          <button id="numberedListBtn" type="button" class="era-icon-btn" data-icon="numbered" data-tip="Numbered list" aria-label="Numbered list"></button>
+          <button type="button" class="era-icon-btn era-btn-menu-trigger" data-tip="Numbered list styles" aria-label="Numbered list styles"><span class="era-btn-menu-caret" aria-hidden="true">▾</span></button>
+          <div class="era-btn-menu-panel era-menu-grid-2" role="menu">
+            <button type="button" class="era-menu-preset" data-list="ordered" data-marker="1."><span class="era-menu-preset-preview">1. a. i.</span>Number</button>
+            <button type="button" class="era-menu-preset" data-list="ordered" data-marker="1)"><span class="era-menu-preset-preview">1) a) i)</span>Paren</button>
+            <button type="button" class="era-menu-preset" data-list="ordered" data-marker="A."><span class="era-menu-preset-preview">A. B. C.</span>Alpha</button>
+            <button type="button" class="era-menu-preset" data-list="ordered" data-marker="I."><span class="era-menu-preset-preview">I. II. III.</span>Roman</button>
+          </div>
+        </div>
+        <button id="indentDecBtn" type="button" class="era-icon-btn" data-icon="indentDec" data-tip="Decrease indent" aria-label="Decrease indent"></button>
+        <button id="indentIncBtn" type="button" class="era-icon-btn" data-icon="indentInc" data-tip="Increase indent" aria-label="Increase indent"></button>
+        <button id="listLevelDecBtn" type="button" class="era-icon-btn" data-icon="listLevelDec" data-tip="Decrease list level" aria-label="Decrease list level"></button>
+        <button id="listLevelIncBtn" type="button" class="era-icon-btn" data-icon="listLevelInc" data-tip="Increase list level" aria-label="Increase list level"></button>
+        <button id="clearFmtBtn" type="button" class="era-icon-btn" data-icon="strike" data-tip="Clear formatting" aria-label="Clear formatting"></button>
+        <button id="superBtn" type="button" class="era-icon-btn" data-icon="superscript" data-tip="Superscript" aria-label="Superscript"></button>
+        <button id="subBtn" type="button" class="era-icon-btn" data-icon="subscript" data-tip="Subscript" aria-label="Subscript"></button>
+      </div>
+      <div class="era-toolbar-secondary">
+        <input id="findInput" type="search" class="era-input era-find-input" placeholder="Find" aria-label="Find in document"/>
+        <button id="findNextBtn" type="button" class="era-icon-btn" data-icon="search" title="Find next" aria-label="Find next"></button>
+        <button id="summarizeAIBtn" type="button" class="era-icon-btn" data-icon="sparkle" title="Summarize with AI" aria-label="Summarize with AI"></button>
+        <button id="rewriteAIBtn" type="button" class="era-icon-btn" data-icon="sparkle" title="Rewrite with AI" aria-label="Rewrite with AI"></button>
+      </div>
+    </div>
+    </div>
+
+    <div class="era-canvas-wrap era-workspace-split">
+      <div class="era-desk era-doc-desk" style="flex:1 1 28rem;min-width:0">
+        <div class="era-doc-sheet-frame">
+          <div class="era-doc-ruler-corner" aria-hidden="true"></div>
+          <div id="docRuler" class="era-doc-ruler era-doc-ruler-h" aria-label="Horizontal ruler" data-tip="Drag indent marker">
+            <div class="era-doc-ruler-track">
+              <div id="rulerIndent" class="era-doc-ruler-indent" role="slider" aria-valuemin="0" aria-valuemax="80" aria-valuenow="0" tabindex="0"></div>
+            </div>
+          </div>
+          <div id="docRulerV" class="era-doc-ruler-v" aria-label="Vertical ruler" aria-hidden="true"></div>
+          <div id="blocks" class="era-doc-page" data-page-size="a4"></div>
+        </div>
+      </div>
+      <aside id="commentsPanel" class="era-comments-rail era-comments-open" aria-label="Comments">
+        <div class="era-comments-head">
+          <strong>Comments</strong>
+          <button type="button" class="era-icon-btn" id="commentsCloseBtn" aria-label="Close comments">✕</button>
+        </div>
+        <p class="era-hint era-comments-hint">On selection · resolve in rail</p>
+        <ul id="commentsList" class="era-comments-list"></ul>
+      </aside>
+    </div>
+    <footer class="era-status-bar" aria-label="Document stats">
+      <span id="wordCount" class="era-word-count" aria-live="polite">0 words</span>
+    </footer>
+  </main>
+
+  <dialog id="tableInsertDlg">
+    <form method="dialog" style="padding:1rem;min-width:16rem">
+      <h3 style="margin-top:0">Insert table</h3>
+      <label>Rows
+        <input id="tableRows" class="era-input" type="number" min="1" max="12" value="3"/>
+      </label>
+      <label style="display:block;margin-top:.5rem">Columns
+        <input id="tableCols" class="era-input" type="number" min="1" max="8" value="3"/>
+      </label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="ok" class="era-btn era-btn-primary">Insert</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="wordCountDlg">
+    <form method="dialog" style="padding:1rem;min-width:16rem">
+      <h3 style="margin-top:0">Word count</h3>
+      <dl id="wordCountStats" style="margin:.5rem 0;display:grid;grid-template-columns:auto 1fr;gap:.25rem .75rem">
+        <dt>Words</dt><dd id="wcWords">0</dd>
+        <dt>Characters</dt><dd id="wcChars">0</dd>
+        <dt>Pages (est.)</dt><dd id="wcPages">0</dd>
+      </dl>
+      <div style="margin-top:1rem;text-align:right">
+        <button type="submit" value="ok" class="era-btn era-btn-primary">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="pageSetupDlg">
+    <form method="dialog" style="padding:1rem;min-width:16rem">
+      <h3 style="margin-top:0">Page setup</h3>
+      <label>Size
+        <select id="pageSize" class="era-input">
+          <option value="a4">A4</option>
+          <option value="letter">Letter</option>
+        </select>
+      </label>
+      <label style="display:block;margin-top:.5rem">Orientation
+        <select id="pageOrient" class="era-input">
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
+        </select>
+      </label>
+      <label style="display:block;margin-top:.5rem">Margins (mm)
+        <input id="pageMargins" class="era-input" type="number" min="5" max="50" value="20"/>
+      </label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="ok" class="era-btn era-btn-primary" id="pageSetupOk">OK</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="replaceDlg">
+    <form method="dialog" style="padding:1rem;min-width:18rem">
+      <h3 style="margin-top:0">Find and replace</h3>
+      <label>Find <input id="replaceFind" class="era-input" style="width:100%"/></label>
+      <label style="display:block;margin-top:.5rem">Replace with <input id="replaceWith" class="era-input" style="width:100%"/></label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="one" class="era-btn">Replace</button>
+        <button type="submit" value="all" class="era-btn era-btn-primary">Replace all</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="versionsDlg">
+    <form method="dialog" style="padding:1rem;min-width:18rem;max-width:28rem">
+      <h3 style="margin-top:0">Version history</h3>
+      <p class="era-hint">Drive immutable versions for this document.</p>
+      <ol id="versionsDlgList" style="padding-left:1.2rem;max-height:14rem;overflow:auto"></ol>
+      <div style="margin-top:1rem;text-align:right">
+        <button type="submit" value="ok" class="era-btn era-btn-primary">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="columnsDlg">
+    <form method="dialog" style="padding:1rem;min-width:16rem">
+      <h3 style="margin-top:0">Columns</h3>
+      <p class="era-hint">Page column layout (1–3). Details in Help → About.</p>
+      <label>Columns
+        <select id="columnsSelect" class="era-input" style="display:block;width:100%;margin-top:.25rem">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="ok" class="era-btn era-btn-primary">Apply</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="stylesDlg">
+    <form method="dialog" style="padding:1rem;min-width:20rem;max-width:28rem">
+      <h3 style="margin-top:0">Manage styles</h3>
+      <p class="era-hint">Named styles apply font/size/bold/italic to the selection and appear in the Styles gallery.</p>
+      <ul id="stylesList" style="list-style:none;padding:0;max-height:10rem;overflow:auto"></ul>
+      <div style="display:grid;gap:.35rem;margin-top:.5rem">
+        <input id="styleName" class="era-input" placeholder="Style name" aria-label="Style name"/>
+        <input id="styleFont" class="era-input" placeholder="Font family" value="Arial"/>
+        <input id="styleSize" class="era-input" type="number" min="8" max="72" value="12" aria-label="Size pt"/>
+        <label style="display:flex;gap:.5rem;align-items:center"><input type="checkbox" id="styleBold"/> Bold</label>
+        <label style="display:flex;gap:.5rem;align-items:center"><input type="checkbox" id="styleItalic"/> Italic</label>
+      </div>
+      <div style="margin-top:.75rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="button" id="styleAddBtn" class="era-btn">Add / update</button>
+        <button type="button" id="styleApplyBtn" class="era-btn era-btn-primary">Apply to selection</button>
+        <button type="submit" value="ok" class="era-btn">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="reviewDlg">
+    <form method="dialog" style="padding:1rem;min-width:20rem;max-width:28rem">
+      <h3 style="margin-top:0">Track changes</h3>
+      <label style="display:flex;gap:.5rem;align-items:center">
+        <input type="checkbox" id="trackChangesChk"/> Record edits as revisions
+      </label>
+      <ol id="revisionsList" style="padding-left:1.2rem;max-height:14rem;overflow:auto;margin:.75rem 0"></ol>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="button" id="reviewAcceptAll" class="era-btn">Accept all</button>
+        <button type="button" id="reviewRejectAll" class="era-btn">Reject all</button>
+        <button type="submit" value="ok" class="era-btn era-btn-primary">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="compareDlg">
+    <form method="dialog" style="padding:1rem;min-width:22rem;max-width:36rem">
+      <h3 style="margin-top:0">Compare documents</h3>
+      <label>Other document id
+        <input id="compareDocId" class="era-input" style="width:100%;margin-top:.25rem" placeholder="drive object id"/>
+      </label>
+      <pre id="compareOut" style="max-height:16rem;overflow:auto;background:#f7f9fc;padding:.5rem;font-size:.85rem;white-space:pre-wrap"></pre>
+      <div style="margin-top:.75rem;display:flex;gap:.5rem;justify-content:flex-end">
+        <button type="button" id="compareRunBtn" class="era-btn era-btn-primary">Compare</button>
+        <button type="submit" value="ok" class="era-btn">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="mergeDlg">
+    <form method="dialog" style="padding:1rem;min-width:22rem;max-width:32rem">
+      <h3 style="margin-top:0">Mail merge</h3>
+      <p class="era-hint">Use &lt;&lt;Name&gt;&gt; / &lt;&lt;Email&gt;&gt; fields in the document. Paste CSV with header row.</p>
+      <textarea id="mergeCsv" class="era-input" rows="6" style="width:100%;font-family:monospace" placeholder="Name,Email&#10;Ada,ada@example.com"></textarea>
+      <div style="margin-top:.75rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="run" class="era-btn era-btn-primary">Generate</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="shareDlg">
+    <form method="dialog" style="padding:1rem;min-width:18rem;max-width:24rem">
+      <h3 style="margin-top:0">Share</h3>
+      <p id="shareAclHint" class="era-hint">Copy link · ACL is managed in Drive (Share on the Drive object).</p>
+      <label class="era-label">Link
+        <input id="shareLinkInput" class="era-input" type="text" readonly style="width:100%;margin-top:.25rem"/>
+      </label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="button" id="shareCopyBtn" class="era-btn">Copy link</button>
+        <a id="shareDriveLink" class="era-btn" href="/drive/">Manage ACL in Drive</a>
+        <button type="submit" value="ok" class="era-btn era-btn-primary">Done</button>
+      </div>
+    </form>
+  </dialog>
+
+  <input type="file" id="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden/>
+  <style>
+    .era-doc-ruler-track {
+      position: relative; height: 1.1rem;
+      background: repeating-linear-gradient(
+        to right,
+        var(--era-line) 0, var(--era-line) 1px,
+        transparent 1px, transparent 8.33%
+      );
+      border: 1px solid var(--era-line); border-radius: 0; background-color: #f1f3f4;
+      box-sizing: border-box;
+    }
+    .era-doc-ruler-indent {
+      position: absolute; top: 0; left: 0; width: 0; height: 100%;
+      cursor: ew-resize;
+    }
+    .era-doc-ruler-indent::after {
+      content: ''; position: absolute; left: -5px; top: 1px;
+      border-left: 5px solid transparent; border-right: 5px solid transparent;
+      border-top: 10px solid var(--era-ink);
+    }
+    @media print {
+      .era-topbar, .era-menubar, .era-toolbar, .era-editor-chrome-actions,
+      .era-comments-rail, #authStatus, #banner, #headerStrip, #docRuler, #docRulerV,
+      .era-doc-ruler-corner, dialog { display: none !important; }
+      .era-doc-page { box-shadow: none; border: none; max-width: none; width: auto; min-height: 0; }
+      body.era-app { background: #fff; height: auto; overflow: visible; }
+    }
+    .doc-block {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .doc-block[data-type="image"] img { max-width: 100%; height: auto; }
+    .doc-block[data-type="table"] table { border-collapse: collapse; width: 100%; }
+    .doc-block[data-type="table"] td { border: 1px solid var(--era-line); padding: .25rem .4rem; }
+    .doc-block[data-type="bookmark"] { color: var(--era-muted); font-size: .85rem; }
+    .doc-block[data-type="toc"] { background: #f7f9fc; padding: .5rem .75rem; border-radius: 4px; }
+    .spell-flag { text-decoration: wavy underline #c62828; }
+    .doc-block[data-type="text_box"], .doc-textbox {
+      border: 1px solid var(--era-line);
+      padding: .5rem .75rem;
+      background: #fafbfc;
+      border-radius: 2px;
+      margin: .35rem 0;
+    }
+    #blocks.era-show-marks .doc-block::after {
+      content: '¶';
+      color: var(--era-muted);
+      margin-left: .25rem;
+      opacity: .65;
+    }
+    #blocks.era-show-marks .doc-block br::after {
+      content: '↵';
+      color: var(--era-muted);
+      font-size: .7em;
+    }
+    #blocks.era-show-marks .doc-hr::after { content: ''; }
+    .doc-hr hr {
+      border: none;
+      border-top: 1.5px solid var(--era-ink);
+      margin: .75rem 0;
+    }
+    .doc-block[data-list-restart="1"]::before {
+      content: '① ';
+      color: var(--era-accent);
+      font-size: .75em;
+    }
+    #blocks.line-numbers .doc-block {
+      position: relative;
+      padding-left: 2.2rem;
+    }
+    #blocks.line-numbers .doc-block::before {
+      content: attr(data-line);
+      position: absolute;
+      left: 0;
+      width: 1.6rem;
+      color: var(--era-muted);
+      font-size: .75rem;
+      text-align: right;
+      user-select: none;
+    }
+    #blocks.line-numbers::after {
+      content: '';
+    }
+    .era-line-num-hint {
+      font-size: .75rem;
+      color: var(--era-muted);
+      margin: 0 0 .35rem;
+    }
+    #blocks.columns-2 { column-count: 2; column-gap: 1.5rem; }
+    #blocks.columns-3 { column-count: 3; column-gap: 1.25rem; }
+    .rev-ins { background: #e8f5e9; }
+    .rev-del { background: #ffebee; text-decoration: line-through; }
+    body.era-suggesting .doc-block { outline: 1px dashed transparent; }
+    body.era-suggesting .doc-block-suggested {
+      outline: 1px solid #81c784;
+      background: #f1f8e9;
+      position: relative;
+      padding-right: 4.5rem;
+    }
+    .doc-suggest-badge {
+      position: absolute;
+      top: 0.15rem;
+      right: 0.25rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #2e7d32;
+      background: #c8e6c9;
+      border-radius: 3px;
+      padding: 0.1rem 0.3rem;
+      pointer-events: none;
+    }
+    .doc-block[data-type="section_break"] {
+      text-align: center; color: var(--era-muted); border-top: 2px double var(--era-line);
+      margin: 1rem 0; padding: .25rem; font-size: .85rem;
+    }
+    .doc-block[data-type="footnote"] {
+      font-size: .85rem; border-top: 1px solid var(--era-line); margin-top: .5rem; padding-top: .35rem;
+    }
+  </style>
+  <script src="/office-assets/icons.js"></script>
+  <script src="/office-assets/menubar.js"></script>
+  <script src="/office-assets/shell.js"></script>
+  <script src="/office-assets/toolbar-chrome.js"></script>
+  <script src="app.js"></script>
+  <script src="later.js"></script>
+  <script src="era_plus.js"></script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+syntax = "proto3";
+
+package era.v1;
+
+option go_package = "era/contracts/gen/era/v1;erav1";
+
+// ERA Office Documents — native wire format (ADR-0026, P1).
+// Extension .erad = wire type erad. ERAT/ERAP reserved for P2/P3.
+
+enum DocumentFormat {
+  DOCUMENT_FORMAT_UNSPECIFIED = 0;
+  DOCUMENT_FORMAT_ERAD = 1;
+  DOCUMENT_FORMAT_ERAT = 2;
+  DOCUMENT_FORMAT_ERAP = 3;
+  DOCUMENT_FORMAT_ERAJ = 4; // ERA Projects board (.eraj)
+}
+
+enum BlockType {
+  BLOCK_TYPE_UNSPECIFIED = 0;
+  BLOCK_TYPE_PARAGRAPH = 1;
+  BLOCK_TYPE_HEADING = 2;
+  BLOCK_TYPE_LIST_ITEM = 3;
+}
+
+enum ListType {
+  LIST_TYPE_UNSPECIFIED = 0;
+  LIST_TYPE_BULLET = 1;
+  LIST_TYPE_ORDERED = 2;
+}
+
+message InlineSpan {
+  string text = 1;
+  bool bold = 2;
+  bool italic = 3;
+  bool underline = 4;
+  string link_url = 5;
+  bool strike = 6;          // O-FMT-1
+  bool superscript = 7;     // O-FMT-1
+  bool subscript = 8;       // O-FMT-1
+  string font_family = 9;
+  uint32 font_size_pt = 10;
+  string color = 11;
+  string highlight = 12;
+}
+
+message BlockAttrs {
+  BlockType block_type = 1;
+  uint32 heading_level = 2;
+  ListType list_type = 3;
+  uint32 list_level = 4;           // O-FMT-1
+  uint32 space_before_pt = 5;      // O-FMT-1
+  uint32 space_after_pt = 6;       // O-FMT-1
+  string line_spacing = 7;         // O-FMT-1 e.g. "1.15"
+  uint32 indent_mm = 8;            // O-FMT-1
+  string style_name = 9;           // O-FMT-1
+}
+
+message Block {
+  string id = 1;
+  BlockAttrs attrs = 2;
+  repeated InlineSpan inlines = 3;
+}
+
+message DocComment {
+  string id = 1;
+  string block_id = 2;
+  string author_id = 3;
+  string text = 4;
+  bool resolved = 5;
+}
+
+message EradDocument {
+  string id = 1;
+  string tenant_id = 2;
+  string drive_object_id = 3;
+  DocumentFormat format = 4;
+  repeated Block blocks = 5;
+  bool legacy_features_dropped = 6;
+  repeated DocComment comments = 7;
+}
+
+enum DocOpType {
+  DOC_OP_TYPE_UNSPECIFIED = 0;
+  DOC_OP_TYPE_INSERT_TEXT = 1;
+  DOC_OP_TYPE_DELETE_RANGE = 2;
+  DOC_OP_TYPE_SET_BLOCK_TYPE = 3;
+  DOC_OP_TYPE_INSERT_BLOCK = 4;
+  DOC_OP_TYPE_SPLIT_BLOCK = 5;
+  DOC_OP_TYPE_MERGE_BLOCKS = 6;
+  DOC_OP_TYPE_SET_MARKS_RANGE = 7;
+  DOC_OP_TYPE_SET_INLINE_MARKS = 8;
+  DOC_OP_TYPE_SET_BLOCK_FORMAT = 9;
+}
+
+message DocSessionOp {
+  uint64 version = 1;
+  string session_id = 2;
+  string author_id = 3;
+  DocOpType op_type = 4;
+  string block_id = 5;
+  uint32 offset = 6;
+  uint32 length = 7;
+  string text = 8;
+  BlockAttrs attrs = 9;
+  Block block = 10;
+  string new_block_id = 11;
+  uint32 end_offset = 12;
+  InlineSpan marks = 13;
+}
+
+// --- ERA Tables (.erat) — P2 / Wave O-T ---
+
+message EratCell {
+  string addr = 1; // A1 notation
+  string value = 2; // display / numeric literal
+  string formula = 3; // optional, e.g. =SUM(A1:A3)
+}
+
+message EratSheet {
+  string id = 1;
+  string tenant_id = 2;
+  string drive_object_id = 3;
+  DocumentFormat format = 4; // DOCUMENT_FORMAT_ERAT
+  string name = 5;
+  uint32 rows = 6;
+  uint32 cols = 7;
+  repeated EratCell cells = 8;
+}
+
+enum SheetOpType {
+  SHEET_OP_TYPE_UNSPECIFIED = 0;
+  SHEET_OP_TYPE_SET_CELL = 1;
+  SHEET_OP_TYPE_CLEAR_CELL = 2;
+}
+
+message SheetSessionOp {
+  uint64 version = 1;
+  string session_id = 2;
+  string author_id = 3;
+  SheetOpType op_type = 4;
+  string addr = 5;
+  string value = 6;
+  string formula = 7;
+}
+
+// --- ERA Presentations (.erap) — P3 / Wave O-P ---
+
+// Text shape: same Block / InlineSpan as Docs (era-office-richtext).
+message TextFrame {
+  repeated Block blocks = 1;
+}
+
+message ErapSlide {
+  string id = 1;
+  // Legacy plain fields (deprecated; prefer *_frame).
+  string title = 2;
+  string body = 3;
+  string layout = 4; // title_body | title_only | section | two_column
+  TextFrame title_frame = 5;
+  TextFrame body_frame = 6;
+  TextFrame body2_frame = 7;
+  string notes = 8;
+  string background = 9;
+  string image_url = 10;
+}
+
+message ErapDeck {
+  string id = 1;
+  string tenant_id = 2;
+  string drive_object_id = 3;
+  DocumentFormat format = 4; // DOCUMENT_FORMAT_ERAP
+  string name = 5;
+  repeated ErapSlide slides = 6;
+  uint64 version = 7;
+}

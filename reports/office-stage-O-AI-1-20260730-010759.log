@@ -1,0 +1,3 @@
+==> office stage gate O-AI-1 20260730-010759
+[PASS] O-AI-1/cmd :: cmd /c "if exist services\platform\cmd\docs-ai\main.go (exit /b 0) else (exit /b 1)"
+STAGE GATE PASS (O-AI-1)

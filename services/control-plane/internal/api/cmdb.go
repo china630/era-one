@@ -23,8 +23,22 @@ func (s *Server) requireManage(w http.ResponseWriter, r *http.Request) bool {
 		http.Error(w, "manage module not licensed", http.StatusForbidden)
 		return false
 	}
-	if !rbac.CanReadCases(rbac.FromRequest(r)) {
+	role := rbac.FromRequest(r)
+	if !rbac.CanReadCases(role) {
 		http.Error(w, "forbidden", http.StatusForbidden)
+		return false
+	}
+	return true
+}
+
+// requireManageAdmin — writes (enforcement policy, escrow, deploy mutate).
+func (s *Server) requireManageAdmin(w http.ResponseWriter, r *http.Request) bool {
+	if s.Gate != nil && !s.Gate.Allow(licensegate.ModuleManage) {
+		http.Error(w, "manage module not licensed", http.StatusForbidden)
+		return false
+	}
+	if !rbac.IsAdmin(rbac.FromRequest(r)) {
+		http.Error(w, "forbidden: admin required", http.StatusForbidden)
 		return false
 	}
 	return true

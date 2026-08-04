@@ -1,0 +1,9 @@
+go 1.26.4
+
+use (
+	./services/comms/internal/httpauth
+	./services/comms/mail-moderation
+	./services/platform
+	./services/license
+	./gen/go
+)

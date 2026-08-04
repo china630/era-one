@@ -46,6 +46,20 @@ func TestDeployJobCreate(t *testing.T) {
 	}
 	var job store.DeployJob
 	_ = json.Unmarshal(rec.Body.Bytes(), &job)
+
+	recGet := httptest.NewRecorder()
+	reqGet := httptest.NewRequest(http.MethodGet, "/api/v1/manage/deploy/jobs/"+job.ID, nil)
+	reqGet.Header.Set("X-ERA-Role", "admin")
+	srv.Routes().ServeHTTP(recGet, reqGet)
+	if recGet.Code != http.StatusOK {
+		t.Fatalf("detail: %d %s", recGet.Code, recGet.Body.String())
+	}
+	var got store.DeployJob
+	_ = json.Unmarshal(recGet.Body.Bytes(), &got)
+	if got.ID != job.ID || got.PackageRef != "s3://era-packages/app.msi" {
+		t.Fatalf("detail mismatch: %+v", got)
+	}
+
 	rec2 := httptest.NewRecorder()
 	patch := `{"status":"failed"}`
 	req2 := httptest.NewRequest(http.MethodPatch, "/api/v1/manage/deploy/jobs/"+job.ID, bytes.NewReader([]byte(patch)))
@@ -53,5 +67,24 @@ func TestDeployJobCreate(t *testing.T) {
 	srv.Routes().ServeHTTP(rec2, req2)
 	if rec2.Code != http.StatusOK {
 		t.Fatalf("rollback: %d %s", rec2.Code, rec2.Body.String())
+	}
+}
+
+func TestDeployPackagesCatalog(t *testing.T) {
+	st := store.NewMemory()
+	srv := New(st, licensegate.DevAllEnabled())
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/manage/deploy/packages", nil)
+	req.Header.Set("X-ERA-Role", "admin")
+	srv.Routes().ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("packages: %d %s", rec.Code, rec.Body.String())
+	}
+	var out struct {
+		Packages []store.DeployPackage `json:"packages"`
+	}
+	_ = json.Unmarshal(rec.Body.Bytes(), &out)
+	if len(out.Packages) == 0 {
+		t.Fatal("expected seeded packages")
 	}
 }

@@ -1,0 +1,6 @@
+==> IT-Ops smoke (service-desk + provision)
+service-desk tests: PASS
+provision tests: PASS
+service-desk: not running (optional: docker compose -f deploy/docker-compose.prod.yml --profile itops up -d)
+provision: not running (optional: docker compose -f deploy/docker-compose.prod.yml --profile itops up -d)
+IT-Ops smoke PASS (unit + optional live) — log D:\My Projects\era-one\reports\itops-smoke-20260730-001741.log

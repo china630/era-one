@@ -12,19 +12,20 @@ type InterfaceStat struct {
 }
 
 type HostMetrics struct {
-	Target     string           `json:"target"`
-	PolledAt   time.Time        `json:"polled_at"`
-	CPUPercent float64          `json:"cpu_percent"`
-	MemPercent float64          `json:"mem_percent"`
-	Interfaces []InterfaceStat  `json:"interfaces"`
-	Error      string           `json:"error,omitempty"`
+	Target        string          `json:"target"`
+	PolledAt      time.Time       `json:"polled_at"`
+	CPUPercent    float64         `json:"cpu_percent"`
+	MemPercent    float64         `json:"mem_percent"`
+	MetricsSource string          `json:"metrics_source"` // host_resources | estimate | sim
+	Interfaces    []InterfaceStat `json:"interfaces"`
+	Error         string          `json:"error,omitempty"`
 }
 
 // PollSimulated — dev/demo без реального SNMP (air-gap lab).
 func PollSimulated(target string) HostMetrics {
 	return HostMetrics{
 		Target: target, PolledAt: time.Now().UTC(),
-		CPUPercent: 42.5, MemPercent: 61.0,
+		CPUPercent: 42.5, MemPercent: 61.0, MetricsSource: "sim",
 		Interfaces: []InterfaceStat{
 			{IfIndex: 1, IfName: "Gi0/1", InOctets: 1_000_000, OutOctets: 9_500_000, Status: "up"},
 			{IfIndex: 2, IfName: "Gi0/2", InOctets: 500_000, OutOctets: 200_000, Status: "up"},

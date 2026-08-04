@@ -37,8 +37,40 @@
     <thead><tr><th>ID</th><th>Title</th><th>Status</th><th>Assignee</th><th>Node</th><th>Actions</th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
+  <h2 style="margin-top:2rem;font-size:1.1rem">FP Suppressions</h2>
+  <div class="toolbar">
+    <input id="supRule" placeholder="rule_id" />
+    <input id="supNode" placeholder="node_id (optional)" />
+    <input id="supReason" placeholder="reason" />
+    <button id="supAdd">Suppress</button>
+  </div>
+  <table>
+    <thead><tr><th>ID</th><th>Rule</th><th>Node</th><th>Reason</th><th></th></tr></thead>
+    <tbody id="supRows"></tbody>
+  </table>
   <script>
     const API = '/api/v1/cases';
+    const SUP = '/api/v1/suppressions';
+    async function loadSup() {
+      const res = await fetch(SUP);
+      const data = await res.json();
+      const tbody = document.getElementById('supRows');
+      tbody.innerHTML = '';
+      for (const s of data.suppressions || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><code>${(s.id||'').slice(0,8)}…</code></td><td>${s.rule_id}</td><td>${s.node_id||'*'}</td><td>${s.reason||'—'}</td>
+          <td><button data-id="${s.id}" class="delSup">Delete</button></td>`;
+        tbody.appendChild(tr);
+      }
+      document.querySelectorAll('.delSup').forEach(btn => {
+        btn.onclick = async () => { await fetch(SUP + '/' + btn.dataset.id, { method: 'DELETE' }); loadSup(); };
+      });
+    }
+    document.getElementById('supAdd').onclick = async () => {
+      await fetch(SUP, { method: 'POST', headers: {'Content-Type':'application/json','X-ERA-Actor':'analyst'},
+        body: JSON.stringify({ rule_id: document.getElementById('supRule').value, node_id: document.getElementById('supNode').value, reason: document.getElementById('supReason').value })});
+      loadSup();
+    };
     async function load() {
       const res = await fetch(API);
       const data = await res.json();
@@ -80,8 +112,9 @@
         body: JSON.stringify({ title: document.getElementById('title').value || 'New incident', node_id: document.getElementById('nodeId').value })});
       load();
     };
-    document.getElementById('refresh').onclick = load;
+    document.getElementById('refresh').onclick = () => { load(); loadSup(); };
     load();
+    loadSup();
   </script>
 </body>
 </html>

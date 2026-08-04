@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <CreateContact xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
+      <Contacts>
+        <Contact>
+          <GivenName>John</GivenName>
+          <Surname>Doe</Surname>
+          <EmailAddresses>
+            <Entry Key="EmailAddress1">john.doe@mail.gov.az</Entry>
+          </EmailAddresses>
+        </Contact>
+      </Contacts>
+    </CreateContact>
+  </soap:Body>
+</soap:Envelope>

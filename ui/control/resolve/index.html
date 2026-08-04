@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — Resolve</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>Resolve</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-banner">DnsEvent emitter mode=stub until ETW/WHQL. Live commercial TI ⏸.</div>
+<div class="era-card"><h2>Verdict</h2>
+<input id="q" value="malware.test"/><button class="era-btn" id="v">Check</button>
+<pre id="out" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>Policy / Packs / Trace</h2>
+<button class="era-btn secondary" id="pol">Policy</button>
+<button class="era-btn secondary" id="pk">Packs</button>
+<button class="era-btn secondary" id="tr">Trace</button>
+<pre id="side" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("resolve");
+document.getElementById("v").onclick=function(){
+  EraControl.x("resolve","/api/v1/resolve/verdict",{method:"POST",body:JSON.stringify({qname:document.getElementById("q").value,qtype:"A"})}).then(function(r){
+    document.getElementById("out").textContent=JSON.stringify(r.json,null,2);
+  });
+};
+document.getElementById("pol").onclick=function(){EraControl.x("resolve","/api/v1/resolve/policy").then(function(r){document.getElementById("side").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("pk").onclick=function(){EraControl.x("resolve","/api/v1/resolve/packs").then(function(r){document.getElementById("side").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("tr").onclick=function(){EraControl.x("resolve","/api/v1/resolve/trace").then(function(r){document.getElementById("side").textContent=JSON.stringify(r.json,null,2);});};
+</script></body></html>

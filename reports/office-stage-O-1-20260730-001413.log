@@ -1,0 +1,8 @@
+==> office stage gate O-1 20260730-001413
+[PASS] O-1/migration :: cmd /c "if exist deploy\postgres\migrations\platform\001_drive.sql (exit /b 0) else (exit /b 1)"
+[PASS] O-1/drive-api :: cmd /c "if exist services\platform\cmd\drive-api\main.go (exit /b 0) else (exit /b 1)"
+[PASS] O-1/drive-tests :: go test -C services/platform ./drive/... -count=1
+[PASS] O-1/license :: go test -C services/platform ./licensegate/... -run "PlatformDrive|OfficeDocuments|OfficeDev" -count=1
+[PASS] O-1/mail-drive :: go test -C ui/mail ./... -run Drive -count=1
+[PASS] O-1/compose :: docker compose -f deploy/docker-compose.office.yml config
+STAGE GATE PASS (O-1)

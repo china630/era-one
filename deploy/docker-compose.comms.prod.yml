@@ -1,0 +1,44 @@
+# ERA Comms — prod overlay (TLS honesty + offline license modules + DEV fail-closed)
+# Usage:
+#   docker compose -f deploy/docker-compose.comms.yml -f deploy/docker-compose.comms.prod.yml up -d --wait
+# Dev certs: pwsh deploy/comms-tls/gen-dev-certs.ps1
+#
+# Honesty: base compose may set ERA_MAIL_DEV/ERA_BRIDGE_DEV=1 for lab. Docker Compose
+# merges environment maps and does NOT unset omitted keys — so prod MUST set "0"
+# explicitly (comment-only "No ERA_MAIL_DEV" left the base "1" active).
+
+services:
+  era-mail-api:
+    environment:
+      ERA_MAIL_TLS: "1"
+      ERA_LICENSE_MODULES: "comms-mail-server"
+      ERA_MAIL_DEV: "0"
+
+  era-mail-core:
+    environment:
+      ERA_MAIL_TLS_CERT: /certs/server.crt
+      ERA_MAIL_TLS_KEY: /certs/server.key
+      ERA_MAIL_SMTP_PORT: "587"
+      ERA_MAIL_IMAP_PORT: "993"
+    volumes:
+      - ../deploy/comms-tls:/certs:ro
+    ports:
+      - "587:587"
+      - "993:993"
+
+  identity-api:
+    environment:
+      ERA_LICENSE_MODULES: "comms-mail-server"
+      ERA_IDENTITY_DEV: "0"
+
+  era-mail-bridge:
+    environment:
+      ERA_BRIDGE_TLS: "1"
+      ERA_LICENSE_MODULES: "comms-outlook-bridge"
+      ERA_BRIDGE_DEV: "0"
+
+  era-mail-moderation:
+    environment:
+      ERA_LICENSE_MODULES: "comms-mail-moderation"
+      ERA_MM_DEV: "0"
+      ERA_MAIL_DEV: "0"

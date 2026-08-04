@@ -1,0 +1,24 @@
+==> office stage gate O-0 20260730-001327
+[PASS] O-0/file :: docs/products/Office-Acceptance-System.md
+[PASS] O-0/file :: docs/Office-Evidence-Rules.md
+[PASS] O-0/file :: docs/Office-MVP-Spec.md
+[PASS] O-0/file :: docs/Office-Sprint-Index.md
+[PASS] O-0/file :: docs/Office-Implementation-Matrix.md
+[PASS] O-0/file :: docs/Office-Pilot-Gap-List.md
+[PASS] O-0/file :: docs/Office-Pilot-Readiness-Checklist.md
+[PASS] O-0/file :: docs/Office-Stage-O0-Spec.md
+[PASS] O-0/file :: docs/Office-Stage-O1-Spec.md
+[PASS] O-0/file :: docs/Office-Stage-O2-Spec.md
+[PASS] O-0/file :: docs/Office-Stage-O3-Spec.md
+[PASS] O-0/file :: docs/Office-Stage-O4-Spec.md
+[PASS] O-0/file :: docs/Office-Stage-O5-Spec.md
+[PASS] O-0/file :: docs/Office-Stage-OGA-Spec.md
+[PASS] O-0/file :: scripts/run-office-stage-gate.ps1
+[PASS] O-0/file :: proto/era/v1/drive.proto
+[PASS] O-0/file :: proto/era/v1/office.proto
+[PASS] O-0/evidence :: docs/Office-Evidence-Rules.md matches Нет лога
+[PASS] O-0/matrix :: docs/Office-Implementation-Matrix.md matches AC-O3
+[PASS] O-0/drive-service :: powershell -NoProfile -Command "if (Select-String -Path proto/era/v1/drive.proto -Pattern 'service DriveService' -Quiet) { exit 0 } else { exit 1 }"
+[PASS] O-0/gen-proto-list :: powershell -NoProfile -Command "if ((Select-String -Path scripts/gen-proto.ps1 -Pattern 'era/v1/drive.proto' -Quiet) -and (Select-String -Path scripts/gen-proto.ps1 -Pattern 'era/v1/office.proto' -Quiet)) { exit 0 } else { exit 1 }"
+[PASS] O-0/golden :: go test -C gen/go ./era/v1/ -run "DriveService|DriveObjectWire|EradDocumentWire" -count=1
+STAGE GATE PASS (O-0)

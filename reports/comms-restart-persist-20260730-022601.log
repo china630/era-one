@@ -1,0 +1,4 @@
+2026-07-30T02:26:01.8601779+04:00 START G1 restart persist
+2026-07-30T02:26:02.0948832+04:00 SEND ok id=37 uid=3 before=2
+2026-07-30T02:26:05.5084530+04:00 PASS: message survived era-mail-api restart (before=2 after=3 found=True)
+2026-07-30T02:26:05.5111520+04:00 PROOF reports/comms-restart-persist-20260730-022601.log

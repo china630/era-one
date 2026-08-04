@@ -1,0 +1,21 @@
+# ERA One — secret scan allowlist for synthetic / golden fixtures.
+title = "era-one"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Test fixtures and documented examples"
+paths = [
+  '''testdata/''',
+  '''.*/testdata/.*''',
+  '''reports/.*\.log''',
+  '''gen/go/.*/testdata/''',
+  '''docs/.*\.md''',
+]
+regexes = [
+  '''ERA_CI_PW''',
+  '''era_ci_pw''',
+  '''CHANGE_ME''',
+  '''your-secret-here''',
+]

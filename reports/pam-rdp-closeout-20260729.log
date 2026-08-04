@@ -1,0 +1,8 @@
+?   	era/services/pam/cmd/pam	[no test files]
+ok  	era/services/pam/internal/api	(cached)
+ok  	era/services/pam/internal/checkout	(cached)
+ok  	era/services/pam/internal/kms	(cached)
+ok  	era/services/pam/internal/proxy	(cached)
+ok  	era/services/pam/internal/rotation	(cached)
+ok  	era/services/pam/internal/shamir	(cached)
+ok  	era/services/pam/internal/vault	(cached)

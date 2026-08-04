@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERA Office</title>
+  <link rel="stylesheet" href="solo.css"/>
+</head>
+<body>
+  <section id="panelBoot" class="boot">
+    <div class="boot-inner">
+      <h1>ERA Office</h1>
+      <p class="boot-lead">Choose how this desktop app connects.</p>
+      <div class="boot-profiles">
+        <button type="button" class="boot-card" id="pickSolo">
+          <strong>Solo</strong>
+          <span>Local Documents, Tables, Presentations &amp; Projects — no tenant server.</span>
+        </button>
+        <button type="button" class="boot-card" id="pickCorp">
+          <strong>Corporate</strong>
+          <span>Open your organization’s Workspace (SSO in WebView).</span>
+        </button>
+      </div>
+      <div id="corpSetup" class="corp-setup" hidden>
+        <label for="serverUrl">Workspace URL</label>
+        <input id="serverUrl" type="url" placeholder="https://office.example.gov" autocomplete="off"/>
+        <p class="hint">Same host as browser Workspace. Login is tenant <code>/login</code>.</p>
+        <div class="boot-actions">
+          <button type="button" id="corpConnect" class="primary">Connect</button>
+          <button type="button" id="corpBack">Back</button>
+        </div>
+      </div>
+      <p id="bootStatus" class="status" role="status"></p>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

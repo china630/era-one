@@ -1,9 +1,10 @@
 # ERA XDR — Production GA Specification
 
-**Версия:** 1.1  
-**Дата:** 9 июня 2026 г.  
+**Версия:** 1.2  
+**Дата:** 30 июля 2026 г.  
 **Статус:** Активный — **софтверный беклог закрыт**; остаются полевые тесты и чек-листы (пилот, soak, pen-test, loadgen proof на prod).  
-**Контекст:** переход от Functional MVP (Фазы 0–4) к **зрелому продукту** для банка/госсектора.
+**Контекст:** переход от Functional MVP (Фазы 0–4) к **зрелому продукту** для банка/госсектора.  
+**Приёмка (канон):** [`Control-Acceptance-System.md`](products/Control-Acceptance-System.md) · [`Control-Sprint-Index.md`](Control-Sprint-Index.md) · [`ERA-Product-Acceptance-Standard.md`](products/ERA-Product-Acceptance-Standard.md) · [`Control-Evidence-Rules.md`](Control-Evidence-Rules.md)
 
 ## Целевая поставка v1.0 GA
 
@@ -28,19 +29,22 @@
 
 ## Definition of Done — Production GA (Wave GA-1)
 
-| ID | Критерий | Софт | Доказательство (чек-лист / пилот) |
-|---|---|---|---|
-| F-GA-1 | Win capture | [x] | Pilot Win hosts |
-| F-GA-2 | Linux capture | [x] | Pilot Linux hosts |
-| F-GA-3 | Prod deploy | [x] | compose up |
-| F-GA-4 | Persistent CP | [x] | restart test |
-| F-GA-5 | ≥10k ev/s 5 мин | [x] script | `run-loadgen-prod.ps1` PASS |
-| F-GA-6 | mTLS agent→gateway | [x] | TLS env on pilot |
-| F-GA-7 | Case lifecycle + UI | [x] | `/ui/portal/` |
-| F-GA-8 | Asset coverage ≥90% | [x] API | метрика на пилоте |
-| F-GA-9 | Sigma ≥100 | [x] | corpus lint |
-| F-GA-10 … F-GA-14 | AI, SOAR, license, docs | [x] | smoke scripts |
-| F-GA-15 | Pilot checklist signed | [x] template | **подпись на пилоте** |
+**Honesty (2026-07-30):** колонки **Scaffold** (soft/CI) и **Pilot-ready** (поле) разделены — см. [`Control-Evidence-Rules.md`](Control-Evidence-Rules.md).  
+Ложный `[x]` на полевом критерии без подписи/лога заказчика **запрещён**.
+
+| ID | Критерий | Scaffold | Pilot-ready | Доказательство |
+|---|---|---|---|---|
+| F-GA-1 | Win capture | [x] | [~] | Soft: Sysmon/EVTX · Pilot: Win hosts |
+| F-GA-2 | Linux capture | [x] | [~] | Soft: auditd · Pilot: Linux hosts |
+| F-GA-3 | Prod deploy | [x] | [~] | Soft: compose · Pilot: customer compose |
+| F-GA-4 | Persistent CP | [x] | [~] | Soft: restart test · Pilot: prod restart |
+| F-GA-5 | ≥10k ev/s 5 мин | **🟡** script | **[blocked: field]** | Field-intent (канон v1.2): script ≠ PASS на sizing |
+| F-GA-6 | mTLS agent→gateway | [x] | [~] | Soft: mTLS code · Pilot: TLS env on pilot |
+| F-GA-7 | Case lifecycle + UI | [x] | [~] | Soft: `/ui/portal/` · Pilot: SOC walkthrough |
+| F-GA-8 | Asset coverage ≥90% | **🟡** API | **[blocked: field]** | Field-intent: API ≠ ≥90% на пилоте |
+| F-GA-9 | Sigma ≥100 | [x] | [x] corpus lint | CI lint (не требует заказчика) |
+| F-GA-10 … F-GA-14 | AI, SOAR, license, docs | [x] | [~] | Soft: smoke · Pilot: field smoke |
+| F-GA-15 | Pilot checklist signed | **🟡** template | **[blocked: field]** | Field-intent: template ≠ **подпись заказчика** |
 
 ---
 
@@ -56,13 +60,13 @@
 | S5-6 | `ERA_PRODUCTION=1` без stub | F-GA-1/2 | [x] |
 | S5-7 | Agent installer | F-GA-14 | [x] |
 | S5-8 | mTLS ingest-gateway | F-GA-6 | [x] |
-| S5-9 | Loadgen 10k + gate | F-GA-5 | [x] (proof — checklist) |
+| S5-9 | Loadgen 10k + gate | F-GA-5 | [x] soft script · Pilot-ready **[blocked: field]** |
 | S5-10 | Curated Sigma 100 | F-GA-9 | [x] |
 | S5-11 | Case API notes/timeline | F-GA-7 | [x] |
 | S5-12 | UI + portal | F-GA-7 | [x] |
 | S5-13 … S5-27 | AI, SOAR, license, RBAC | F-GA-* | [x] |
 | S5-21 | Backpressure integration | F1-7 | [x] |
-| S5-28 | E2E demo script | F-GA-15 | [x] |
+| S5-28 | E2E demo script | F-GA-15 | [x] soft · Pilot-ready **[blocked: field]** (подпись) |
 
 ---
 

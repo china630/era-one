@@ -17,7 +17,32 @@ type Rule struct {
 	Logsource  map[string]string `yaml:"logsource"`
 	Detection  map[string]any    `yaml:"detection"`
 	Status     string            `yaml:"status"`
+	Tags       []string          `yaml:"tags"`
 	filePath   string
+}
+
+// Techniques extracts ATT&CK technique IDs from tags (attack.Txxxx / attack.txxxx).
+func (r *Rule) Techniques() []string {
+	if r == nil {
+		return nil
+	}
+	var out []string
+	seen := map[string]bool{}
+	for _, tag := range r.Tags {
+		t := strings.TrimSpace(tag)
+		low := strings.ToLower(t)
+		if strings.HasPrefix(low, "attack.") {
+			id := t[len("attack."):]
+			if len(id) > 0 && (id[0] == 'T' || id[0] == 't') {
+				id = "T" + id[1:]
+				if !seen[id] {
+					seen[id] = true
+					out = append(out, id)
+				}
+			}
+		}
+	}
+	return out
 }
 
 // LoadDir загружает все .yml/.yaml из каталога.

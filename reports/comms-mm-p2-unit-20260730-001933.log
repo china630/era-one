@@ -1,0 +1,11 @@
+?   	era/services/comms/mail-moderation/cmd/mail-moderation	[no test files]
+ok  	era/services/comms/mail-moderation/internal/adminapi	0.099s
+ok  	era/services/comms/mail-moderation/internal/audit	0.094s
+ok  	era/services/comms/mail-moderation/internal/engine	0.099s
+ok  	era/services/comms/mail-moderation/internal/hold	0.150s
+ok  	era/services/comms/mail-moderation/internal/milter	0.111s
+ok  	era/services/comms/mail-moderation/internal/notify	0.140s
+ok  	era/services/comms/mail-moderation/internal/policy	0.142s
+ok  	era/services/comms/mail-moderation/internal/resolve	0.153s
+ok  	era/services/comms/mail-moderation/internal/rules	0.054s
+ok  	era/services/comms/mail-moderation/internal/smtpproxy	0.062s

@@ -34,6 +34,8 @@ import (
 
 	"era/services/detection-engine/internal/sigma"
 
+	"era/services/detection-engine/internal/suppress"
+
 	"era/services/detection-engine/internal/tip"
 
 	"era/services/platform/cpclient"
@@ -58,6 +60,7 @@ type Processor struct {
 
 	Detections detectionWriter
 	CP         *cpclient.Client
+	Suppress   *suppress.Cache
 	caseDedup  map[string]time.Time
 }
 
@@ -136,25 +139,25 @@ func (p *Processor) Handle(ctx context.Context, env *erav1.Envelope) {
 
 			if ok, ruleID := p.NDR.LateralMovement(srcIP); ok {
 
-				p.emit(ctx, env, ruleID, "NDR lateral movement T1021", "critical", "ndr", eid, obs, node)
+				p.emit(ctx, env, ruleID, "NDR lateral movement T1021", "critical", "ndr", eid, obs, node, []string{"T1021"})
 
 			}
 
 			if ok, ruleID := p.NDR.Beaconing(srcIP, dstIP); ok {
 
-				p.emit(ctx, env, ruleID, "NDR C2 beaconing T1071", "high", "ndr", eid, obs, node)
+				p.emit(ctx, env, ruleID, "NDR C2 beaconing T1071", "high", "ndr", eid, obs, node, []string{"T1071"})
 
 			}
 
 			if ok, ruleID := p.NDR.DataExfil(srcIP); ok {
 
-				p.emit(ctx, env, ruleID, "NDR data exfiltration T1048", "high", "ndr", eid, obs, node)
+				p.emit(ctx, env, ruleID, "NDR data exfiltration T1048", "high", "ndr", eid, obs, node, []string{"T1048"})
 
 			}
 
 			if ok, ruleID := p.NDR.JA3Fingerprint(srcIP); ok {
 
-				p.emit(ctx, env, ruleID, "NDR malicious JA3 fingerprint", "high", "ndr", eid, obs, node)
+				p.emit(ctx, env, ruleID, "NDR malicious JA3 fingerprint", "high", "ndr", eid, obs, node, nil)
 
 			}
 
@@ -170,7 +173,7 @@ func (p *Processor) Handle(ctx context.Context, env *erav1.Envelope) {
 
 			if ok, ruleID := p.NDR.DNSTunnel(srcIP); ok {
 
-				p.emit(ctx, env, ruleID, "NDR DNS tunnel T1071.004", "high", "ndr", eid, obs, node)
+				p.emit(ctx, env, ruleID, "NDR DNS tunnel T1071.004", "high", "ndr", eid, obs, node, []string{"T1071.004"})
 
 			}
 
@@ -179,8 +182,11 @@ func (p *Processor) Handle(ctx context.Context, env *erav1.Envelope) {
 	case "auth":
 
 		if ok, rule := itdr.MatchAuth(payload); ok {
-
-			p.emit(ctx, env, rule.ID, rule.Title, rule.Level, "itdr", eid, obs, node)
+			tech := []string{}
+			if rule.Technique != "" {
+				tech = []string{rule.Technique}
+			}
+			p.emit(ctx, env, rule.ID, rule.Title, rule.Level, "itdr", eid, obs, node, tech)
 
 		}
 
@@ -192,7 +198,7 @@ func (p *Processor) Handle(ctx context.Context, env *erav1.Envelope) {
 
 		if rule.Match(cat, payload) {
 
-			p.emit(ctx, env, rule.ID, rule.Title, rule.Level, "sigma", eid, obs, node)
+			p.emit(ctx, env, rule.ID, rule.Title, rule.Level, "sigma", eid, obs, node, rule.Techniques())
 
 		}
 
@@ -204,7 +210,7 @@ func (p *Processor) Handle(ctx context.Context, env *erav1.Envelope) {
 
 		if ok, ruleID := p.National.Match(payload); ok {
 
-			p.emit(ctx, env, ruleID, "National IOC match", "high", "national-tip", eid, obs, node)
+			p.emit(ctx, env, ruleID, "National IOC match", "high", "national-tip", eid, obs, node, nil)
 
 		}
 
@@ -214,7 +220,7 @@ func (p *Processor) Handle(ctx context.Context, env *erav1.Envelope) {
 
 		if ok, ruleID := p.STIX.Match(payload); ok {
 
-			p.emit(ctx, env, ruleID, "STIX IOC match", "high", "stix-tip", eid, obs, node)
+			p.emit(ctx, env, ruleID, "STIX IOC match", "high", "stix-tip", eid, obs, node, nil)
 
 		}
 
@@ -224,13 +230,13 @@ func (p *Processor) Handle(ctx context.Context, env *erav1.Envelope) {
 
 	if ok, ruleID := p.Corr.APTChain(node); ok {
 
-		p.emit(ctx, env, ruleID, "APT lateral movement chain", "high", "correlation", eid, obs, node)
+		p.emit(ctx, env, ruleID, "APT lateral movement chain", "high", "correlation", eid, obs, node, nil)
 
 	}
 
 	if ok, ruleID := p.Corr.ObserveNetworkEndpoint(node); ok {
 
-		p.emit(ctx, env, ruleID, "Observe network alert + suspicious endpoint", "high", "correlation", eid, obs, node)
+		p.emit(ctx, env, ruleID, "Observe network alert + suspicious endpoint", "high", "correlation", eid, obs, node, nil)
 
 	}
 
@@ -238,67 +244,41 @@ func (p *Processor) Handle(ctx context.Context, env *erav1.Envelope) {
 
 
 
-func (p *Processor) emit(ctx context.Context, env *erav1.Envelope, ruleID, ruleName, level, engine, eventID string, obs time.Time, node string) {
-
-	if p.Risk != nil && !p.Risk.ShouldEmit(ruleID, node, obs) {
-
-		return
-
-	}
-
-	if p.Risk != nil {
-
-		score := p.Risk.Bump(node, level, obs)
-
-		if score >= 50 && level != "critical" {
-
-			level = "high"
-
-		}
-
-	}
-
-	did := uuid.NewString()
-
+func (p *Processor) emit(ctx context.Context, env *erav1.Envelope, ruleID, ruleName, level, engine, eventID string, obs time.Time, node string, techniques []string) {
 	tenant := ""
-
 	if s := env.GetSource(); s != nil {
-
 		tenant = s.GetTenantId()
-
 	}
-
-	if err := p.Detections.InsertDetection(ctx, chwriter.DetectionRow{
-
-		DetectionID: did,
-
-		EventID:     eventID,
-
-		ObservedAt:  obs,
-
-		TenantID:    tenant,
-
-		NodeID:      node,
-
-		RuleID:      ruleID,
-
-		RuleName:    ruleName,
-
-		Severity:    level,
-
-		Engine:      engine,
-
-		Confidence:  0.85,
-
-	}); err != nil {
-
-		log.Printf("detection insert: %v", err)
-
+	if p.Suppress != nil && p.Suppress.Matches(tenant, ruleID, node) {
 		return
-
 	}
-
-	log.Printf("DETECTION rule=%s event=%s node=%s", ruleID, eventID, node)
+	if p.Risk != nil && !p.Risk.ShouldEmit(ruleID, node, obs) {
+		return
+	}
+	if p.Risk != nil {
+		score := p.Risk.Bump(node, level, obs)
+		if score >= 50 && level != "critical" {
+			level = "high"
+		}
+	}
+	did := uuid.NewString()
+	if err := p.Detections.InsertDetection(ctx, chwriter.DetectionRow{
+		DetectionID:     did,
+		EventID:         eventID,
+		ObservedAt:      obs,
+		TenantID:        tenant,
+		NodeID:          node,
+		RuleID:          ruleID,
+		RuleName:        ruleName,
+		Severity:        level,
+		Engine:          engine,
+		Confidence:      0.85,
+		MitreTechniques: techniques,
+	}); err != nil {
+		log.Printf("detection insert: %v", err)
+		return
+	}
+	log.Printf("DETECTION rule=%s event=%s node=%s mitre=%v", ruleID, eventID, node, techniques)
 	p.maybeAutoCase(ruleID, ruleName, level, node, obs)
 }
 

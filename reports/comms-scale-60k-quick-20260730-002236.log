@@ -1,0 +1,1 @@
+comms-scale mailboxes=200 workers=8 duration_ms=12 throughput_mb_per_s=15860.05 p50_ms=0 p95_ms=0 errors=200 health_ok=false summary_ok=0

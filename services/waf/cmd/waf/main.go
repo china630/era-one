@@ -3,10 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"time"
 
+	"era/services/platform/envelope"
+	"era/services/platform/licensegate"
+	"era/services/waf/internal/api"
 	"era/services/waf/internal/rules"
 )
 
@@ -15,48 +17,27 @@ func main() {
 	addr := env("ERA_HTTP_ADDR", ":8093")
 	upstream := env("ERA_WAF_UPSTREAM", "http://127.0.0.1:8089")
 	engine := rules.NewOWASP()
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
-		writeJSON(w, `{"status":"ok"}`)
-	})
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if m, blocked := engine.Evaluate(r); blocked {
-			log.Printf("WAF BLOCK rule=%s cat=%s path=%s", m.RuleID, m.Category, r.URL.Path)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusForbidden)
-			_, _ = w.Write([]byte(`{"blocked":true,"rule_id":"` + m.RuleID + `"}`))
-			return
+	if p := env("ERA_WAF_RULES_PATH", ""); p != "" {
+		if err := engine.LoadFile(p); err != nil {
+			log.Fatalf("load rules: %v", err)
 		}
-		proxyTo(w, r, upstream)
-	})
-
-	srv := &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5 * time.Second}
-	log.Printf("waf listening %s (upstream %s)", addr, upstream)
-	log.Fatal(srv.ListenAndServe())
-}
-
-func proxyTo(w http.ResponseWriter, r *http.Request, upstream string) {
-	req := httptest.NewRequest(r.Method, upstream+r.URL.RequestURI(), r.Body)
-	req.Header = r.Header.Clone()
-	resp, err := http.DefaultClient.Do(req)
+	}
+	gate, err := licensegate.GateFromEnv(0)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadGateway)
-		return
+		log.Fatalf("license: %v", err)
 	}
-	defer resp.Body.Close()
-	for k, vv := range resp.Header {
-		for _, v := range vv {
-			w.Header().Add(k, v)
-		}
+	var pub *envelope.Publisher
+	if brokers := env("ERA_KAFKA_BROKERS", ""); brokers != "" {
+		pub = envelope.New(envelope.MustBrokers(brokers), env("ERA_TENANT_ID", "tenant-dev"), env("ERA_NODE_ID", "waf-01"), "waf")
+		defer pub.Close()
 	}
-	w.WriteHeader(resp.StatusCode)
-	_, _ = w.Write([]byte("proxied"))
-}
-
-func writeJSON(w http.ResponseWriter, body string) {
-	w.Header().Set("Content-Type", "application/json")
-	_, _ = w.Write([]byte(body))
+	srv, err := api.New(engine, upstream, gate, pub, api.ParseBodyLimit(env("ERA_WAF_BODY_LIMIT", "")))
+	if err != nil {
+		log.Fatal(err)
+	}
+	httpSrv := &http.Server{Addr: addr, Handler: srv.Routes(), ReadHeaderTimeout: 5 * time.Second}
+	log.Printf("waf listening %s (upstream %s)", addr, upstream)
+	log.Fatal(httpSrv.ListenAndServe())
 }
 
 func env(k, def string) string {

@@ -90,9 +90,24 @@ func (s *Store) List() []*Record {
 	defer s.mu.Unlock()
 	out := make([]*Record, 0, len(s.sessions))
 	for _, r := range s.sessions {
-		out = append(out, r)
+		cp := *r
+		cp.Commands = append([]string(nil), r.Commands...)
+		out = append(out, &cp)
 	}
 	return out
+}
+
+// Get возвращает метаданные сессии по id.
+func (s *Store) Get(sessionID string) (*Record, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	r, ok := s.sessions[sessionID]
+	if !ok {
+		return nil, false
+	}
+	cp := *r
+	cp.Commands = append([]string(nil), r.Commands...)
+	return &cp, true
 }
 
 func (s *Store) Alerts() []Alert {

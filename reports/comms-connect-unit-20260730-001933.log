@@ -1,0 +1,5 @@
+?   	era/services/comms/mail-connect/cmd/mail-connect-api	[no test files]
+ok  	era/services/comms/mail-connect/internal/api	0.098s
+?   	era/services/comms/mail-connect/internal/audit	[no test files]
+ok  	era/services/comms/mail-connect/internal/autodiscover	0.125s
+ok  	era/services/comms/mail-connect/internal/sync	0.111s

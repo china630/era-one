@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
@@ -16,6 +17,7 @@ import (
 	"era/services/detection-engine/internal/api"
 	"era/services/detection-engine/internal/processor"
 	"era/services/detection-engine/internal/sigma"
+	"era/services/detection-engine/internal/suppress"
 	"era/services/detection-engine/internal/tip"
 	"era/services/platform/cpclient"
 	"era/services/platform/httpserver"
@@ -76,12 +78,19 @@ func main() {
 		log.Printf("auto-case enabled → %s", cpURL)
 	}
 	proc := processor.New(rules, dw, nationalFeed, stixFeed, cp)
+	if cp != nil {
+		sc := suppress.New(cp)
+		proc.Suppress = sc
+		stopPoll := make(chan struct{})
+		defer close(stopPoll)
+		go sc.StartPoll(30*time.Second, stopPoll)
+	}
 
 	groupID := env("ERA_CONSUMER_GROUP", "era-detection-engine")
 	httpAddr := env("ERA_HTTP_ADDR", ":8097")
-	expSrv := &api.ExposureServer{CH: dw, CP: cp}
+	expSrv := &api.ExposureServer{CH: dw, CP: cp, Rules: rules}
 	go func() {
-		log.Printf("detection-engine HTTP %s (/api/v1/exposure, /metrics)", httpAddr)
+		log.Printf("detection-engine HTTP %s (/api/v1/exposure, /api/v1/mitre/coverage, /metrics)", httpAddr)
 		if err := httpserver.Listen(httpAddr, expSrv.Routes()); err != nil {
 			log.Printf("http server: %v", err)
 		}

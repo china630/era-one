@@ -1,0 +1,3 @@
+==> office stage gate O-H-2 20260730-010706
+[PASS] O-H-2/docx :: cargo test -p era-docs-engine --test golden_docx_corpus --quiet
+STAGE GATE PASS (O-H-2)

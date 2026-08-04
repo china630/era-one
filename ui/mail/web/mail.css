@@ -1,0 +1,238 @@
+/* ERA Communications — webmail layout (Theme Matrix Phase C/D).
+ * Tokens from ui/shared-tokens (synced to /mail/static/tokens/). */
+@import url("tokens/era-tokens-base.css");
+@import url("tokens/era-theme-comms.css");
+@import url("tokens/era-theme-sku.css");
+
+* { box-sizing: border-box; }
+
+body.era-app {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--era-font);
+  color: var(--era-ink);
+  background: var(--era-bg);
+}
+
+.era-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 1rem;
+  background: var(--era-surface);
+  border-bottom: 1px solid var(--era-line);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-height: var(--era-topbar-h);
+}
+
+.era-brand {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  text-decoration: none;
+  color: var(--era-ink);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.era-brand-mark { font-size: 0.95rem; }
+.era-brand-mod {
+  color: var(--era-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.era-brand .era-icon { color: var(--era-accent); }
+
+.era-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  flex: 1 1 auto;
+}
+.era-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--era-muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+.era-nav a:hover { color: var(--era-accent); }
+.era-nav a.active,
+.era-nav a[aria-current="page"] {
+  color: var(--era-accent);
+  background: var(--era-accent-soft);
+  font-weight: 700;
+}
+.era-nav a[aria-disabled="true"] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.era-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.era-user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--era-ink);
+  background: var(--era-accent-soft);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.era-main.era-mail-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 2rem;
+}
+
+.era-mail-banner {
+  background: var(--era-warn-bg);
+  border: 1px solid #f0d78c;
+  color: var(--era-ink);
+  padding: 0.5rem 1rem;
+  border-radius: var(--era-radius);
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.era-mail-layout {
+  display: grid;
+  grid-template-columns: var(--era-nav-w) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.era-mail-folders {
+  background: var(--era-surface);
+  border: 1px solid var(--era-line);
+  border-radius: 8px;
+  padding: 0.65rem;
+}
+.era-mail-folders h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--era-muted);
+}
+.era-mail-folders button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: var(--era-accent-soft);
+  color: var(--era-accent);
+  font: inherit;
+  font-weight: 650;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.era-mail-pane {
+  background: var(--era-surface);
+  border: 1px solid var(--era-line);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  box-shadow: var(--era-shadow);
+}
+
+.era-mail-pane h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+}
+
+.era-btn {
+  border: 1px solid var(--era-line);
+  background: var(--era-surface);
+  color: var(--era-ink);
+  border-radius: var(--era-radius);
+  padding: 0.45rem 0.85rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.era-btn-primary {
+  background: var(--era-accent);
+  border-color: var(--era-accent);
+  color: #fff;
+}
+.era-btn-primary:hover { filter: brightness(1.05); }
+.era-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+#compose {
+  display: none;
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--era-line);
+  border-radius: 8px;
+  background: #fafbfc;
+}
+#compose input,
+#compose textarea {
+  display: block;
+  width: 100%;
+  max-width: 36rem;
+  margin: 0.4rem 0;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--era-line);
+  border-radius: 6px;
+  font: inherit;
+}
+#compose input:focus,
+#compose textarea:focus {
+  outline: 2px solid var(--era-accent);
+  border-color: var(--era-accent);
+}
+
+.era-mail-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+.era-mail-list li {
+  border-bottom: 1px solid var(--era-line);
+  padding: 0.75rem 0.35rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.era-mail-list li:hover,
+.era-mail-list li.selected {
+  background: var(--era-accent-soft);
+}
+
+#messageDetail {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--era-line);
+}
+#messageDetail h3 { margin: 0 0 0.5rem; }
+#msgBody {
+  white-space: pre-wrap;
+  font-family: var(--era-font);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 720px) {
+  .era-mail-layout { grid-template-columns: 1fr; }
+}

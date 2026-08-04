@@ -1,0 +1,5 @@
+==> office stage gate O-4 20260730-003207
+[PASS] O-4/ws-coedit :: cargo test -p era-docs-engine --test ws_coedit --quiet
+[PASS] O-4/sync :: cargo test -p era-docs-engine sync --quiet
+[PASS] O-4/ui-docs :: go test -C ui/docs ./... -count=1
+STAGE GATE PASS (O-4)

@@ -14,7 +14,10 @@ SSOT: [`pricing-comms-data.yaml`](./pricing-comms-data.yaml)
 | Издание | EU €/user/год | СНГ | Примечание |
 |---------|---------------|-----|------------|
 | **ERA Mail Server** (+ Client) | 10 | **5** | MVP |
-| **ERA Mail Connect** | 4 | **2** | Migration tier, **отдельная цена** |
+| **ERA Mail Connect** | 4 | **2** | Hybrid tier, **отдельная цена** |
+| **ERA Comms Migration** | €1/mailbox one-time | €0.5/mailbox one-time | Many-to-many; см. [vendor matrix](../Comms-Migration-Vendor-Matrix.md) |
+| **ERA Outlook Bridge** | €3/user/год | €1.5/user/год | EWS façade; project license — deal-desk |
+| **ERA Mail Moderation** | €2/user/год | **1** | Outbound Approve/Reject; IceWarp/any SMTP — [PRD](../products/PRD-Mail-Moderation.md) |
 | **ERA Conference** | 6 | **3** | Phase 2 |
 | **ERA Chat** | 6 | **3** | Phase 2 |
 | **ERA Comms AI** | 8 | **4** | Phase 3 |

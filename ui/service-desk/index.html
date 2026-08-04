@@ -4,59 +4,86 @@
   <meta charset="UTF-8" />
   <title>ERA Service — ITSM-lite</title>
   <style>
-    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --muted: #8b949e; --accent: #3fb950; }
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --muted: #8b949e; --err: #f85149; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 1.5rem; }
     nav a { color: #58a6ff; margin-right: 1rem; }
     .card { background: var(--card); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
-    input, textarea, select { width: 100%; background: #0d1117; border: 1px solid #30363d; color: var(--text); border-radius: 6px; padding: 0.5rem; margin: 0.25rem 0; }
+    input, textarea { width: 100%; box-sizing: border-box; background: #0d1117; border: 1px solid #30363d; color: var(--text); border-radius: 6px; padding: 0.5rem; margin: 0.25rem 0; }
     button { background: #238636; border: none; color: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 0.5rem; }
     th, td { padding: 0.5rem; border-bottom: 1px solid #21262d; text-align: left; }
+    #msg { color: var(--err); min-height: 1.2em; }
   </style>
 </head>
 <body>
   <nav>
-    <a href="/ui/cases/">Cases (SOC)</a>
-    <a href="/ui/assets/">CMDB</a>
-    <a href="/ui/service-desk/">Service Desk</a>
+    <a href="/ui/">Service Desk</a>
+    <a href="#portal">Portal</a>
   </nav>
-  <h1>ERA Service — Incidents & Requests</h1>
+  <h1>ERA Service — Incidents &amp; Requests</h1>
+  <p id="msg"></p>
   <div class="card">
     <h2>Новый инцидент</h2>
     <input id="title" placeholder="Заголовок" />
-    <input id="node" placeholder="Node ID (CMDB)" />
+    <input id="node" placeholder="Node ID (CMDB, optional)" />
     <input id="requester" placeholder="Заявитель" value="user1" />
-    <button id="createInc">Создать</button>
+    <button id="createInc" type="button">Создать</button>
   </div>
-  <div class="card">
+  <div class="card" id="portal">
     <h2>Портал заявок</h2>
     <input id="reqTitle" placeholder="Запрос" />
-    <button id="createReq">Отправить</button>
+    <button id="createReq" type="button">Отправить</button>
   </div>
   <div class="card">
     <h2>Инциденты</h2>
     <table><thead><tr><th>ID</th><th>Title</th><th>Node</th><th>Status</th><th>SLA</th></tr></thead><tbody id="inc"></tbody></table>
   </div>
+  <div class="card">
+    <h2>Problems / Changes</h2>
+    <table><thead><tr><th>Type</th><th>ID</th><th>Title</th><th>Status</th></tr></thead><tbody id="pc"></tbody></table>
+  </div>
   <script>
-    const API = 'http://127.0.0.1:8122';
+    const API = '';
+    const msg = (t) => { document.getElementById('msg').textContent = t || ''; };
     async function load() {
+      msg('');
       const r = await fetch(API + '/api/v1/incidents');
+      if (!r.ok) { msg('API ' + r.status); return; }
       const d = await r.json();
       const tb = document.getElementById('inc'); tb.innerHTML = '';
       for (const i of d.incidents || []) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${i.id.slice(0,8)}</td><td>${i.title}</td><td>${i.node_id||''}</td><td>${i.status}</td><td>${i.sla_due_at||'—'}</td>`;
+        tr.innerHTML = `<td>${(i.id||'').slice(0,8)}</td><td>${i.title||''}</td><td>${i.node_id||''}</td><td>${i.status||''}</td><td>${i.sla_due_at||'—'}</td>`;
         tb.appendChild(tr);
+      }
+      const [pr, ch] = await Promise.all([
+        fetch(API + '/api/v1/problems').then(x => x.json()).catch(() => ({})),
+        fetch(API + '/api/v1/changes').then(x => x.json()).catch(() => ({}))
+      ]);
+      const pc = document.getElementById('pc'); pc.innerHTML = '';
+      for (const p of pr.problems || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>problem</td><td>${(p.id||'').slice(0,8)}</td><td>${p.title||''}</td><td>${p.status||''}</td>`;
+        pc.appendChild(tr);
+      }
+      for (const c of ch.changes || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>change</td><td>${(c.id||'').slice(0,8)}</td><td>${c.title||''}</td><td>${c.status||''}</td>`;
+        pc.appendChild(tr);
       }
     }
     document.getElementById('createInc').onclick = async () => {
-      await fetch(API + '/api/v1/incidents', { method:'POST', headers:{'Content-Type':'application/json'},
+      const res = await fetch(API + '/api/v1/incidents', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ title: document.getElementById('title').value, node_id: document.getElementById('node').value, requester: document.getElementById('requester').value, sla_hours: 8 })});
+      if (!res.ok) { msg(await res.text()); return; }
       load();
     };
     document.getElementById('createReq').onclick = async () => {
-      await fetch(API + '/api/v1/requests', { method:'POST', headers:{'Content-Type':'application/json'},
+      const res = await fetch(API + '/api/v1/requests', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ title: document.getElementById('reqTitle').value, requester: document.getElementById('requester').value })});
+      if (!res.ok) { msg(await res.text()); return; }
+      msg('request created');
+      load();
     };
     load();
   </script>

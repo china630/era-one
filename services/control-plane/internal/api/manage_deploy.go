@@ -12,19 +12,43 @@ import (
 func (s *Server) mountManageDeploy(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v1/manage/deploy/jobs", s.handleDeployJobs)
 	mux.HandleFunc("/api/v1/manage/deploy/jobs/", s.handleDeployJobSub)
+	mux.HandleFunc("/api/v1/manage/deploy/packages", s.handleDeployPackages)
 	mux.HandleFunc("/api/v1/manage/patch/plan", s.handlePatchPlan)
 	mux.HandleFunc("/api/v1/manage/patch/jobs", s.handlePatchJobs)
 }
 
-func (s *Server) handleDeployJobs(w http.ResponseWriter, r *http.Request) {
+// seedDeployPackages — in-memory air-gap package catalog for lab UI.
+func seedDeployPackages() []store.DeployPackage {
+	return []store.DeployPackage{
+		{ID: "agent-win-x64", Name: "ERA Agent", Version: "1.0.0", PackageRef: "s3://era-packages/agent-win-x64.msi", Platform: "windows"},
+		{ID: "agent-linux-amd64", Name: "ERA Agent", Version: "1.0.0", PackageRef: "s3://era-packages/agent-linux-amd64.deb", Platform: "linux"},
+		{ID: "sensor-win-x64", Name: "ERA Sensor", Version: "1.0.0", PackageRef: "s3://era-packages/sensor-win-x64.msi", Platform: "windows"},
+	}
+}
+
+func (s *Server) handleDeployPackages(w http.ResponseWriter, r *http.Request) {
 	if !s.requireManage(w, r) {
 		return
 	}
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"packages": seedDeployPackages()})
+}
+
+func (s *Server) handleDeployJobs(w http.ResponseWriter, r *http.Request) {
 	st := s.scopedStore(r)
 	switch r.Method {
 	case http.MethodGet:
+		if !s.requireManage(w, r) {
+			return
+		}
 		writeJSON(w, http.StatusOK, map[string]any{"jobs": st.ListDeployJobs()})
 	case http.MethodPost:
+		if !s.requireManageAdmin(w, r) {
+			return
+		}
 		var req struct {
 			NodeID     string `json:"node_id"`
 			TenantID   string `json:"tenant_id"`
@@ -50,32 +74,43 @@ func (s *Server) handleDeployJobs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDeployJobSub(w http.ResponseWriter, r *http.Request) {
-	if !s.requireManage(w, r) {
-		return
-	}
 	id := strings.TrimPrefix(r.URL.Path, "/api/v1/manage/deploy/jobs/")
-	if id == "" {
+	if id == "" || strings.Contains(id, "/") {
 		http.Error(w, "id required", http.StatusBadRequest)
 		return
 	}
-	if r.Method != http.MethodPatch {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	var req struct {
-		Status string `json:"status"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Status == "" {
-		http.Error(w, "status required", http.StatusBadRequest)
-		return
-	}
 	st := s.scopedStore(r)
-	job, ok := st.UpdateDeployJob(id, store.RolloutStatus(req.Status))
-	if !ok {
-		http.NotFound(w, r)
-		return
+	switch r.Method {
+	case http.MethodGet:
+		if !s.requireManage(w, r) {
+			return
+		}
+		job, ok := st.GetDeployJob(id)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		writeJSON(w, http.StatusOK, job)
+	case http.MethodPatch:
+		if !s.requireManageAdmin(w, r) {
+			return
+		}
+		var req struct {
+			Status string `json:"status"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Status == "" {
+			http.Error(w, "status required", http.StatusBadRequest)
+			return
+		}
+		job, ok := st.UpdateDeployJob(id, store.RolloutStatus(req.Status))
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		writeJSON(w, http.StatusOK, job)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
-	writeJSON(w, http.StatusOK, job)
 }
 
 func (s *Server) handlePatchPlan(w http.ResponseWriter, r *http.Request) {
@@ -92,14 +127,17 @@ func (s *Server) handlePatchPlan(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handlePatchJobs(w http.ResponseWriter, r *http.Request) {
-	if !s.requireManage(w, r) {
-		return
-	}
 	st := s.scopedStore(r)
 	switch r.Method {
 	case http.MethodGet:
+		if !s.requireManage(w, r) {
+			return
+		}
 		writeJSON(w, http.StatusOK, map[string]any{"jobs": st.ListPatchJobs()})
 	case http.MethodPost:
+		if !s.requireManageAdmin(w, r) {
+			return
+		}
 		var req struct {
 			NodeID     string `json:"node_id"`
 			TenantID   string `json:"tenant_id"`

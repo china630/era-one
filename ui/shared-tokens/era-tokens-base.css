@@ -1,0 +1,26 @@
+/* ERA shared design tokens — base names + light suite defaults.
+ * SSOT: ui/shared-tokens/ · Theme Matrix · sync via scripts/sync-era-tokens.ps1 */
+:root {
+  --era-ink: #1a1f24;
+  --era-muted: #5c6770;
+  --era-line: #d8dee4;
+  --era-bg: #e8edf2;
+  --era-surface: #ffffff;
+  --era-accent: #0b5fff;
+  --era-accent-soft: #dbe8ff;
+  --era-ok: #0a7a3e;
+  --era-warn: #b06000;
+  --era-err: #a11;
+  --era-warn-bg: #fff8e6;
+  --era-warn-line: #f0d78c;
+  --era-font: "Segoe UI", system-ui, sans-serif;
+  --era-doc-font: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+  --era-radius: 6px;
+  --era-shadow: 0 1px 3px rgba(16, 24, 40, 0.08), 0 8px 24px rgba(16, 24, 40, 0.06);
+  --era-topbar-h: 3rem;
+  --era-nav-w: 220px;
+  --era-space-1: 0.25rem;
+  --era-space-2: 0.5rem;
+  --era-space-3: 1rem;
+  --era-space-4: 1.5rem;
+}

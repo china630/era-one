@@ -26,7 +26,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("clickhouse: %v", err)
 	}
-	srv := api.New(inv, licensegate.DevDefault())
+	// Fail-closed when ERA_PRODUCTION / ERA_LICENSE_STRICT without ERA_LICENSE_TOKEN.
+	gate, err := licensegate.GateFromEnv(0)
+	if err != nil {
+		log.Fatalf("license: %v", err)
+	}
+	srv := api.New(inv, gate)
 	httpSrv := &http.Server{
 		Addr:              addr,
 		Handler:           srv.Routes(),

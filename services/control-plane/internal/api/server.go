@@ -14,12 +14,13 @@ import (
 )
 
 type Server struct {
-	Store store.Repository
-	Gate  *licensegate.Gate
+	Store         store.Repository
+	Gate          *licensegate.Gate
+	Suppressions  *store.SuppressionMem
 }
 
 func New(st store.Repository, gate *licensegate.Gate) *Server {
-	return &Server{Store: st, Gate: gate}
+	return &Server{Store: st, Gate: gate, Suppressions: store.NewSuppressionMem()}
 }
 
 func (s *Server) Routes() http.Handler {
@@ -33,6 +34,8 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("/api/v1/assets/register", s.handleRegister)
 	mux.HandleFunc("/api/v1/cases", s.handleCases)
 	mux.HandleFunc("/api/v1/cases/", s.handleCaseSub)
+	mux.HandleFunc("/api/v1/suppressions", s.handleSuppressions)
+	mux.HandleFunc("/api/v1/suppressions/", s.handleSuppressionSub)
 	mux.HandleFunc("/api/v1/audit", s.handleAudit)
 	mux.HandleFunc("/api/v1/hybrid/status", s.handleHybridStatus)
 	mux.HandleFunc("/api/v1/hybrid/policy", s.handleHybridPolicy)
@@ -42,22 +45,55 @@ func (s *Server) Routes() http.Handler {
     s.mountCMDBNetwork(mux)
     s.mountEnforcement(mux)
     s.mountManageDeploy(mux)
-    mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        if r.URL.Path == "/" || r.URL.Path == "/ui" || r.URL.Path == "/ui/" {
-            http.Redirect(w, r, "/ui/portal/", http.StatusFound)
-            return
-        }
-        http.NotFound(w, r)
-    })
-    mux.Handle("/ui/", noCacheUI(http.StripPrefix("/ui/", http.FileServer(http.Dir(uiDir())))))
+	mux.HandleFunc("/api/v1/assets/", s.handleAssetByID)
+	mux.HandleFunc("/api/v1/byo/connectors", s.handleBYOConnectors)
+	mux.HandleFunc("/api/v1/byo/connectors/", s.handleBYOConnectorSub)
+	mux.Handle("/control-assets/", noCacheUI(http.StripPrefix("/control-assets/", http.FileServer(http.Dir(controlShellDir())))))
+	// Legacy lab pages → Control shell modules (Theme Matrix Phase D).
+	for _, redir := range []struct{ from, to string }{
+		{"/ui/observe", "/ui/control/observe/"},
+		{"/ui/observe/", "/ui/control/observe/"},
+		{"/ui/pam", "/ui/control/pam/"},
+		{"/ui/pam/", "/ui/control/pam/"},
+		{"/ui/workbench", "/ui/control/workbench/"},
+		{"/ui/workbench/", "/ui/control/workbench/"},
+		{"/ui/provision", "/ui/control/provision/"},
+		{"/ui/provision/", "/ui/control/provision/"},
+		{"/ui/resolve", "/ui/control/resolve/"},
+		{"/ui/resolve/", "/ui/control/resolve/"},
+		{"/ui/cases", "/ui/control/workbench/"},
+		{"/ui/cases/", "/ui/control/workbench/"},
+		{"/ui/enforcement", "/ui/control/manage/"},
+		{"/ui/enforcement/", "/ui/control/manage/"},
+		{"/ui/service-desk", "/ui/control/service/"},
+		{"/ui/service-desk/", "/ui/control/service/"},
+		{"/ui/assets", "/ui/control/"},
+		{"/ui/assets/", "/ui/control/"},
+		{"/ui/events", "/ui/control/"},
+		{"/ui/events/", "/ui/control/"},
+	} {
+		from, to := redir.from, redir.to
+		mux.HandleFunc(from, func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, to, http.StatusFound)
+		})
+	}
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" || r.URL.Path == "/ui" || r.URL.Path == "/ui/" {
+			http.Redirect(w, r, "/ui/control/", http.StatusFound)
+			return
+		}
+		if r.URL.Path == "/ui/portal" || r.URL.Path == "/ui/portal/" {
+			http.Redirect(w, r, "/ui/control/", http.StatusFound)
+			return
+		}
+		http.NotFound(w, r)
+	})
+	mux.Handle("/ui/", noCacheUI(http.StripPrefix("/ui/", http.FileServer(http.Dir(uiDir())))))
 	return rbac.Middleware(mux)
 }
 
 func (s *Server) actor(r *http.Request) string {
-	if a := r.Header.Get("X-ERA-Actor"); a != "" {
-		return a
-	}
-	return string(rbac.FromRequest(r))
+	return rbac.Actor(r)
 }
 
 func (s *Server) scopedStore(r *http.Request) store.Repository {
@@ -277,6 +313,13 @@ func uiDir() string {
 		return p
 	}
 	return "../../ui"
+}
+
+func controlShellDir() string {
+	if p := os.Getenv("ERA_CONTROL_SHELL_DIR"); p != "" {
+		return p
+	}
+	return "../../ui/control-shell/web"
 }
 
 // CreateCaseFromExternal — для SOAR/AI интеграции (S5-26, S5-27).

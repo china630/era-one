@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package era.v1;
+
+option go_package = "era/contracts/gen/era/v1;erav1";
+
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// ERA Communications — mail audit и internal status (ADR-0027, PRD AC-C7)
+//
+// Правила эволюции: только ДОБАВЛЕНИЕ полей; номера полей НЕ переиспользуем.
+// ============================================================================
+
+// MailAuditAction — значимое событие почтового backend для SIEM/ClickHouse.
+enum MailAuditAction {
+  MAIL_AUDIT_ACTION_UNSPECIFIED = 0;
+  MAIL_AUDIT_LOGIN = 1;
+  MAIL_AUDIT_SEND = 2;
+  MAIL_AUDIT_RECEIVE = 3;
+  MAIL_AUDIT_DELETE = 4;
+  MAIL_AUDIT_ADMIN = 5;
+  MAIL_AUDIT_CALENDAR_CREATE = 6;
+  MAIL_AUDIT_CALENDAR_UPDATE = 7;
+  MAIL_AUDIT_CHAT_MESSAGE = 8;
+  MAIL_AUDIT_VCS_ROOM_JOIN = 9;
+  MAIL_AUDIT_AI_INFERENCE = 10;
+}
+
+// MailAuditEvent — строка аудита mail server (ClickHouse era_comms.mail_audit).
+message MailAuditEvent {
+  // Версия контракта (semver), напр. "1.0.0".
+  string schema_version = 1;
+
+  // ULID или UUID события аудита.
+  string event_id = 2;
+
+  google.protobuf.Timestamp observed_at = 3;
+
+  string tenant_id = 4;
+  string mailbox = 5;
+  MailAuditAction action = 6;
+
+  // RFC 5322 Message-ID, если применимо.
+  string message_id = 7;
+
+  string src_ip = 8;
+
+  // Доп. контекст (размер, subject hash, admin action type).
+  map<string, string> metadata = 9;
+}
+
+// InlineAttachmentPolicy — tenant policy для вложений без ERA Drive (PRD §3).
+message InlineAttachmentPolicy {
+  uint32 max_attachment_size_mb = 1;
+  uint32 quota_mb_per_user = 2;
+  uint32 retention_days = 3;
+  uint32 max_attachments_per_message = 4;
+}
+
+// MailCoreStatus — health snapshot Rust mail-core (Go ↔ core bridge).
+message MailCoreStatus {
+  bool smtp_ready = 1;
+  bool imap_ready = 2;
+  uint64 messages_stored = 3;
+  string version = 4;
+}

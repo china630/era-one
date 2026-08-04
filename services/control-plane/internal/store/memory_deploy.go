@@ -34,6 +34,18 @@ func (m *memoryStore) CreateDeployJob(j *DeployJob) {
 	m.deployJobs = append(m.deployJobs, j)
 }
 
+func (m *memoryStore) GetDeployJob(id string) (*DeployJob, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, j := range m.deployJobs {
+		if j.ID == id {
+			cp := *j
+			return &cp, true
+		}
+	}
+	return nil, false
+}
+
 func (m *memoryStore) ListDeployJobs() []*DeployJob {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

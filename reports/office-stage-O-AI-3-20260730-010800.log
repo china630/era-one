@@ -1,0 +1,3 @@
+==> office stage gate O-AI-3 20260730-010800
+[PASS] O-AI-3/sbom :: pwsh -NoProfile -File ./scripts/office-sbom-gate.ps1
+STAGE GATE PASS (O-AI-3)

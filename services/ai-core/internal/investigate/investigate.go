@@ -3,6 +3,8 @@ package investigate
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -51,14 +53,23 @@ type StoryStep struct {
 }
 
 type Result struct {
-	DetectionID string      `json:"detection_id"`
-	Storyline   []StoryStep `json:"storyline"`
-	Verdict     string      `json:"verdict"`
-	Confidence  float64     `json:"confidence"`
-	Narrative   string      `json:"narrative"`
-	Mitre       []string    `json:"mitre_techniques"`
-	CaseID      string      `json:"case_id,omitempty"`
+	DetectionID         string              `json:"detection_id"`
+	InvestigationID     string              `json:"investigation_id,omitempty"`
+	Status              string              `json:"status,omitempty"` // pending | completed | confirmed | rejected
+	Storyline           []StoryStep         `json:"storyline"`
+	Verdict             string              `json:"verdict"`
+	Confidence          float64             `json:"confidence"`
+	Narrative           string              `json:"narrative"`
+	Mitre               []string            `json:"mitre_techniques"`
+	CaseID              string              `json:"case_id,omitempty"`
+	ModelVersion        string              `json:"model_version"`
+	PromptHash          string              `json:"prompt_hash"`
+	CustodyRootHash     string              `json:"custody_root_hash,omitempty"`
+	RecommendedActions  []RecommendedAction `json:"recommended_actions,omitempty"`
+	HumanOnLoop         bool                `json:"human_on_loop"`
 }
+
+const ModelVersionHeuristic = "era-investigate-heuristic-1"
 
 func (c *Client) Investigate(ctx context.Context, req Request) (*Result, error) {
 	if req.NodeID == "" {
@@ -80,24 +91,37 @@ func (c *Client) Investigate(ctx context.Context, req Request) (*Result, error) 
 	defer rows.Close()
 
 	var steps []StoryStep
-	suspicious := 0
 	for rows.Next() {
 		var eid, cat, payload string
 		var obs time.Time
 		if err := rows.Scan(&eid, &cat, &obs, &payload); err != nil {
 			return nil, err
 		}
-		sum := summarize(cat, payload)
-		if isSuspicious(payload) {
-			suspicious++
-		}
 		steps = append(steps, StoryStep{
 			EventID: eid, Category: cat,
 			ObservedAt: obs.UTC().Format(time.RFC3339Nano),
-			Summary:    sum,
+			Summary:    summarize(cat, payload),
 		})
 	}
 
+	res := BuildResult(req, steps)
+	if c.llm != nil && c.llm.Available() {
+		prompt := fmt.Sprintf("SOC analyst summary for node %s verdict %s events %d", req.NodeID, res.Verdict, len(steps))
+		if aiText, err := c.llm.Complete(ctx, prompt); err == nil && aiText != "" {
+			res.Narrative = strings.TrimSpace(res.Narrative + " LLM: " + aiText)
+		}
+	}
+	return res, nil
+}
+
+// BuildResult runs heuristic verdict without ClickHouse (tests / offline).
+func BuildResult(req Request, steps []StoryStep) *Result {
+	suspicious := 0
+	for _, s := range steps {
+		if isSuspicious(s.Summary) {
+			suspicious++
+		}
+	}
 	verdict := "benign"
 	conf := 0.55
 	if suspicious >= 3 {
@@ -107,7 +131,6 @@ func (c *Client) Investigate(ctx context.Context, req Request) (*Result, error) 
 		verdict = "suspicious"
 		conf = 0.78
 	}
-
 	narrative := fmt.Sprintf(
 		"On-prem investigation for node %s: %d timeline events, %d suspicious indicators. ",
 		req.NodeID, len(steps), suspicious,
@@ -120,23 +143,20 @@ func (c *Client) Investigate(ctx context.Context, req Request) (*Result, error) 
 	default:
 		narrative += "No strong malicious pattern in recent window."
 	}
-
-	mitre := inferMitre(steps, verdict)
-	if c.llm != nil && c.llm.Available() {
-		prompt := fmt.Sprintf("SOC analyst summary for node %s verdict %s events %d", req.NodeID, verdict, len(steps))
-		if aiText, err := c.llm.Complete(ctx, prompt); err == nil && aiText != "" {
-			narrative = strings.TrimSpace(narrative + " LLM: " + aiText)
-		}
+	promptMaterial := req.NodeID + "|" + req.DetectionID + "|" + verdict + "|" + fmt.Sprint(len(steps))
+	res := &Result{
+		DetectionID:  req.DetectionID,
+		Storyline:    steps,
+		Verdict:      verdict,
+		Confidence:   conf,
+		Narrative:    narrative,
+		Mitre:        inferMitre(steps, verdict),
+		ModelVersion: ModelVersionHeuristic,
+		PromptHash:   hashPrompt(promptMaterial),
+		HumanOnLoop:  true,
 	}
-
-	return &Result{
-		DetectionID: req.DetectionID,
-		Storyline:   steps,
-		Verdict:     verdict,
-		Confidence:  conf,
-		Narrative:   narrative,
-		Mitre:       mitre,
-	}, nil
+	res.RecommendedActions = SuggestActions(res, req.NodeID)
+	return res
 }
 
 func inferMitre(steps []StoryStep, verdict string) []string {
@@ -188,4 +208,9 @@ func isSuspicious(payload string) bool {
 		}
 	}
 	return false
+}
+
+func hashPrompt(s string) string {
+	h := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(h[:])
 }

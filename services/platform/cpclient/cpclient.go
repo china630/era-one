@@ -103,6 +103,43 @@ func (c *Client) ListAssets() ([]Asset, error) {
 	return out.Assets, nil
 }
 
+// Suppression is an FP suppression from control-plane.
+type Suppression struct {
+	ID       string `json:"id"`
+	TenantID string `json:"tenant_id"`
+	RuleID   string `json:"rule_id"`
+	NodeID   string `json:"node_id"`
+	Reason   string `json:"reason"`
+}
+
+// ListSuppressions returns active FP suppressions.
+func (c *Client) ListSuppressions() ([]Suppression, error) {
+	if c == nil {
+		return nil, fmt.Errorf("control-plane not configured")
+	}
+	req, err := http.NewRequest(http.MethodGet, c.Base+"/api/v1/suppressions", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("X-ERA-Actor", c.Actor)
+	req.Header.Set("X-ERA-Role", "admin")
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("control-plane status %d", resp.StatusCode)
+	}
+	var out struct {
+		Suppressions []Suppression `json:"suppressions"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+	return out.Suppressions, nil
+}
+
 // RegisterAsset — post-install enroll (provision / deploy).
 func (c *Client) RegisterAsset(agentID, tenantID, nodeID, hostname, platform, agentVersion string) error {
 	if c == nil {

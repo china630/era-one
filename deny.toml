@@ -1,0 +1,43 @@
+# cargo-deny — advisories gate for Rust workspace (CI).
+# Refs: security-and-air-gap, quality-gates skill
+#
+# Note: on Linux the file must be lowercase `deny.toml` (case-sensitive FS).
+
+[advisories]
+yanked = "warn"
+# Fail unmaintained/unsound only for direct workspace deps (Tauri→gtk/unic are transitive).
+unmaintained = "workspace"
+unsound = "workspace"
+unused-ignored-advisory = "allow"
+ignore = [
+  # Direct dep of era-mail-core / tonic; migrate to rustls-pki-types PemObject later.
+  { id = "RUSTSEC-2025-0134", reason = "rustls-pemfile archived; thin wrapper over rustls-pki-types — migrate in follow-up" },
+]
+
+[licenses]
+version = 2
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Unicode-3.0",
+  "Unicode-DFS-2016",
+  "Zlib",
+  "MPL-2.0",
+  "OpenSSL",
+  "CC0-1.0",
+  "BSL-1.0",
+]
+confidence-threshold = 0.8
+
+[bans]
+multiple-versions = "allow"
+wildcards = "allow"
+
+[sources]
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

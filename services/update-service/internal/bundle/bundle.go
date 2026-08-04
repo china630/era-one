@@ -25,12 +25,13 @@ const (
 	KindCVEFeed     = "cve-feed"
 	KindConnector   = "connector"
 	KindAIPack      = "ai-pack"
+	KindAtlasPack   = "atlas-pack"
 )
 
 // ValidKind проверяет известный kind.
 func ValidKind(kind string) bool {
 	switch kind {
-	case KindSigmaCorpus, KindCVEFeed, KindConnector, KindAIPack:
+	case KindSigmaCorpus, KindCVEFeed, KindConnector, KindAIPack, KindAtlasPack:
 		return true
 	default:
 		return false

@@ -35,7 +35,7 @@
 | ID | % | Статус | Доказательство |
 |----|---|--------|----------------|
 | M-01 inventory CH | 90 | [x] | `inventory_history` + chwriter |
-| M-02 enforce lab hooks | 75 | [~] | monitor path; kernel enforce [blocked: WHQL] |
+| M-02 enforce lab hooks | 90 | [x] | monitor-complete: app/USB/BitLocker goldens + VP detection; kernel enforce [blocked: WHQL] |
 | M-03 USB/BitLocker events | 85 | [x] | enforcement events + CP API |
 | M-04 virtual patching monitor | 85 | [x] | enforcement policy API |
 | M-05 PXE MinIO boot chain | 85 | [x] | `provision/TestPXEConfigGolden` |
@@ -49,18 +49,60 @@
 |----|---|--------|----------------|
 | P-01 vault persist | 90 | [x] | `vault_persist_test.go` |
 | P-02 SSH transcript | 90 | [x] | `proxy/ssh_proxy_test.go` |
-| P-03 RDP gateway | 40 | [blocked] | security-review external |
+| P-03 RDP gateway | 85 | [x] | TCP relay MVP (`RDPProxy` + `TestRDPProxySession`); inject/video [gate: security-review] |
 | P-04 LDAP approver | 85 | [x] | SSO profile + CP headers |
 | P-05 KMS file-sealed | 85 | [x] | `kms` + StubHSM interface |
+| P2-01 RDP broker inject | 90 | [x] | `pam/internal/broker` — inject_token, no password in JSON |
+| P2-02 session idle/max | 90 | [x] | `sessionpolicy` + custody `proxy.rdp.timeout` |
+| P2-03 metadata recording | 85 | [x] | `recording` artifact+hash (not Guacamole video) |
 
 ### Observe
 
 | ID | % | Статус | Доказательство |
 |----|---|--------|----------------|
-| O-01 SNMP real | 90 | [x] | `PollReal`; `poll_prod_test.go`; compose `ERA_OBSERVE_SNMP_SIM=0` |
+| O-01 SNMP real | 90 | [x] | `PollReal` + HOST-RESOURCES; `poll_prod_test.go`; compose `ERA_OBSERVE_SNMP_SIM=0` |
 | O-02 discovery no sim fallback | 90 | [x] | `sweep_prod_test.go` |
-| O-03 NetFlow | 85 | [x] | `netflow` parsers + tests |
+| O-03 NetFlow | 90 | [x] | UDP listener + golden; `run-observe-smoke.ps1` |
 | O-04 CMDB + topology UI | 90 | [x] | `/api/v1/topology`; `topology.html` |
+
+### Perimeter (ADR-0031)
+
+| ID | % | Статус | Доказательство |
+|----|---|--------|----------------|
+| PE-01 WAF proxy + rules | 90 | [x] | `waf` golden + reverse-proxy tests; `run-perimeter-smoke.ps1` |
+| PE-02 NGFW policy API | 90 | [x] | evaluate golden + persist; licensegate |
+| PE-03 DLP session (pam\|perimeter) | 90 | [x] | dlp gate pam or perimeter |
+| P2-PE-01 WAF body + CRS-lite | 90 | [x] | `EvaluateWithBody` + `era-waf-crs-*` |
+| P2-PE-02 NGFW host apply opt-in | 85 | [x] | `ERA_NGFW_APPLY=1` nft/iptables; default noop |
+| P2-PE-03 content-DLP inspect | 90 | [x] | `POST /api/v1/dlp/inspect` + golden |
+
+### Resolve (ADR-0031)
+
+| ID | % | Статус | Доказательство |
+|----|---|--------|----------------|
+| RS-01 Guard verdict + DNS | 90 | [x] | `guard` golden + `dnsx` UDP NXDOMAIN/sinkhole |
+| RS-02 Trace DnsEvent | 90 | [x] | `trace.Buffer` + envelope DNS topic |
+| RS-03 Atlas offline pack | 90 | [x] | `atlas_pack.golden.json` hit → deny |
+| RS-04 compose profile | 85 | [x] | `deploy` profile `resolve`; `run-resolve-smoke.ps1` |
+| P2-RS-01 DoH | 90 | [x] | `/dns-query` RFC 8484; doh golden NXDOMAIN |
+| P2-RS-02 Atlas update packs | 90 | [x] | `KindAtlasPack` + `packs/reload` USB path |
+| P2-RS-03 agent DnsEvent | 85 | [x] | `era-collectors::emit_dns_event` stub |
+
+### Manage Phase 2 lab-enforce
+
+| ID | % | Статус | Доказательство |
+|----|---|--------|----------------|
+| P2-M-01 lab decision enforce | 90 | [x] | `BlockResult` + `effect=telemetry_only` golden; OS block ⏸ WHQL |
+| P2-M-02 kernel stub messaging | 90 | [x] | `kernel_hook=unavailable` + WHQL message |
+| P2-M-03 VP monitor-only | 90 | [x] | enforce mode still allows VP would_block |
+
+### AI Agentic (ADR-0023 Phase 3 lite)
+
+| ID | % | Статус | Доказательство |
+|----|---|--------|----------------|
+| P2-AI-01 recommended_actions | 90 | [x] | golden `recommended_actions.malicious` |
+| P2-AI-02 confirm/reject audit | 90 | [x] | `POST .../confirm|reject` + custody |
+| P2-AI-03 SOAR draft handoff | 85 | [x] | draft-only; no auto-execute |
 
 ### Hybrid + Hardening
 
@@ -90,13 +132,20 @@
 
 | ID | % | Статус | Доказательство |
 |----|---|--------|----------------|
-| DC-01 Sigma→MITRE runtime | 0 | [ ] | ADR-0022 DC-6; detection row `mitre_techniques` из rule tags |
-| DC-02 FP suppression UI | 0 | [ ] | ADR-0022 DC-7; CP API + UI |
-| DC-03 MITRE heatmap | 0 | [ ] | ADR-0022 DC-6 |
-| DC-04 CVE feed content | 30 | [~] | `KindCVEFeed`; нет `data/cve-feed/` sample |
-| AI-01 investigation audit log | 0 | [ ] | ADR-0023 AI-4 |
-| AI-02 evidence chain→custody | 0 | [ ] | ADR-0023 AI-5; `platform/custody` |
-| AI-03 attack graph UI | 0 | [ ] | ADR-0023 AI-6; workbench |
+| DC-01 Sigma→MITRE runtime | 90 | [x] | `sigma.Techniques` + `DetectionRow.MitreTechniques`; `processor_mitre_test` |
+| DC-02 FP suppression UI | 90 | [x] | CP `/api/v1/suppressions` + DE `suppress.Cache` + `ui/cases` |
+| DC-03 MITRE heatmap | 90 | [x] | `GET /api/v1/mitre/coverage` + workbench; `mitre/coverage.golden.json` |
+| DC-04 CVE feed content | 90 | [x] | `data/cve-feed/cve.json` + `vm/cvefeed` golden |
+| AI-01 investigation audit log | 90 | [x] | `investigate.AuditLog` + `GET /api/v1/investigate/audit` |
+| AI-02 evidence chain→custody | 90 | [x] | `SealEvidence` → `custody_root_hash` |
+| AI-03 attack graph UI | 90 | [x] | `BuildAttackGraph` + workbench + `POST /investigate/graph` |
+
+### Deferred (не в этой волне)
+
+| Тема | Статус |
+|------|--------|
+| Hybrid ступени 3–4 / full TI-share | Roadmap — [Hybrid-Roadmap-3-4.md](Hybrid-Roadmap-3-4.md) |
+| EPM-lite / JIT admin | Отдельная линия Manage P6; **вне** monitor-complete |
 
 ---
 

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "era-waf-sqli",
+    "category": "A03-injection",
+    "severity": "critical",
+    "pattern": "(?i)('|\\\")(\\s)*(or|union|select|drop|insert|delete)\\s"
+  },
+  {
+    "id": "era-waf-xss",
+    "category": "A03-injection",
+    "severity": "high",
+    "pattern": "(?i)<\\s*script|javascript:|onerror\\s*="
+  },
+  {
+    "id": "era-waf-path-traversal",
+    "category": "A01-broken-access",
+    "severity": "high",
+    "pattern": "(?i)(\\.\\./|\\.\\.\\\\|%2e%2e%2f)"
+  }
+]

@@ -1,0 +1,7 @@
+==> stage gate C-5 20260729-235914
+[PASS] F-C31/comms-ai :: go test -C services/comms/ai ./... -count=1
+[PASS] F-C32/phishing-golden :: go test -C services/comms/ai ./... -run F_C32 -count=1
+[PASS] F-C33/loadgen :: go test -C services/comms/cmd/loadgen-mailboxes ./... -count=1
+[PASS] F-C34/budget :: go test -C services/comms/ai ./... -run F_C34 -count=1
+[PASS] F-C32/audit-ch :: go test -C services/comms/auditch -tags integration ./... -run AIInference -count=1
+STAGE GATE PASS (C-5)

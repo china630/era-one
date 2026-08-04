@@ -1,0 +1,6 @@
+==> office stage gate O-5 20260730-004202
+[PASS] O-5/golden-docx :: cargo test -p era-docs-engine --test golden_docx --quiet
+[PASS] O-5/golden-corpus :: cargo test -p era-docs-engine --test golden_docx_corpus --quiet
+[PASS] O-5/fuzz-smoke :: cargo test -p era-docs-engine fuzz_docx_smoke --quiet
+[PASS] O-5/sbom :: pwsh -NoProfile -File ./scripts/office-sbom-gate.ps1
+STAGE GATE PASS (O-5)

@@ -1,0 +1,18 @@
+{
+  "enforce": {
+    "allowed": true,
+    "blocked": true,
+    "effect": "telemetry_only",
+    "enforce_mode": "enforce",
+    "kernel_hook": "unavailable",
+    "would_block": true
+  },
+  "monitor": {
+    "allowed": true,
+    "blocked": false,
+    "effect": "telemetry_only",
+    "enforce_mode": "monitor",
+    "kernel_hook": "unavailable",
+    "would_block": true
+  }
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERA Webmail</title>
+  <link rel="stylesheet" href="/mail/static/mail.css"/>
+  <link rel="stylesheet" href="/mail/static/era-chrome.css"/>
+</head>
+<body class="era-app" data-line="comms" data-sku="mail">
+  <header class="era-topbar">
+    <a class="era-brand" href="/mail/" data-mod="mail">
+      <span class="era-brand-mark">ERA Communications</span>
+      <span class="era-brand-mod">Mail</span>
+    </a>
+    <nav class="era-nav" aria-label="Communications modules">
+      <a href="/mail/" data-mod="mail" aria-current="page">Mail</a>
+      <a href="#" data-mod="chat" aria-disabled="true" title="Planned">Chat</a>
+    </nav>
+    <div class="era-topbar-right">
+      <span id="user" class="era-user-chip" title="Signed-in user">—</span>
+    </div>
+  </header>
+
+  <main class="era-main era-mail-main">
+    <div id="policy" class="era-mail-banner" hidden></div>
+
+    <div class="era-mail-layout">
+      <aside class="era-mail-folders" aria-label="Folders">
+        <h2>Folders</h2>
+        <button type="button" id="folderInbox" aria-current="true">Inbox</button>
+      </aside>
+
+      <section class="era-mail-pane">
+        <h1>ERA Webmail</h1>
+        <button id="composeBtn" type="button" class="era-btn era-btn-primary">Compose</button>
+        <div id="compose">
+          <input id="to" placeholder="To"/>
+          <input id="subject" placeholder="Subject"/>
+          <textarea id="body" rows="6" placeholder="Message"></textarea>
+          <button id="sendBtn" type="button" class="era-btn era-btn-primary">Send</button>
+        </div>
+        <h2 style="font-size:1rem;margin:1rem 0 0.35rem">Inbox</h2>
+        <ul id="inbox" class="era-mail-list"></ul>
+        <div id="messageDetail" hidden>
+          <h3 id="msgSubject"></h3>
+          <pre id="msgBody"></pre>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/mail/static/era-chrome.js"></script>
+  <script src="/mail/static/app.js"></script>
+</body>
+</html>

@@ -54,10 +54,19 @@
     <aside class="exposure">
       <h2>Exposure — Top 10</h2>
       <ol id="top10"></ol>
+      <h2 style="margin-top:1rem">MITRE coverage</h2>
+      <div id="mitre" style="max-height:240px;overflow:auto;font-size:0.75rem"></div>
+      <h2 style="margin-top:1rem">Attack graph</h2>
+      <div id="graph" style="font-size:0.75rem;max-height:200px;overflow:auto"></div>
+      <h2 style="margin-top:1rem">AI recommendations</h2>
+      <p style="color:var(--muted);font-size:0.75rem">Human-on-loop — ИИ не закрывает инцидент автономно</p>
+      <button id="runInv" style="margin-bottom:0.5rem;width:100%">Investigate</button>
+      <div id="recs" style="font-size:0.75rem;max-height:280px;overflow:auto"></div>
     </aside>
   </div>
   <script>
     const params = new URLSearchParams(location.search);
+    let lastInvestigation = null;
     if (params.get('case_id')) document.getElementById('caseId').value = params.get('case_id');
     if (params.get('node_id')) document.getElementById('nodeId').value = params.get('node_id');
 
@@ -89,6 +98,27 @@
         el.appendChild(div);
       }
       document.getElementById('status').textContent = `Timeline: ${items.length} записей`;
+      renderGraph(items);
+    }
+
+    function renderGraph(items) {
+      const el = document.getElementById('graph');
+      if (!el) return;
+      const steps = (items || []).map(e => ({
+        event_id: e.event_id || e.id || '',
+        category: e.category || e.kind || 'other',
+        observed_at: e.at || '',
+        summary: e.summary || ''
+      }));
+      fetch('http://127.0.0.1:8091/api/v1/investigate/graph', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ storyline: steps })
+      }).then(r => r.ok ? r.json() : null).then(g => {
+        if (!g) { el.textContent = 'graph API offline'; return; }
+        el.innerHTML = (g.edges||[]).map(e => `<div>${String(e.from).slice(0,8)}… → ${String(e.to).slice(0,8)}… <span style="color:var(--muted)">${e.rel}</span></div>`).join('')
+          || (g.nodes||[]).map(n => `<div>${n.kind}: ${n.label||n.id}</div>`).join('')
+          || 'no edges';
+      }).catch(() => { el.textContent = 'graph unavailable'; });
     }
 
     async function loadExposure() {
@@ -109,9 +139,75 @@
       }
     }
 
+    async function loadMitre() {
+      const res = await fetch('/api/proxy/detection/api/v1/mitre/coverage').catch(() => null);
+      const alt = res && res.ok ? res : await fetch('http://127.0.0.1:8097/api/v1/mitre/coverage').catch(() => null);
+      if (!alt || !alt.ok) {
+        document.getElementById('mitre').textContent = 'coverage unavailable';
+        return;
+      }
+      const data = await alt.json();
+      const el = document.getElementById('mitre');
+      el.innerHTML = '<table style="width:100%"><tr><th>T</th><th>rules</th><th>seen</th></tr>' +
+        (data.techniques || []).slice(0, 40).map(t =>
+          `<tr><td>${t.technique}</td><td>${t.rule_count||0}</td><td>${t.seen_count||0}</td></tr>`
+        ).join('') + '</table>';
+    }
+
     document.getElementById('load').onclick = loadTimeline;
+    document.getElementById('runInv').onclick = runInvestigate;
     loadExposure();
+    loadMitre();
     if (params.get('case_id') || params.get('node_id')) loadTimeline();
+
+    async function runInvestigate() {
+      const nodeId = document.getElementById('nodeId').value.trim() || 'node-lab';
+      const el = document.getElementById('recs');
+      el.textContent = '…';
+      try {
+        const r = await fetch('http://127.0.0.1:8091/api/v1/investigate', {
+          method: 'POST', headers: {'Content-Type':'application/json','X-ERA-Actor':'workbench'},
+          body: JSON.stringify({ node_id: nodeId, detection_id: document.getElementById('caseId').value.trim() || 'wb' })
+        });
+        const data = await r.json();
+        if (!r.ok) { el.textContent = JSON.stringify(data); return; }
+        lastInvestigation = data;
+        renderRecs(data);
+      } catch (e) {
+        el.textContent = 'ai-core offline: ' + e;
+      }
+    }
+
+    function renderRecs(data) {
+      const el = document.getElementById('recs');
+      const acts = data.recommended_actions || [];
+      el.innerHTML = `<div class="meta">verdict=${data.verdict} id=${data.investigation_id||''}</div>` +
+        acts.map(a => `<div class="entry" style="border-left-color:var(--accent)">
+          <div>${a.title} <span class="meta">[${a.status||'pending'}]</span></div>
+          <div class="meta">${a.kind} · ${a.detail||''}</div>
+          <button data-act="${a.id}" data-dec="confirm" class="btn-acc">Accept</button>
+          <button data-act="${a.id}" data-dec="reject" class="btn-rej" style="background:#da3633;border-color:#da3633">Reject</button>
+        </div>`).join('') || 'no recommendations';
+      el.querySelectorAll('button[data-act]').forEach(btn => {
+        btn.onclick = () => decide(btn.dataset.act, btn.dataset.dec);
+      });
+    }
+
+    async function decide(actionId, decision) {
+      if (!lastInvestigation || !lastInvestigation.investigation_id) return;
+      const id = lastInvestigation.investigation_id;
+      const r = await fetch(`http://127.0.0.1:8091/api/v1/investigate/${id}/${decision}`, {
+        method: 'POST', headers: {'Content-Type':'application/json','X-ERA-Actor':'workbench'},
+        body: JSON.stringify({ action_id: actionId })
+      });
+      const data = await r.json();
+      document.getElementById('status').textContent = decision + ': ' + JSON.stringify(data.decision || data);
+      if (lastInvestigation.recommended_actions) {
+        const a = lastInvestigation.recommended_actions.find(x => x.id === actionId);
+        if (a) a.status = decision === 'confirm' ? 'accepted' : 'rejected';
+        renderRecs(lastInvestigation);
+      }
+    }
   </script>
 </body>
 </html>

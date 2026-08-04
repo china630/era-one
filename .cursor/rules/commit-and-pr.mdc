@@ -24,17 +24,21 @@ docs(adr): ADR-0007 переведён в статус Implemented
 ## Ссылки на контекст (обязательно)
 
 Каждый коммит/PR ссылается на источник задачи:
-- задача спринта — `Refs: S1-4` (из `docs/MVP-Sprint-1-Spec.md`);
+- Control — `Refs: S1-4` / `F-GA-*` / `AC-P*` (`Control-Sprint-Index`, MVP-Sprint / Production-GA-Spec);
+- Comms — `Refs: CM1-*` / `C-MM-*` (`Comms-Sprint-Index`);
+- Office — `Refs: OM*-*` (`Office-Sprint-Index`);
 - решение — `Refs: ADR-0008`.
+Приёмка: `docs/products/ERA-Product-Acceptance-Standard.md` **v1.2** + product Matrix SSOT;
+перед merge желательно `.\scripts\check-acceptance-consistency.ps1`.
 
 ## Тело PR
 
 ```
 ## Что сделано
 - ...
-## Приёмка (см. task-acceptance)
-- [x] AC4: дедуп — 0 дублей (доказательство: лог/тест)
-- Обновлён статус: Sprint-1 S1-4 → [x], ADR-0008 → Implemented
+## Приёмка (см. task-acceptance + Acceptance-System продукта)
+- [x] AC…: критерий — PASS (доказательство: лог reports/ или CI)
+- Обновлены: Sprint-Index / Matrix (Scaffold|Pilot-ready) / Evidence при необходимости
 ## Тесты
 - go test ./... — PASS; cargo test — PASS
 ```

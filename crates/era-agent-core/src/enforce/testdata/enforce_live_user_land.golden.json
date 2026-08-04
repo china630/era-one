@@ -1,0 +1,7 @@
+{
+  "allowed": false,
+  "blocked": true,
+  "effect": "user_land_block",
+  "enforce_mode": "enforce",
+  "would_block": true
+}

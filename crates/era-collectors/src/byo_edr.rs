@@ -67,6 +67,14 @@ struct GenericJsonEvent {
     category: String,
 }
 
+/// Redact PII field before emit (ADR-0009). Only then may `pii_sanitized=true`.
+fn redact(kind: &str, val: &str) -> String {
+    if val.is_empty() {
+        return String::new();
+    }
+    format!("[redacted:{kind}]")
+}
+
 /// Парсит одну строку JSON feed (NDJSON) в Envelope.
 pub fn parse_json_line(line: &str, cfg: &ByoEdrConfig) -> Result<Envelope, ByoEdrError> {
     let line = line.trim();
@@ -89,23 +97,25 @@ pub fn parse_json_line(line: &str, cfg: &ByoEdrConfig) -> Result<Envelope, ByoEd
         insert_str(&mut fields, "event_type", &ev.event_type);
     }
     if !ev.user.is_empty() {
-        insert_str(&mut fields, "user", &ev.user);
+        insert_str(&mut fields, "user", &redact("user", &ev.user));
     }
     if !ev.host.is_empty() {
-        insert_str(&mut fields, "host", &ev.host);
+        insert_str(&mut fields, "host", &redact("host", &ev.host));
     }
     if !ev.src_ip.is_empty() {
-        insert_str(&mut fields, "src_ip", &ev.src_ip);
+        insert_str(&mut fields, "src_ip", &redact("ip", &ev.src_ip));
     }
     if !ev.category.is_empty() {
         insert_str(&mut fields, "category", &ev.category);
     }
+    // raw not copied — would reintroduce PII
     Ok(build_envelope(
         cfg,
         map_severity(&ev.severity),
         map_category(&ev.category),
         summary,
         fields,
+        true,
     ))
 }
 
@@ -118,17 +128,16 @@ pub fn parse_syslog_line(line: &str, cfg: &ByoEdrConfig) -> Result<Envelope, Byo
     if let Some(rest) = line.strip_prefix("CEF:") {
         return parse_cef(rest, cfg);
     }
-    // Простой syslog: "<pri>timestamp host msg"
-    let msg = line.splitn(3, ' ').last().unwrap_or(line);
+    // Простой syslog: не копируем raw; summary — redacted stub.
     let mut fields = BTreeMap::new();
-    insert_str(&mut fields, "summary", msg);
-    insert_str(&mut fields, "raw", line);
+    insert_str(&mut fields, "summary", "[redacted:raw]");
     Ok(build_envelope(
         cfg,
         Severity::Medium,
         EventCategory::Module,
-        msg.to_string(),
+        "[redacted:raw]".into(),
         fields,
+        true,
     ))
 }
 
@@ -148,7 +157,16 @@ fn parse_cef(rest: &str, cfg: &ByoEdrConfig) -> Result<Envelope, ByoEdrError> {
     if let Some(ext) = parts.get(7) {
         for kv in ext.split_whitespace() {
             if let Some((k, v)) = kv.split_once('=') {
-                insert_str(&mut fields, k, v);
+                let kl = k.to_ascii_lowercase();
+                if kl == "src" || kl == "src_ip" || kl == "dst" || kl == "dst_ip" {
+                    insert_str(&mut fields, k, &redact("ip", v));
+                } else if kl == "suser" || kl == "duser" || kl == "user" {
+                    insert_str(&mut fields, k, &redact("user", v));
+                } else if kl == "shost" || kl == "dhost" || kl == "host" {
+                    insert_str(&mut fields, k, &redact("host", v));
+                } else {
+                    insert_str(&mut fields, k, v);
+                }
             }
         }
     }
@@ -158,6 +176,7 @@ fn parse_cef(rest: &str, cfg: &ByoEdrConfig) -> Result<Envelope, ByoEdrError> {
         EventCategory::Process,
         name.to_string(),
         fields,
+        true,
     ))
 }
 
@@ -167,6 +186,7 @@ fn build_envelope(
     category: EventCategory,
     _summary: String,
     fields: BTreeMap<String, Value>,
+    pii_sanitized: bool,
 ) -> Envelope {
     Envelope {
         schema_version: "1.0.0".into(),
@@ -197,7 +217,7 @@ fn build_envelope(
             category_uid: 1,
             activity_id: 1,
         }),
-        pii_sanitized: true,
+        pii_sanitized,
         payload: Some(envelope::Payload::Raw(RawEvent {
             source_type: GENERIC_SOURCE_TYPE.into(),
             fields: Some(Struct { fields }),
@@ -260,6 +280,15 @@ mod tests {
         assert!(env.pii_sanitized);
         if let Some(envelope::Payload::Raw(raw)) = env.payload {
             assert_eq!(raw.source_type, GENERIC_SOURCE_TYPE);
+            let fields = raw.fields.as_ref().unwrap();
+            let user = fields.fields.get("user").unwrap();
+            match &user.kind {
+                Some(Kind::StringValue(s)) => {
+                    assert_eq!(s, "[redacted:user]");
+                    assert!(!s.contains("admin"));
+                }
+                _ => panic!("expected string user"),
+            }
         } else {
             panic!("expected raw payload");
         }
@@ -271,8 +300,26 @@ mod tests {
         let line = "CEF:0|Vendor|EDR|1.0|100|Suspicious Process|8|src=10.0.0.1 dst=10.0.0.2";
         let env = parse_syslog_line(line, &cfg).expect("cef");
         assert_eq!(env.severity, Severity::High as i32);
+        assert!(env.pii_sanitized);
+        if let Some(envelope::Payload::Raw(raw)) = &env.payload {
+            let src = raw.fields.as_ref().unwrap().fields.get("src").unwrap();
+            match &src.kind {
+                Some(Kind::StringValue(s)) => assert_eq!(s, "[redacted:ip]"),
+                _ => panic!("expected redacted src"),
+            }
+        }
         let wire = env.encode_to_vec();
         let back = Envelope::decode(wire.as_slice()).expect("roundtrip");
         assert_eq!(back.source.as_ref().unwrap().agent_id, "byo-edr-collector");
+    }
+
+    #[test]
+    fn json_does_not_leak_src_ip() {
+        let cfg = ByoEdrConfig::default();
+        let line = r#"{"summary":"x","src_ip":"192.168.1.10","user":"alice"}"#;
+        let env = parse_json_line(line, &cfg).expect("parse");
+        let wire = format!("{:?}", env);
+        assert!(!wire.contains("192.168.1.10"));
+        assert!(!wire.contains("alice"));
     }
 }

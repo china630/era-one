@@ -1,0 +1,11 @@
+2026-07-30T00:22:18.7156777+04:00 CUTOVER Step 1: final delta migration jobs (mode=delta)
+2026-07-30T00:22:18.9126345+04:00 CUTOVER delta job: {"id":"20260729202218-mig-imap","source":"imap","mailbox":"pilot@mail.gov.az","status":"done","items_total":2,"items_ok":2,"items_fail":0,"created_at":"2026-07-29T20:22:18.814352814Z"}
+
+2026-07-30T00:22:18.9154982+04:00 CUTOVER Step 2: rerun idempotency probe
+2026-07-30T00:22:18.9379786+04:00 CUTOVER rerun: {"new_items":0}
+
+2026-07-30T00:22:18.9407358+04:00 CUTOVER Step 3: switch Autodiscover to Bridge (manual MX/AD — see Comms-Cutover-Rehearsal-Runbook.md)
+2026-07-30T00:22:19.0034488+04:00 CUTOVER bridge autodiscover EwsUrl present: True
+2026-07-30T00:22:19.0060194+04:00 CUTOVER Step 4: Outlook VM send/receive smoke - MANUAL (partner site RT-11)
+2026-07-30T00:22:19.0080618+04:00 CUTOVER Step 5: decommission CG SMTP after MX cutover - MANUAL
+2026-07-30T00:22:19.0112058+04:00 CUTOVER CUTOVER rehearsal log complete: D:\My Projects\era-one\scripts\..\reports\comms-migration-cutover-20260730-002218.log

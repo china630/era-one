@@ -1,0 +1,216 @@
+/* Dedicated ERA account page — Google-like steps, ERA brand tokens (air-gap, no CDN). */
+:root {
+  --login-ink: #202124;
+  --login-muted: #5f6368;
+  --login-line: #dadce0;
+  --login-bg0: #f0f4f8;
+  --login-bg1: #e2eaf2;
+  --login-card: #ffffff;
+  --login-accent: #0b5fff;
+  --login-accent-ink: #ffffff;
+  --login-err: #c5221f;
+  --login-radius: 12px;
+  --login-font: "Segoe UI", "Candara", "Gill Sans", system-ui, sans-serif;
+  --login-display: "Segoe UI Semibold", "Segoe UI", Candara, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body.era-login {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--login-font);
+  color: var(--login-ink);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #d7e6ff 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #e8f0f7 0%, transparent 50%),
+    linear-gradient(165deg, var(--login-bg0), var(--login-bg1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.era-login-shell {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.era-login-card {
+  background: var(--login-card);
+  border: 1px solid var(--login-line);
+  border-radius: var(--login-radius);
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.12), 0 8px 28px rgba(60, 64, 67, 0.1);
+  padding: 2.25rem 2rem 1.75rem;
+}
+
+.era-login-brand {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.era-login-mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.65rem;
+  background: linear-gradient(145deg, #1a73e8, var(--login-accent));
+  color: #fff;
+  font-family: var(--login-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  display: grid;
+  place-items: center;
+  letter-spacing: -0.04em;
+}
+
+.era-login-product {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--login-muted);
+}
+
+.era-login-brand h1 {
+  margin: 0.1rem 0 0;
+  font-family: var(--login-display);
+  font-size: 1.55rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.era-login-sub {
+  margin: 0 0 1.5rem;
+  color: var(--login-muted);
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
+.era-login-field {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.era-login-field span {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--login-muted);
+  margin-bottom: 0.35rem;
+}
+
+.era-login-field input {
+  width: 100%;
+  border: 1px solid var(--login-line);
+  border-radius: 8px;
+  padding: 0.85rem 0.9rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--login-ink);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.era-login-field input:focus {
+  border-color: var(--login-accent);
+  box-shadow: 0 0 0 3px rgba(11, 95, 255, 0.18);
+}
+
+.era-login-primary {
+  width: 100%;
+  margin-top: 0.35rem;
+  border: none;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font: inherit;
+  font-weight: 650;
+  font-size: 0.98rem;
+  color: var(--login-accent-ink);
+  background: var(--login-accent);
+  cursor: pointer;
+}
+
+.era-login-primary:hover { filter: brightness(1.05); }
+.era-login-primary:disabled { opacity: 0.55; cursor: wait; }
+
+.era-login-alt {
+  margin: 1.1rem 0 0;
+  text-align: center;
+  font-size: 0.92rem;
+}
+
+.era-login-link {
+  border: none;
+  background: none;
+  color: var(--login-accent);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  padding: 0;
+}
+
+.era-login-link:hover { text-decoration: underline; }
+
+.era-login-error {
+  margin: 0 0 0.75rem;
+  color: var(--login-err);
+  font-size: 0.88rem;
+}
+
+.era-login-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--login-line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem 0.35rem 0.45rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1.1rem;
+  max-width: 100%;
+}
+
+.era-login-chip::before {
+  content: "";
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--login-accent);
+  color: #fff;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.era-login-chip[data-initial]::before {
+  content: attr(data-initial);
+  color: #fff;
+}
+
+.era-login-foot {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  color: var(--login-muted);
+  font-size: 0.82rem;
+}
+
+.era-login-foot code {
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--login-line);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+}
+
+@media (max-width: 480px) {
+  .era-login-card { padding: 1.75rem 1.25rem 1.4rem; }
+}

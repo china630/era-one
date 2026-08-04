@@ -79,6 +79,7 @@ hybrid_components:
 editions:
   era-core:
     title: ERA Core
+    # Honesty 2026-07-30: software GA (soft DoD closed). Pilot-ready open: F-GA-5/8/15 — see Control-Evidence-Rules.
     status: ga
     license_module: core           # база; присутствует всегда
     description: База XDR — телеметрия, приём, хранилище, детекция, активы, кейсы.
@@ -91,6 +92,7 @@ editions:
 
   era-control-ai:
     title: ERA Control AI
+    # Honesty: software GA; field smoke / pilot walkthrough still open (Control-Sprint-Index).
     status: ga
     license_module: control-ai
     description: ИИ-аналитик SOC (расследование, storyline, on-prem LLM).
@@ -99,6 +101,7 @@ editions:
 
   era-response:
     title: ERA Response
+    # Honesty: software GA; field SOAR walkthrough open.
     status: ga
     license_module: response
     description: SOAR — playbooks реагирования.
@@ -129,21 +132,37 @@ editions:
 
   era-perimeter:
     title: ERA Perimeter
-    status: roadmap                 # WAF/NGFW не реализованы; флага `perimeter` нет в licensegate
-    license_module: { name: perimeter, exists: false }
-    description: WAF + NGFW-логика (контент-DLP — позже).
-    services: [waf, ngfw]
+    status: mvp                     # WAF reverse-proxy + NGFW policy API + session DLP (ADR-0031). GA: field/pen-test
+    license_module: { name: perimeter, exists: true }
+    description: >
+      WAF reverse-proxy (OWASP-style rules), NGFW L3/L4 policy decision API,
+      privileged session DLP foundation (shared with PAM). Content-DLP — Phase 2.
+      Не замена commercial NGFW.
+    services: [waf, ngfw, dlp]
+    refs: [ADR-0031, PRD-ERA-Perimeter.md]
+
+  era-resolve:
+    title: ERA Resolve
+    status: mvp                     # DNS DDR Guard/Trace/Atlas (ADR-0031). GA: field DNS lab
+    license_module: { name: resolve, exists: true }
+    description: >
+      DNS Detection & Response — ONE QUERY. ONE POLICY. ONE VERDICT.
+      Guard (protective DNS + verdict), Trace (DnsEvent), Atlas (offline domain TI packs).
+      Donor patterns: DNSSense DNSDome/DNSEye/Cyber X-Ray (ideas only, ADR-0003).
+    services: [resolve]
+    refs: [ADR-0031, PRD-ERA-Resolve.md]
 
   # ---- Platform-издания (код готов, MVP; GA после стенд/полевых гейтов) ----
 
   era-manage:
     title: ERA Manage
-    status: mvp                     # CMDB/ITAM ✅ (ADR-0011); enforcement monitor 🟡 (ADR-0012). GA-гейт: WHQL-подпись драйвера
+    status: mvp                     # CMDB/ITAM ✅ (ADR-0011); enforce lab decisions 🟡 (blocked=telemetry, not OS kill; ADR-0012). GA: WHQL
     license_module: manage
     description: >
       IT-Ops — инвентаризация/CMDB (+ финансовый ITAM: контракты, лицензии,
       стоимость владения), деплой ПО, патчи, App Control, Device Control (USB),
-      BitLocker, EPM-lite, Virtual Patching (mitigation до патча ОС).
+      BitLocker, Virtual Patching (mitigation до патча ОС).
+      EPM-lite/JIT — отдельная линия (не в MVP monitor-complete).
     agent:
       plugins: [inventory, appcontrol, devicecontrol, bitlocker, deploy]
     services: [control-plane]      # + новые серверные части по мере фаз

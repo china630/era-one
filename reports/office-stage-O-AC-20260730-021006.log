@@ -1,0 +1,5 @@
+==> office stage gate O-AC 20260730-021006
+[FAIL] O-AC/ws-coedit :: cargo test -p era-docs-engine --test ws_coedit --quiet
+[PASS] O-AC/mail-docs :: go test -C ui/mail ./... -run "Documents|EditLink|VerifyIntent" -count=1
+[PASS] O-AC/spec :: cmd /c "if exist docs\Office-Stage-O-AUTH-Spec.md (exit /b 0) else (exit /b 1)"
+STAGE GATE FAIL (O-AC)

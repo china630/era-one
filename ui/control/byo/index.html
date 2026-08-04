@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — BYO-EDR</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>BYO-EDR connectors</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-card"><h2>Connectors</h2>
+<button class="era-btn secondary" id="list">Refresh</button>
+<button class="era-btn" id="add">Add</button>
+<table class="era" id="tb"><thead><tr><th>ID</th><th>Name</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("byo");
+function refresh(){
+  EraControl.api("/api/v1/byo/connectors").then(function(r){
+    var tb=document.querySelector("#tb tbody"); tb.innerHTML="";
+    ((r.json&&r.json.connectors)||[]).forEach(function(c){
+      var tr=document.createElement("tr");
+      tr.innerHTML="<td>"+c.id+"</td><td>"+c.name+"</td><td>"+c.status+"</td><td><button data-id=\""+c.id+"\">del</button></td>";
+      tb.appendChild(tr);
+    });
+    tb.querySelectorAll("button").forEach(function(b){
+      b.onclick=function(){EraControl.api("/api/v1/byo/connectors/"+b.getAttribute("data-id"),{method:"DELETE"}).then(refresh);};
+    });
+  });
+}
+document.getElementById("list").onclick=refresh;
+document.getElementById("add").onclick=function(){
+  var id="c"+Date.now();
+  EraControl.api("/api/v1/byo/connectors",{method:"POST",body:JSON.stringify({id:id,name:"lab-"+id,status:"ready"})}).then(refresh);
+};
+refresh();
+</script></body></html>

@@ -1,0 +1,14 @@
+From user@lab.local Fri Jul 10 00:00:00 2026
+From: user@lab.local
+To: dest@lab.local
+Subject: pilot-one
+Date: Fri, 10 Jul 2026 00:00:00 +0000
+
+Body one
+From user@lab.local Fri Jul 10 00:00:01 2026
+From: user@lab.local
+To: dest@lab.local
+Subject: pilot-two
+Date: Fri, 10 Jul 2026 00:00:01 +0000
+
+Body two

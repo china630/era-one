@@ -1,14 +1,17 @@
 # ADR → Код → Тесты (матрица прослеживаемости)
 
-**Дата:** 2 июля 2026 г.  
+**Дата:** 30 июля 2026 г. (honesty pass — code/logic audit)  
 **Назначение:** честная сверка «что решили в ADR» vs «что есть в репозитории».  
-**Легенда статусов:**
+**Приёмка Control:** [`Control-Acceptance-System.md`](products/Control-Acceptance-System.md) · [`Control-Evidence-Rules.md`](Control-Evidence-Rules.md) · [`Control-Sprint-Index.md`](Control-Sprint-Index.md)  
+**Канон:** [`ERA-Product-Acceptance-Standard.md`](products/ERA-Product-Acceptance-Standard.md) · Shared ownership: [`Shared-Acceptance-System.md`](products/Shared-Acceptance-System.md)
+
+**Легенда статусов** (совместима с каноном §3; для product AC предпочитать колонки Scaffold / Pilot-ready):
 
 | Маркер | Значение |
 |--------|----------|
-| ✅ | Реализовано, есть тест/доказательство |
+| ✅ | Scaffold: реализовано, есть тест/доказательство |
 | 🟡 | Частично / MVP / sim / monitor-only |
-| ⏸ | За гейтом (field / external) — код не обязан закрывать |
+| ⏸ | Pilot-ready / внешний гейт (field / WHQL / pen-test) — код не обязан закрывать |
 | 📋 | Стратегия / ориентир — не чеклист кода |
 | ❌ | Сознательно вне scope / DECLINE |
 
@@ -26,24 +29,25 @@
 | 0006 Coverage gaps | Accepted (ориентир) | 📋 | P0/P1 дыры частично |
 | 0007 ClickHouse schema | Accepted | ✅ | inventory typed columns — 🟡 |
 | 0008 Ingest gRPC | Accepted | ✅ | — |
-| 0009 PII + budget | Accepted | ✅ | — |
-| 0010 Licensing | Accepted | ✅ | HSM prod — ⏸ |
+| 0009 PII + budget | Accepted | ✅ | process + BYO/DNS redact-or-false; flag after redact |
+| 0010 Licensing | Accepted | ✅ | GateFromEnv fail-closed prod path; `ERA_LICENSE_DEV` lab-only; HSM ⏸ |
 | 0011 CMDB/ITAM | Implemented | ✅ | CH typed inventory — 🟡 |
-| 0012 Enforcement | Implemented monitor | 🟡 | боевой enforce — ⏸ |
-| 0013 PAM | Accepted MVP | 🟡 | RDP/HSM — ⏸ |
+| 0012 Enforcement | Implemented lab decision | ✅ AC-E1…E3 | `effect=telemetry_only`; OS block ⏸ WHQL |
+| 0013 PAM | Implemented Phase 2 | ✅ | Guacamole video + HSM — ⏸ |
 | 0014 Monorepo | Accepted | 🟡 | rename era-one — ❌ отложен |
-| 0016 UEM scope | Accepted | 🟡 | MDM/VPN — ❌ |
-| 0017 Vision One patterns | Accepted | 🟡 | vpatch enforce — ⏸ |
+| 0016 UEM scope | Accepted | ✅ server | MDM/VPN — ❌; field — ⏸ |
+| 0017 Vision One patterns | Accepted | 🟡 | vpatch kernel — ⏸ |
 | 0018 Hybrid | Implemented Hybrid-0 | 🟡 | SaaS/TI B/C — ❌/⏸ |
 | 0019 Agent orchestrator | Implemented | ✅ | не все плагины из vision |
-| 0020 Observe | Implemented MVP | 🟡 | полный NMS — ❌ |
+| 0020 Observe | Implemented Path A+B | ✅ | полный NMS — ❌; field lab — ⏸ |
 | 0021 Portal + калькулятор | Accepted | 🟡 | статический сайт `site/` + рабочий калькулятор из SSOT `pricing-data.yaml`; тесты `site/test/calculator.test.js` зелёные; контент в развитии |
-| 0022 Detection content | Accepted | 🟡 | корпус ~600, lint ✅; MITRE runtime map, FP UI, heatmap — [ ] |
-| 0023 AI explainability | Accepted | 🟡 | investigate API ✅; custody chain к AI, audit log — [ ] |
+| 0022 Detection content | Accepted | ✅ PP-1 | корпус ~600, lint ✅; Sigma→MITRE on alert; FP UI/heatmap — ⏸ |
+| 0023 AI explainability | Accepted + Phase 3 lite | ✅ | human-on-loop recommend; GateFromEnv on ai-core/soar |
 | 0024 Product families | Accepted | 🟡 | `products.yaml`, platform, deploy profiles; Comms/Office ADR ✅ |
 | 0025 Shared platform | Accepted | 📋 | ADR + `editions-shared.yaml`; runtime — roadmap |
 | 0026 Office engine | Accepted | 📋 | sovereign CRDT + Rust OOXML; no OnlyOffice/GPL |
 | 0027 Communications | Accepted | 📋 | Mail Connect, standalone, Office boundary |
+| 0031 Perimeter + Resolve | Implemented Phase 2 | ✅ | field/pen-test / live TI ⏸ |
 
 ---
 
@@ -112,8 +116,8 @@
 | ITDR | `detection-engine/internal/itdr/` | 🟡 rules |
 | Tamper protection | `era-agent-core` tamper | 🟡 Фаза 1 detect |
 | Risk-based alerting / FP | `risk/`, correlator | 🟡 dedup only |
-| Sigma→MITRE runtime | tags в YAML, не на alert | 🟡 |
-| Case management | `control-plane` cases API | ✅ |
+| Sigma→MITRE runtime | tags → `mitre_techniques` on alert (`processor`, `sigma.Techniques`) | ✅ |
+| Case management | `control-plane` cases API | ✅ API + AuthZ middleware (`ERA_RBAC_TRUST` proxy/api_key; Trusted-Proxy + hop/CIDR) |
 | TIP/STIX | `detection-engine/internal/tip/` | ✅ |
 | CMDB/Inventory | этап 5 | ✅ |
 | Chain of custody | `platform/custody` | ✅ |
@@ -150,26 +154,28 @@
 
 ## ADR-0009 — PII + agent budget
 
-| Решение | Код | Тест |
-|---------|-----|------|
-| Redaction на агенте | `crates/era-agent` sanitize | `tests/golden_pii.rs` |
-| Budget bench | `crates/era-agent-core/src/budget_guard.rs` `check_process_memory` | CI (`ci-gates-stage10.ps1`) |
-| `pii_sanitized` gate | ingest validate | `validate_test.go` |
+| Решение | Код | Тест | Scaffold |
+|---------|-----|------|----------|
+| Redaction на агенте (Process/Auth) | `crates/era-agent-core` sanitize | `tests/golden_pii.rs` | ✅ |
+| Budget bench | `crates/era-agent-core/src/budget_guard.rs` | CI (`ci-gates-stage10.ps1`) | ✅ |
+| `pii_sanitized` gate | ingest validate | `validate_test.go` | ✅ |
+| Collectors BYO/DNS redact-or-false | `era-collectors` byo_edr, dns | unit + golden | ✅ |
 
-**Итог:** ✅
+**Итог:** ✅ — process path + collectors redact-then-flag; DNS `mode=stub`
 
 ---
 
 ## ADR-0010 — Licensing
 
-| Решение | Код | Тест |
-|---------|-----|------|
-| Ed25519 offline license | `services/license`, `crates/era-license` | `license/internal/license/*_test.go` |
-| Lease (hybrid) | `lease.go`, `era-keygen issue-lease` | `lease_test.go` |
-| Sealed clock anti-rollback | validate | golden |
-| HSM в проде | KMS abstraction в pam | ⏸ external |
+| Решение | Код | Тест | Scaffold |
+|---------|-----|------|----------|
+| Ed25519 offline license | `services/license`, `crates/era-license` | `license/internal/license/*_test.go` | ✅ |
+| Lease (hybrid) | `lease.go`, `era-keygen issue-lease` | `lease_test.go` | ✅ |
+| Sealed clock anti-rollback | validate | golden | 🟡 library; path-optional без env |
+| Soft GateFromEnv / DevDefault | `platform/licensegate`, ai-core, soar, perimeter, resolve, pam | startup + 403 tests | ✅ prod path fail-closed; lab `ERA_LICENSE_DEV=1` |
+| HSM в проде | KMS abstraction в pam | ⏸ external | ⏸ |
 
-**Итог:** ✅ dev; HSM — ⏸
+**Итог:** ✅ core verify + GateFromEnv fail-closed; HSM — ⏸
 
 ---
 
@@ -192,17 +198,21 @@
 
 ## ADR-0012 — Enforcement mode
 
-| Решение | Код | Тест |
-|---------|-----|------|
-| Policy engine monitor/enforce | `era-agent-core/src/enforce/` | `engine.rs` tests, fuzz |
-| Fail-open, monitor before enforce | `engine.rs`, orchestrator | unit |
-| Plugins app/device/bitlocker | `era-plugin-appcontrol` etc. | golden status |
-| CP policy API | `control-plane/internal/api/enforcement.go` | go test api |
-| UI | `ui/enforcement/` | — |
-| Kernel minifilter / eBPF prod | — | ⏸ external |
-| WHQL driver signing | — | ⏸ external |
+| Решение | Код | Тест | Scaffold |
+|---------|-----|------|----------|
+| Policy engine monitor/enforce | `era-agent-core/src/enforce/` | `engine.rs` tests, fuzz | ✅ decisions |
+| Fail-open, monitor before enforce | `engine.rs`, orchestrator | unit | ✅ (design; not protect) |
+| Plugins app/device/bitlocker | `era-plugin-appcontrol` etc. | golden status + would_block + `effect` | ✅ lab decision |
+| CP policy API | `control-plane/internal/api/enforcement.go` | go test api + spoof→401/403; agent Bearer | ✅ AuthZ middleware + hop |
+| UI | `ui/enforcement/` | — | 🟡 |
+| Lab decision BlockResult | `enforce/engine.rs` apply_block | golden `enforce_vs_monitor` · `effect=telemetry_only` | ✅ |
+| User-land LIVE gate | `enforce/user_land.rs` + `apply_block` | golden `enforce_live_user_land` · `effect=user_land_block` | ✅ (not WHQL) |
+| Agent token ≠ admin | `control-plane/internal/rbac` | agent GET policy 200 · PUT/escrow 403 | ✅ |
+| Kernel stub messaging | `enforce/kernel.rs` | unit + plugin goldens | ✅ Unavailable until WHQL |
+| Kernel minifilter / eBPF prod | — | ⏸ WHQL — `ERA-Manage-WHQL-Program.md` | ⏸ |
+| WHQL driver signing | — | ⏸ external | ⏸ |
 
-**Итог:** 🟡 monitor-ready
+**Итог:** ✅ AC-E1…E3 + E2b user-land LIVE; **AC-E4 / WHQL kernel ⏸**
 
 ---
 
@@ -213,14 +223,18 @@
 | Vault AES-GCM + seal | `services/pam/internal/vault/` | vault tests |
 | Shamir 2-of-3 | `pam/internal/shamir/` | golden |
 | Checkout RBAC+TTL | `pam/internal/checkout/` | api tests |
-| SSH proxy stub | `pam/internal/api/server.go` | — |
+| SSH TCP proxy + command log | `pam/internal/proxy/ssh_proxy.go` | `ssh_proxy_test.go` |
+| RDP TCP proxy (binary relay) | `pam/internal/proxy/rdp_proxy.go` | `rdp_proxy_test.go`, API `TestRDPProxySession` |
+| RDP broker inject (P2) | `pam/internal/broker` | no password in JSON |
+| Session idle/max (P2) | `pam/internal/sessionpolicy` | timeout custody |
+| Metadata recording (P2) | `pam/internal/recording` | artifact+hash |
 | Session recording | `platform/privilegedsession`, `dlp` | — |
 | Custody chain | `platform/custody` | custody tests |
-| RDP proxy prod | — | ⏸ external |
+| RDP inject + graphical recording | — | ⏸ security-review — `PAM-RDP-Security-Review-Checklist.md` |
 | HSM crypto audit | `software-sealed-dev` KMS | ⏸ external |
 | Kafka `xdr.privileged` | compose pam profile | — |
 
-**Итог:** 🟡 MVP; §5 «не в MVP» — не в коде
+**Итог:** ✅ MVP + Phase 2 broker/policy/recording code; Guacamole video / HSM ⏸
 
 ---
 
@@ -240,15 +254,15 @@
 
 | Решение | Код | Тест |
 |---------|-----|------|
-| §4 Service ITSM | `services/service-desk` | go test |
-| §3 Provision PXE | `services/provision` | go test |
+| §4 Service ITSM | `services/service-desk` + `ui/service-desk` | go test + `run-itops-smoke.ps1` |
+| §3 Provision PXE | `services/provision` + `ui/provision` | PXE golden + smoke |
 | Deploy/patch | `era-plugin-deploy`, CP deploy API | cargo/go test |
-| Device Control | этап 6 plugin | stub |
+| Device Control | `era-plugin-devicecontrol` | golden USB |
 | MDM/Mobile UEM | — | ❌ DECLINE |
 | VPN/ZTNA | — | ❌ INTEGRATE-ONLY |
 | Field rollout | — | ⏸ |
 
-**Итог:** 🟡 server IT-Ops MVP
+**Итог:** ✅ server IT-Ops MVP; field ⏸
 
 ---
 
@@ -304,15 +318,37 @@
 | Решение | Код | Тест |
 |---------|-----|------|
 | Path A PRTG/Zabbix/syslog | `services/observe/internal/adapters/` | golden prtg, syslog |
-| Path B SNMP/discovery sim | `observe/internal/snmp`, `discovery` | — |
-| NetFlow line | `observe/internal/netflow/` | golden |
+| Path B SNMP PollReal + HOST-RESOURCES | `observe/internal/snmp` | `poll_prod_test.go`, metrics_source |
+| NetFlow UDP + line | `observe/internal/netflow/` | golden + UDP listener |
 | Ingest → `xdr.network` | `observe/internal/ingest/` | api test |
 | CMDB network assets | `networkreconcile/`, CP API | `reconcile_test.go` |
 | Correlation | `correlator ObserveNetworkEndpoint` | `engine_test.go` |
 | Полный NMS / Nmap | — | ❌ не в MVP |
-| Боевой SNMP poll | sim only | 🟡 |
+| Field lab SNMP | `run-observe-smoke.ps1` | ⏸ hardware |
 
-**Итог:** 🟡 MVP Path A+B
+**Итог:** ✅ Path A+B code; field / full NMS ⏸/❌
+
+---
+
+## ADR-0031 — Perimeter + Resolve
+
+| Решение | Код | Тест |
+|---------|-----|------|
+| WAF reverse-proxy + rule pack | `services/waf` | rules golden, api proxy/block |
+| NGFW policy decision API | `services/ngfw` | evaluate golden, persist |
+| Session DLP (shared PAM) | `services/dlp` | session tests; pam\|perimeter gate |
+| Resolve Guard/Trace/Atlas | `services/resolve` | verdict golden, DNS UDP, atlas pack |
+| DoH RFC 8484 (P2) | `resolve/internal/doh` | doh golden NXDOMAIN |
+| Atlas Update Service pack | `KindAtlasPack` + packs/reload | kinds_test |
+| Agent DnsEvent emitter | `era-collectors` dns | emit_dns_event unit |
+| Editions mvp + license | `editions-control.yaml` | licensegate KnownModules |
+| Datasheets DNS vs ITSM fix | `site/datasheets/*/16-ERA-Resolve.html` | content review |
+| Content-DLP inspect (P2) | `dlp/internal/content` | inspect golden |
+| WAF body + CRS-lite (P2) | `waf` EvaluateWithBody | body/CRS unit |
+| NGFW host apply opt-in (P2) | `ngfw/internal/apply` | noop default |
+| Live commercial TI SaaS | — | ⏸ external/content |
+
+**Итог:** ✅ MVP + Phase 2 code; field/pen-test / live TI ⏸
 
 ---
 
@@ -326,13 +362,13 @@
 | Correlation chains | `detection-engine/internal/correlator/` | `engine_test.go` |
 | STIX / national IoC | `detection-engine/internal/tip/` | stix tests |
 | MITRE eval scenarios | `data/mitre-eval/` | `mitreval/scenarios_test.go` |
-| MITRE tags → alert runtime | — | ❌ Фаза 2 |
-| Analyst suppression UI | — | ❌ Фаза 2 |
+| MITRE tags → alert runtime | `sigma.Techniques` + chwriter `mitre_techniques` | processor_mitre_test |
+| Analyst suppression UI | CP suppressions + DE cache + ui/cases | suppression_test |
+| Coverage heatmap UI | `/api/v1/mitre/coverage` + workbench | mitre coverage golden |
+| CVE content pipeline | `data/cve-feed/` + `vm/cvefeed` | feed_test |
 | FP feedback outbound | ADR-0018 §5 | ❌ не в MVP |
-| CVE content pipeline | bundle kind `cve-feed` | 🟡 нет `data/cve-feed/` |
-| Coverage heatmap UI | — | ❌ Фаза 2 |
 
-**Итог:** 🟡 — корпус и базовая детекция ✅; governance workflow и MITRE runtime — [ ]
+**Итог:** ✅ DC-01…04 Post-GA code; FP outbound / heatmap CH-seen layer — optional field
 
 ---
 
@@ -346,12 +382,15 @@
 | On-prem LLM narrative | optional Ollama/vLLM | — |
 | Auto-case malicious/suspicious | `ai-core/internal/api/server.go` | — |
 | Custody hashchain (PAM) | `platform/custody/hashchain.go` | custody tests |
-| Investigation audit log | — | ❌ Фаза 2 |
-| Evidence chain verdict→custody | — | ❌ Фаза 2 |
-| Attack graph UI | workbench partial | ❌ Фаза 2 |
-| Model version pinning | ai-pack bundle | 🟡 |
+| Investigation audit log | `investigate.AuditLog` + `/api/v1/investigate/audit` | forensic_test |
+| Evidence chain verdict→custody | `SealEvidence` → `custody_root_hash` | forensic_test |
+| Attack graph UI | `BuildAttackGraph` + workbench | forensic_test |
+| Model version pinning | `ModelVersionHeuristic` + prompt_hash | forensic_test |
+| recommended_actions (P3 lite) | `SuggestActions` | recommend golden |
+| confirm/reject + custody | `POST .../confirm|reject` | recommend_test |
+| SOAR draft handoff | `soar-draft` + `ERA_SOAR_DRAFT_URL` | no auto-execute |
 
-**Итог:** 🟡 — triage MVP ✅; forensic-grade trail — [ ]
+**Итог:** ✅ Phase-2 forensic + Phase 3 lite agentic (human-on-loop); autonomous close ❌
 
 ---
 
@@ -361,8 +400,8 @@
 
 | Тема | Честный статус | ADR |
 |------|----------------|-----|
-| FP / alert fatigue | dedup + correlation 🟡; suppression UI ❌ | 0022, 0006 P1 |
-| Sigma + MITRE | корпус ✅; runtime map ❌ | 0022 |
+| FP / alert fatigue | suppressions UI ✅ + risk dedup | 0022, 0006 P1 |
+| Sigma + MITRE | корпус ✅; runtime map on alert ✅ (PP-1); FP UI/heatmap ⏸ | 0022 |
 | Air-gap updates | bundles ✅; IoC отдельным каналом | 0018 §3.2.1, 0022 |
 | Tamper protect | detect ✅; prevent ⏸ WHQL | 0006, 0012 |
 | 10k+ scale | 10k ev/s target ⏸ field; не 10k hosts proof | AC2, Field-Server-Sizing |
@@ -396,16 +435,18 @@
 | Office stub | `services/docs/cmd/docs` | `docs/cmd/docs/main_test.go` |
 | Deploy profiles | `deploy/profiles/*.yaml` | — |
 
-**Итог:** 🟡 Control GA + shared platform MVP; Comms/Office roadmap
+**Итог:** ✅ Control Scaffold-Green (AuthZ/license/enforce honesty/PII/AC matrix); Pilot-ready F-GA-5/8/15 + Manage OS-block / WHQL / HSM remain ⏸; Comms/Office **mvp** — honesty pass 2026-07-30 · Scaffold-Green 2026-07-30
 
 ---
 
 ## Как обновлять
 
 При закрытии ADR-пункта:
-1. Добавить строку в таблицу ADR выше (код + тест).
+1. Добавить строку в таблицу ADR выше (код + тест); для product AC — явно Scaffold vs Pilot-ready.
 2. Обновить статус в `docs/adr/00XX-*.md`.
-3. При необходимости — `Implementation-Roadmap.md`, Blueprint §5.
-4. Прогнать `scripts/ci-gates-stage10.ps1` или целевой `go test`/`cargo test`.
+3. Обновить [`Control-Sprint-Index.md`](Control-Sprint-Index.md) при смене волны/издания.
+4. При необходимости — `Implementation-Roadmap.md`, Blueprint §5.
+5. Прогнать `scripts/ci-gates-stage10.ps1` или целевой `go test`/`cargo test`; лог в `reports/` или CI.
+6. Соблюдать [`Control-Evidence-Rules.md`](Control-Evidence-Rules.md) (нет лога — нет `[x]`).
 
 **Связано:** [Implementation-Roadmap.md](Implementation-Roadmap.md) · [Hardening-Scale-Spec.md](Hardening-Scale-Spec.md) · [ADR-0022](adr/0022-detection-content-governance.md) · [ADR-0023](adr/0023-ai-investigation-explainability.md)

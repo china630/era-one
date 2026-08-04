@@ -1,0 +1,7 @@
+# Lab TLS material for Comms prod overlay.
+# Generate: pwsh deploy/comms-tls/gen-dev-certs.ps1
+# Do not commit real customer private keys.
+*
+!.gitignore
+!gen-dev-certs.ps1
+!README.md

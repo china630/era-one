@@ -1,0 +1,48 @@
+[package]
+name = "era-docs-engine"
+version = "0.1.0"
+edition = "2021"
+description = "ERA Documents engine — HTTP/WS, Drive bind, persist (ADR-0026; core in era-docs-core)"
+publish = false
+
+[lib]
+name = "era_docs_engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "era-docs-engine"
+path = "src/main.rs"
+
+[dependencies]
+era-docs-core = { path = "../../../crates/era-docs-core" }
+era-office-richtext = { path = "../office-richtext" }
+era-office-storage = { path = "../../../crates/era-office-storage" }
+async-trait = "0.1"
+jsonwebtoken = "9"
+hmac = "0.12"
+sha2 = "0.10"
+hex = "0.4"
+anyhow = "1"
+axum = { version = "0.7", features = ["ws"] }
+bytes = "1"
+futures-util = "0.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.6", features = ["trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1", features = ["v4"] }
+deadpool-postgres = "0.14"
+tokio-postgres = { version = "0.7", features = ["with-serde_json-1"] }
+base64 = "0.22"
+
+[dev-dependencies]
+jsonwebtoken = "9"
+tempfile = "3"
+tokio-tungstenite = "0.24"
+axum = "0.7"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde_json = "1"
+prost = "0.13"

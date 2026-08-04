@@ -1,0 +1,11 @@
+{
+  "name": "era-control-e2e",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:e2e": "cross-env ERA_CONTROL_E2E=1 playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

@@ -1,29 +1,56 @@
-go 1.26.4
+go 1.26.5
 
 use (
 	./gen/go
 	./scripts/gen-curated-sigma
 	./scripts/gen-sigma-corpus
 	./services/ai-core
+	./services/cloud-portal
+	./services/comms/ai
+	./services/comms/auditch
+	./services/comms/calendar
+	./services/comms/chat
+	./services/comms/cmd/lab-imap
+	./services/comms/cmd/loadgen-mailboxes
+	./services/comms/internal/httpauth
+	./services/comms/internal/imapclient
+	./services/comms/mail
+	./services/comms/mail-bridge
+	./services/comms/mail-connect
+	./services/comms/mail-moderation
+	./services/comms/migration
+	./services/comms/vcs
 	./services/compliance
 	./services/control-plane
-	./services/cloud-portal
-	./services/update-service
 	./services/ctem
 	./services/deception
 	./services/detection-engine
 	./services/dlp
+	./services/docs
 	./services/event-writer
 	./services/federated
 	./services/ingest-gateway
 	./services/license
 	./services/national-hub
 	./services/ngfw
-	./services/platform
-	./services/pam
-	./services/provision
-	./services/service-desk
 	./services/observe
-	./services/docs
+	./services/pam
+	./services/platform
+	./services/provision
+	./services/resolve
+	./services/service-desk
+	./services/soar
+	./services/update-service
+	./services/vm
 	./services/waf
+	./ui/chat
+	./ui/docs
+	./ui/drive
+	./ui/mail
+	./ui/meet
+	./ui/office-ai
+	./ui/office-shell
+	./ui/presentations
+	./ui/projects
+	./ui/tables
 )

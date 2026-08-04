@@ -1,0 +1,4 @@
+==> office stage gate O-T-5 20260730-010555
+[PASS] O-T-5/ui :: go test -C ui/tables ./... -count=1
+[PASS] O-T-5/workspace :: go test -C services/platform ./workspace/... -run Tables -count=1
+STAGE GATE PASS (O-T-5)

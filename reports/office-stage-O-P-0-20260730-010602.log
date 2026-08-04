@@ -1,0 +1,4 @@
+==> office stage gate O-P-0 20260730-010602
+[PASS] O-P-0/prd :: cmd /c "if exist docs\products\PRD-Office-P3.md (exit /b 0) else (exit /b 1)"
+[PASS] O-P-0/proto :: go test -C gen/go ./era/v1/ -run "ErapDeckWire" -count=1
+STAGE GATE PASS (O-P-0)

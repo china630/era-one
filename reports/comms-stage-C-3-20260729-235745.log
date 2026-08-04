@@ -1,0 +1,3 @@
+==> stage gate C-3 20260729-235745
+[FAIL] F-C14/webmail :: go test ./ui/mail/... -count=1
+STAGE GATE FAIL (C-3)

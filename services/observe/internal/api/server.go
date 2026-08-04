@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"era/services/observe/internal/adapters"
 	"era/services/observe/internal/cmdb"
@@ -19,17 +21,66 @@ import (
 	"era/services/platform/licensegate"
 	"era/services/platform/metrics"
 	erav1 "era/contracts/gen/era/v1"
+	"github.com/google/uuid"
 )
+
+// Alert — in-memory lab alert (не замена detection-engine).
+type Alert struct {
+	ID        string    `json:"id"`
+	NodeID    string    `json:"node_id"`
+	Severity  string    `json:"severity"`
+	Summary   string    `json:"summary"`
+	Source    string    `json:"source"`
+	Acked     bool      `json:"acked"`
+	AckedBy   string    `json:"acked_by,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// PollerSchedule — простой CRUD расписания SNMP poll targets.
+type PollerSchedule struct {
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	Targets    []string  `json:"targets"`
+	IntervalSec int      `json:"interval_sec"`
+	Enabled    bool      `json:"enabled"`
+	CreatedAt  time.Time `json:"created_at"`
+}
 
 type Server struct {
 	Ingest *ingestclient.Client
 	CMDB   *cmdb.Client
 	Gate   *licensegate.Gate
 	Tenant string
+
+	mu       sync.RWMutex
+	alerts   []*Alert
+	pollers  []*PollerSchedule
 }
 
 func New(ing *ingestclient.Client, cm *cmdb.Client, gate *licensegate.Gate, tenant string) *Server {
-	return &Server{Ingest: ing, CMDB: cm, Gate: gate, Tenant: tenant}
+	now := time.Now().UTC()
+	return &Server{
+		Ingest: ing, CMDB: cm, Gate: gate, Tenant: tenant,
+		alerts: []*Alert{
+			{
+				ID: "alert-lab-1", NodeID: "net-10-0-0-1", Severity: "warning",
+				Summary: "high egress on Gi0/1 (sim)", Source: "observe_snmp",
+				CreatedAt: now,
+			},
+			{
+				ID: "alert-lab-2", NodeID: "sw-01", Severity: "info",
+				Summary: "lab seed alert", Source: "lab",
+				CreatedAt: now,
+			},
+		},
+		pollers: []*PollerSchedule{
+			{
+				ID: "poller-default", Name: "default-sim",
+				Targets: []string{"10.0.0.1"}, IntervalSec: 60, Enabled: true,
+				CreatedAt: now,
+			},
+		},
+	}
 }
 
 func (s *Server) Routes() http.Handler {
@@ -45,6 +96,11 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("/api/v1/discovery/sweep", s.handleDiscovery)
 	mux.HandleFunc("/api/v1/netflow/line", s.handleNetflow)
 	mux.HandleFunc("/api/v1/devices", s.handleDevices)
+	mux.HandleFunc("/api/v1/devices/", s.handleDeviceDetail)
+	mux.HandleFunc("/api/v1/alerts", s.handleAlerts)
+	mux.HandleFunc("/api/v1/alerts/", s.handleAlertSub)
+	mux.HandleFunc("/api/v1/pollers", s.handlePollers)
+	mux.HandleFunc("/api/v1/pollers/", s.handlePollerDetail)
 	mux.HandleFunc("/api/v1/topology", s.handleTopology)
 	mux.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(uiDir()))))
 	return mux
@@ -120,7 +176,17 @@ func (s *Server) emitNMS(w http.ResponseWriter, r *http.Request, nodeID, source,
 	_, _ = s.CMDB.ReconcileNetwork(r.Context(), cmdb.NetworkAsset{
 		NodeID: nodeID, TenantID: s.tenant(), Hostname: nodeID, IPAddrs: ipFromNode(nodeID),
 	})
+	s.pushAlert(nodeID, "warning", summary, source)
 	writeJSON(w, http.StatusAccepted, map[string]any{"accepted": 1, "node_id": nodeID})
+}
+
+func (s *Server) pushAlert(nodeID, severity, summary, source string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.alerts = append(s.alerts, &Alert{
+		ID: uuid.NewString(), NodeID: nodeID, Severity: severity,
+		Summary: summary, Source: source, CreatedAt: time.Now().UTC(),
+	})
 }
 
 func (s *Server) handleSNMPPoll(w http.ResponseWriter, r *http.Request) {
@@ -142,9 +208,11 @@ func (s *Server) handleSNMPPoll(w http.ResponseWriter, r *http.Request) {
 		_, _ = s.CMDB.ReconcileNetwork(r.Context(), cmdb.NetworkAsset{
 			NodeID: node, TenantID: s.tenant(), Hostname: target, IPAddrs: []string{target},
 		})
+		s.pushAlert(node, "warning", msg, "observe_snmp")
 	}
 	_ = s.Ingest.PostEvents(r.Context(), events)
-	writeJSON(w, http.StatusOK, map[string]any{"metrics": m, "events": len(events)})
+	// Honest label: sim path always reports metrics_source=sim (see snmp.PollSimulated).
+	writeJSON(w, http.StatusOK, map[string]any{"metrics": m, "events": len(events), "metrics_source": m.MetricsSource})
 }
 
 func (s *Server) handleDiscovery(w http.ResponseWriter, r *http.Request) {
@@ -219,6 +287,163 @@ func (s *Server) handleDevices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"devices": assets})
+}
+
+func (s *Server) handleDeviceDetail(w http.ResponseWriter, r *http.Request) {
+	if !s.requireObserve(w) {
+		return
+	}
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/devices/"), "/")
+	if id == "" {
+		http.Error(w, "id required", http.StatusBadRequest)
+		return
+	}
+	asset, err := s.CMDB.GetNetwork(r.Context(), id)
+	if err != nil || asset == nil {
+		http.NotFound(w, r)
+		return
+	}
+	// Attach last sim metrics when available (honest metrics_source).
+	var metrics any
+	if len(asset.IPAddrs) > 0 {
+		m := snmp.PollSimulated(asset.IPAddrs[0])
+		metrics = m
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"device":         asset,
+		"metrics":        metrics,
+		"metrics_source": "sim",
+	})
+}
+
+func (s *Server) handleAlerts(w http.ResponseWriter, r *http.Request) {
+	if !s.requireObserve(w) {
+		return
+	}
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	out := make([]*Alert, len(s.alerts))
+	copy(out, s.alerts)
+	writeJSON(w, http.StatusOK, map[string]any{"alerts": out})
+}
+
+func (s *Server) handleAlertSub(w http.ResponseWriter, r *http.Request) {
+	if !s.requireObserve(w) {
+		return
+	}
+	rest := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/alerts/"), "/")
+	parts := strings.Split(rest, "/")
+	if len(parts) == 0 || parts[0] == "" {
+		http.Error(w, "id required", http.StatusBadRequest)
+		return
+	}
+	id := parts[0]
+	if len(parts) == 2 && parts[1] == "ack" {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		var body struct {
+			By string `json:"by"`
+		}
+		_ = json.NewDecoder(r.Body).Decode(&body)
+		if body.By == "" {
+			body.By = "operator"
+		}
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		for _, a := range s.alerts {
+			if a.ID == id {
+				a.Acked = true
+				a.AckedBy = body.By
+				writeJSON(w, http.StatusOK, a)
+				return
+			}
+		}
+		http.NotFound(w, r)
+		return
+	}
+	http.NotFound(w, r)
+}
+
+func (s *Server) handlePollers(w http.ResponseWriter, r *http.Request) {
+	if !s.requireObserve(w) {
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+		out := make([]*PollerSchedule, len(s.pollers))
+		copy(out, s.pollers)
+		writeJSON(w, http.StatusOK, map[string]any{"pollers": out})
+	case http.MethodPost:
+		var body PollerSchedule
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Name == "" {
+			http.Error(w, "name required", http.StatusBadRequest)
+			return
+		}
+		if body.ID == "" {
+			body.ID = "poller-" + uuid.NewString()[:8]
+		}
+		if body.IntervalSec <= 0 {
+			body.IntervalSec = 60
+		}
+		if body.Targets == nil {
+			body.Targets = []string{}
+		}
+		body.CreatedAt = time.Now().UTC()
+		s.mu.Lock()
+		s.pollers = append(s.pollers, &body)
+		s.mu.Unlock()
+		writeJSON(w, http.StatusCreated, body)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (s *Server) handlePollerDetail(w http.ResponseWriter, r *http.Request) {
+	if !s.requireObserve(w) {
+		return
+	}
+	id := strings.Trim(strings.TrimPrefix(r.URL.Path, "/api/v1/pollers/"), "/")
+	if id == "" {
+		http.Error(w, "id required", http.StatusBadRequest)
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+		for _, p := range s.pollers {
+			if p.ID == id {
+				writeJSON(w, http.StatusOK, p)
+				return
+			}
+		}
+		http.NotFound(w, r)
+	case http.MethodDelete:
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		for i, p := range s.pollers {
+			if p.ID == id {
+				s.pollers = append(s.pollers[:i], s.pollers[i+1:]...)
+				writeJSON(w, http.StatusOK, map[string]string{"status": "deleted", "id": id})
+				return
+			}
+		}
+		http.NotFound(w, r)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 func (s *Server) handleTopology(w http.ResponseWriter, r *http.Request) {

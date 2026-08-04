@@ -1,0 +1,28 @@
+[
+  {
+    "id": "act-1",
+    "kind": "isolate_host",
+    "title": "Isolate host",
+    "detail": "Contain node node-lab",
+    "playbook": "isolate_host",
+    "requires_ack": true,
+    "status": "pending"
+  },
+  {
+    "id": "act-2",
+    "kind": "open_case_note",
+    "title": "Open case note",
+    "detail": "Document triage for malicious",
+    "requires_ack": true,
+    "status": "pending"
+  },
+  {
+    "id": "act-3",
+    "kind": "soar_draft",
+    "title": "SOAR playbook draft",
+    "detail": "Draft Response playbook — not executed",
+    "playbook": "isolate_host",
+    "requires_ack": true,
+    "status": "pending"
+  }
+]

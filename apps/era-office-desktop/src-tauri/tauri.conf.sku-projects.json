@@ -1,0 +1,14 @@
+{
+  "productName": "ERA Projects",
+  "identifier": "az.era.office.projects",
+  "app": {
+    "windows": [{ "label": "main", "title": "ERA Projects" }]
+  },
+  "bundle": {
+    "shortDescription": "ERA Projects Solo — local .eraj board",
+    "fileAssociations": [
+      { "ext": ["eraj"], "name": "ERA Project Board", "mimeType": "application/vnd.era.eraj", "role": "Editor" }
+    ],
+    "icon": ["icons/sku-projects.png", "icons/sku-projects.ico", "icons/icon.png", "icons/icon.ico"]
+  }
+}

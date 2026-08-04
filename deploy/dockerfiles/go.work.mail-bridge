@@ -1,0 +1,9 @@
+go 1.26.4
+
+use (
+	./gen/go
+	./services/comms/internal/imapclient
+	./services/comms/mail-bridge
+	./services/license
+	./services/platform
+)

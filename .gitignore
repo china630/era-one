@@ -16,6 +16,11 @@ node_modules/
 .cursor/*
 !.cursor/rules/
 !.cursor/rules/**
+!.cursor/hooks.json
+!.cursor/hooks/
+!.cursor/hooks/**
+!.cursor/skills/
+!.cursor/skills/**
 .idea/
 .vscode/
 *.swp
@@ -36,6 +41,9 @@ deploy/prod/.env
 
 # Site build output (artifact for deploy)
 dist/
+
+# Generated dep graphs (local / agent; regenerate via scripts/export-dep-graph.ps1)
+reports/deps/
 
 # Generated proto (local regen via scripts/gen-proto.ps1)
 gen/*

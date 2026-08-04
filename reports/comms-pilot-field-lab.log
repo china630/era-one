@@ -1,0 +1,14 @@
+2026-07-30T00:20:39.3339818+04:00 FIELD-LAB A2 bridge healthz
+2026-07-30T00:20:39.5795913+04:00 FIELD-LAB A2 migration healthz
+2026-07-30T00:20:39.5989827+04:00 FIELD-LAB A4 bridge autodiscover smoke
+2026-07-30T00:20:59.9609190+04:00 FIELD-LAB A2 bridge healthz
+2026-07-30T00:21:00.2620028+04:00 FIELD-LAB A2 migration healthz
+2026-07-30T00:21:00.2798526+04:00 FIELD-LAB A4 bridge autodiscover smoke
+2026-07-30T00:21:00.3375844+04:00 FIELD-LAB A4 autodiscover SSL on PASS
+2026-07-30T00:21:00.3406194+04:00 FIELD-LAB A4 bridge EWS FindFolder smoke
+2026-07-30T00:21:00.3897999+04:00 FIELD-LAB A4 EWS upstream not configured (expected in stub lab): Response status code does not indicate success: 502 (Bad Gateway).
+2026-07-30T00:21:00.3946025+04:00 FIELD-LAB A3 Mail Server baseline — manual Outlook VM checklist (see docs/Comms-Internal-Field-Lab.md §Outlook)
+2026-07-30T00:21:00.4047512+04:00 FIELD-LAB A5 Thunderbird/CG optional — manual if CG lab available
+2026-07-30T00:21:00.4086641+04:00 FIELD-LAB CH bridge audit probe
+2026-07-30T00:21:00.4416154+04:00 FIELD-LAB BRIDGE audit rows: 2
+2026-07-30T00:21:00.4454559+04:00 FIELD-LAB FIELD-LAB PASS (automated probes; complete A3/A4 manual Outlook steps for full AC-BR-1/2)

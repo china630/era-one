@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — PAM</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>PAM</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-banner">Video/Guacamole &amp; HSM = code-ready / GA after review ⏸. Sessions show metadata recording.</div>
+<div class="era-card"><h2>Vault</h2>
+<button class="era-btn secondary" id="st">Status</button>
+<pre id="v" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>Secrets</h2>
+<button class="era-btn secondary" id="sec">List</button>
+<pre id="s" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>Sessions</h2>
+<button class="era-btn secondary" id="ses">List sessions</button>
+<pre id="se" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("pam");
+document.getElementById("st").onclick=function(){EraControl.x("pam","/api/v1/vault/status").then(function(r){document.getElementById("v").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("sec").onclick=function(){EraControl.x("pam","/api/v1/secrets").then(function(r){document.getElementById("s").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("ses").onclick=function(){EraControl.x("pam","/api/v1/sessions").then(function(r){document.getElementById("se").textContent=JSON.stringify(r.json,null,2);});};
+document.getElementById("st").click();
+</script></body></html>

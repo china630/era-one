@@ -1,0 +1,8 @@
+{
+  "from": "CEO <ceo@evil.com>",
+  "subject": "URGENT: Verify your account immediately",
+  "body": "Click here to verify your password or your account will be suspended.",
+  "headers": {
+    "reply-to": "attacker@phish.com"
+  }
+}

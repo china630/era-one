@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — AI</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>AI Investigate</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-banner">Human-on-loop only. No autonomous close.</div>
+<div class="era-card"><h2>Queue</h2>
+<button class="era-btn secondary" id="refresh">Refresh list</button>
+<button class="era-btn" id="newInv">New investigate</button>
+<table class="era" id="list"><thead><tr><th>ID</th><th>Status</th><th></th></tr></thead><tbody></tbody></table></div>
+<div class="era-card"><h2>Detail</h2>
+<pre id="det" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre>
+<button class="era-btn" id="confirm">Confirm</button>
+<button class="era-btn secondary" id="reject">Reject</button>
+<button class="era-btn secondary" id="soar">SOAR draft</button>
+<div id="st" class="era-status"></div></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("ai");
+var cur="";
+function refresh(){
+  EraControl.x("ai","/api/v1/investigate").then(function(r){
+    var tb=document.querySelector("#list tbody"); tb.innerHTML="";
+    var items=(r.json&&(r.json.items||r.json.investigations))||[];
+    items.forEach(function(it){
+      var id=it.investigation_id||it.id||"";
+      var tr=document.createElement("tr");
+      tr.innerHTML="<td>"+id+"</td><td>"+(it.status||"")+"</td><td><button data-id=\""+id+"\">open</button></td>";
+      tb.appendChild(tr);
+    });
+    tb.querySelectorAll("button").forEach(function(b){b.onclick=function(){openId(b.getAttribute("data-id"));};});
+  });
+}
+function openId(id){
+  cur=id;
+  EraControl.x("ai","/api/v1/investigate/"+encodeURIComponent(id)).then(function(r){
+    document.getElementById("det").textContent=JSON.stringify(r.json,null,2);
+  });
+}
+document.getElementById("refresh").onclick=refresh;
+document.getElementById("newInv").onclick=function(){
+  EraControl.x("ai","/api/v1/investigate",{method:"POST",body:JSON.stringify({summary:"lab investigate",node_id:"lab-node"})}).then(function(r){
+    EraControl.setStatus(document.getElementById("st"), r.ok?"created":"err "+r.status, r.ok?"ok":"err");
+    refresh();
+    if(r.json&&(r.json.investigation_id||r.json.id)) openId(r.json.investigation_id||r.json.id);
+  });
+};
+document.getElementById("confirm").onclick=function(){
+  if(!cur)return;
+  EraControl.x("ai","/api/v1/investigate/"+cur+"/confirm",{method:"POST",body:JSON.stringify({action_id:"ui-confirm",note:"lab"})}).then(function(r){
+    EraControl.setStatus(document.getElementById("st"), r.ok?"confirmed":"err "+r.status, r.ok?"ok":"err"); openId(cur);
+  });
+};
+document.getElementById("reject").onclick=function(){
+  if(!cur)return;
+  EraControl.x("ai","/api/v1/investigate/"+cur+"/reject",{method:"POST",body:JSON.stringify({action_id:"ui-reject",note:"lab"})}).then(function(r){
+    EraControl.setStatus(document.getElementById("st"), r.ok?"rejected":"err "+r.status, r.ok?"ok":"err"); openId(cur);
+  });
+};
+document.getElementById("soar").onclick=function(){
+  if(!cur)return;
+  EraControl.x("ai","/api/v1/investigate/"+cur+"/soar-draft",{method:"POST",body:"{}"}).then(function(r){
+    document.getElementById("det").textContent=JSON.stringify(r.json,null,2);
+  });
+};
+refresh();
+</script></body></html>

@@ -178,7 +178,7 @@ Edition-matrix + CI: `ci-gates-stage10.ps1`, bundle golden, PII/pam gates.
 
 | ID | Тема | ADR | DoD (кратко) | Статус |
 |---|---|---|---|---|
-| PP-1 | Sigma→MITRE runtime на detection | 0022 | теги правила → `mitre_techniques` на алерте + golden | [ ] |
+| PP-1 | Sigma→MITRE runtime на detection | 0022 | теги правила → `mitre_techniques` на алерте + golden | [x] |
 | PP-2 | Analyst suppression / FP UI | 0022 | per-tenant suppress + FP mark → CP API + UI | [ ] |
 | PP-3 | MITRE coverage heatmap | 0022 | UI + отчёт по корпусу | [ ] |
 | PP-4 | CVE content pipeline | 0022 | `data/cve-feed/` + e2e apply в VM | [~] kind есть |

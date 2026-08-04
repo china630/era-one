@@ -12,14 +12,16 @@ adr: docs/adr/0025-era-one-shared-platform.md
 editions:
   era-drive:
     title: ERA Drive
-    status: roadmap
-    license_module: { name: platform-drive, exists: false }
+    # Honesty 2026-07-30: O-0…O-5 gates PASS; O-GA honesty closeout; field RT-O09 open → not ga
+    status: mvp
+    license_module: { name: platform-drive, exists: true }
     description: >
       Файловое хранилище, sync, ACL, версии. API для Mail (вложения) и Office (документы).
       Отдельная строка RFQ; всегда включён в ERA Office Suite.
-    services: [platform-drive]
+    services: [platform-drive, drive-api]
     consumers: [era-communications, era-office]
     pricing_ref: platform-drive
+    proof: "O-GA gate — scripts/run-office-stage-gate.ps1 -Stage O-GA"
 
   era-sign:
     title: ERA Sign

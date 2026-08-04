@@ -1,0 +1,30 @@
+2026-07-30T01:04:39.2779426+04:00 CONNECT-LAB autodiscover
+2026-07-30T01:04:39.3469241+04:00 CONNECT-LAB autodiscover: <?xml version="1.0" encoding="utf-8"?>
+<Autodiscover>
+  <Response>
+    <Account>
+      <Type>CONNECT</Type>
+      <Email>lab1@mail.gov.az</Email>
+      <Endpoint>/api/v1/connect/sync</Endpoint>
+      
+2026-07-30T01:04:39.3502908+04:00 CONNECT-LAB register mailbox
+2026-07-30T01:04:39.4113050+04:00 CONNECT-LAB sync
+2026-07-30T01:04:39.4285587+04:00 CONNECT-LAB sync job: {"id":"sync-20260729210439-1","mailbox":"lab1@mail.gov.az","tenant_id":"t-demo","status":"failed","items_total":0,"items_ok":0,"items_fail":1,"error":"dial tcp 127.0.0.1:1144: connect: connection refused","created_at":"2026-07-29T21:04:39.416851198Z"}
+
+2026-07-30T01:05:07.1139381+04:00 CONNECT-LAB autodiscover
+2026-07-30T01:05:07.1731247+04:00 CONNECT-LAB autodiscover: <?xml version="1.0" encoding="utf-8"?>
+<Autodiscover>
+  <Response>
+    <Account>
+      <Type>CONNECT</Type>
+      <Email>lab1@mail.gov.az</Email>
+      <Endpoint>/api/v1/connect/sync</Endpoint>
+      <Protocol>
+        <Type>IMAP</Type>
+        <Server>dovecot-lab</Server>
+      
+2026-07-30T01:05:07.1776864+04:00 CONNECT-LAB register mailbox (IMAP dovecot-lab:143)
+2026-07-30T01:05:07.2253084+04:00 CONNECT-LAB sync
+2026-07-30T01:05:07.2682639+04:00 CONNECT-LAB sync job: {"id":"sync-20260729210507-1","mailbox":"lab1@mail.gov.az","tenant_id":"t-demo","status":"done","items_total":1,"items_ok":1,"items_fail":0,"created_at":"2026-07-29T21:05:07.231045346Z"}
+
+2026-07-30T01:05:07.2764988+04:00 CONNECT-LAB RT-10 Connect lab PASS (items_ok=1) — see D:\My Projects\era-one\scripts\..\reports\comms-connect-lab.log

@@ -9,6 +9,7 @@ import (
 	"era/services/dlp/internal/api"
 	"era/services/dlp/internal/session"
 	"era/services/platform/envelope"
+	"era/services/platform/licensegate"
 )
 
 func main() {
@@ -21,7 +22,11 @@ func main() {
 		defer pub.Close()
 	}
 
-	srv := api.New(session.NewStore(), pub)
+	gate, err := licensegate.GateFromEnv(0)
+	if err != nil {
+		log.Fatalf("license: %v", err)
+	}
+	srv := api.New(session.NewStore(), pub, gate)
 	httpSrv := &http.Server{Addr: addr, Handler: srv.Routes(), ReadHeaderTimeout: 5 * time.Second}
 	log.Printf("dlp-uam listening %s", addr)
 	log.Fatal(httpSrv.ListenAndServe())

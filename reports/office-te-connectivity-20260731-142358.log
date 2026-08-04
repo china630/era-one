@@ -1,0 +1,22 @@
+﻿[PASS] workspace http://127.0.0.1:8170/healthz
+[PASS] identity http://127.0.0.1:8160/healthz
+[PASS] drive-api http://127.0.0.1:8175/healthz
+[PASS] docs-engine http://127.0.0.1:8142/healthz
+[PASS] tables-engine http://127.0.0.1:8143/healthz
+[PASS] presentations-engine http://127.0.0.1:8144/healthz
+[PASS] docs-projects http://127.0.0.1:8145/healthz
+[PASS] docs-ai http://127.0.0.1:8146/healthz
+[PASS] UI /drive/ (200)
+[PASS] UI /docs/ (200)
+[PASS] UI /tables/ (200)
+[PASS] UI /presentations/ (200)
+[PASS] UI /projects/ (200)
+[PASS] UI /office-ai/ (200)
+[PASS] staging token for alice@mail.gov.az
+[PASS] GET /api/v1/drive/folders/_root/children via BFF (200)
+[PASS] Drive rejects header-only spoof (HTTP 401)
+[FAIL] Docs API - Удаленный сервер возвратил ошибку: (502) Недопустимый шлюз.
+[FAIL] Tables API - Удаленный сервер возвратил ошибку: (502) Недопустимый шлюз.
+[FAIL] Presentations API - Удаленный сервер возвратил ошибку: (502) Недопустимый шлюз.
+[PASS] GET /api/v1/projects/board
+[PASS] POST /api/v1/docs-ai/summarize

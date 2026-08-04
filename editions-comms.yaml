@@ -9,8 +9,9 @@ product: era-communications
 editions:
   era-mail-server:
     title: ERA Mail Server
-    status: roadmap
-    license_module: { name: comms-mail-server, exists: false }
+    # Honesty 2026-07-29: code restored from stash; scaffold gates pending re-proof; field RT-09 open → not ga
+    status: mvp
+    license_module: { name: comms-mail-server, exists: true }
     description: Почтовый backend — SMTP/IMAP, Autodiscover, CalDAV; EWS subset (Outlook).
     services: [comms-mail]
     pricing_ref: comms-mail-server
@@ -20,43 +21,91 @@ editions:
 
   era-mail-client:
     title: ERA Mail Client
+    # Summer S4-1: webmail is MVP surface; desktop exists:false until skeleton — see PRD-Mail-Client-Desktop.md
     status: roadmap
     license_module: { name: comms-mail-client, exists: false }
-    description: Webmail + desktop/mobile, Zero-Touch Autodiscover.
+    description: >
+      Webmail (ui/mail) for MVP. Desktop/mobile native client roadmap
+      (PRD-Mail-Client-Desktop); not ga.
     services: [comms-mail-client]
     included_with: [era-mail-server]
 
   era-mail-connect:
     title: ERA Mail Connect
-    status: roadmap
-    license_module: { name: comms-mail-connect, exists: false }
+    # 2026-07-30: real IMAP + vault ref unit PASS; field RT-10 open → mvp not ga
+    status: mvp
+    license_module: { name: comms-mail-connect, exists: true }
     description: >
-      Migration tier: Mail Client + BFF к внешнему IMAP/JMAP/EWS.
+      Hybrid tier: Mail Client + BFF к внешнему IMAP/JMAP/EWS.
       Отдельная лицензия; не заменяет Mail Server в Full Suite GA narrative.
     services: [comms-mail-connect]
-    tier: migration
+    tier: hybrid
     pricing_ref: comms-mail-connect
+
+  era-comms-migration:
+    title: ERA Comms Migration
+    # Honesty 2026-07-29: restored; unit proof required before ga; field cutover open
+    status: mvp
+    license_module: { name: comms-migration, exists: true }
+    description: >
+      Bulk migration many-to-many: Communigate, Lotus, Exchange, IMAP, PST →
+      ERA Mail Server, IceWarp, … Air-gap job pipeline + CH audit.
+    services: [comms-migration]
+    requires: []
+    tier: upsell
+    pricing_ref: comms-migration
+    vendor_matrix: docs/Comms-Migration-Vendor-Matrix.md
+
+  era-outlook-bridge:
+    title: ERA Outlook Bridge
+    # Honesty 2026-07-29: restored; unit proof required before ga; field Exchange/100mb open
+    status: mvp
+    license_module: { name: comms-outlook-bridge, exists: true }
+    description: >
+      Server Exchange façade (Autodiscover + EWS) перед IceWarp, Communigate,
+      Exchange, ERA Mail Server. Zero Outlook desktop plugin.
+    services: [comms-mail-bridge]
+    tier: upsell
+    pricing_ref: comms-outlook-bridge
+    adr: docs/adr/0030-era-outlook-bridge.md
+
+  era-mail-moderation:
+    title: ERA Mail Moderation
+    status: mvp
+    license_module: { name: comms-mail-moderation, exists: true }
+    description: >
+      Outbound message moderation: SMTP hold → manager/curator Approve/Reject.
+      Standalone edge перед IceWarp / любым SMTP; native path на ERA Mail Server.
+      Zero desktop plugin. DLP PII — не ядро (см. Perimeter / P2).
+    services: [comms-mail-moderation]
+    tier: upsell
+    pricing_ref: comms-mail-moderation
+    prd: docs/products/PRD-Mail-Moderation.md
+    stage: docs/Comms-Stage-CMM-Spec.md
 
   era-conference:
     title: ERA Conference
-    status: roadmap
-    license_module: { name: comms-conference, exists: false }
+    # L-5/R-2: meet join UI + LiveKit stub smoke → mvp (not ga; field open)
+    status: mvp
+    license_module: { name: comms-conference, exists: true }
     description: Видеоконференции on-prem (LiveKit, 1000+ участников).
     services: [comms-conference]
     pricing_ref: comms-conference
 
   era-chat:
     title: ERA Chat
-    status: roadmap
-    license_module: { name: comms-chat, exists: false }
+    # L-3/R-1: PG runtime via ERA_CHAT_DATABASE_URL → mvp (not ga)
+    status: mvp
+    license_module: { name: comms-chat, exists: true }
     description: Корпоративный мессенджер; интеграция с ERA Conference и почтой.
     services: [comms-chat]
     pricing_ref: comms-chat
 
   era-comms-ai:
     title: ERA Comms AI
-    status: roadmap
-    license_module: { name: comms-ai, exists: false }
+    # L-4/R-3: Ollama compose overlay → mvp when Available() true; Heuristic CI fallback
+    status: mvp
+    license_module: { name: comms-ai, exists: true }
     description: >
       Air-Gap LLM — аудит почты, саммари переписки и встреч.
       Отдельно от ERA Control AI.
@@ -76,3 +125,15 @@ bundles:
     editions: [era-mail-server, era-mail-client, era-conference, era-chat, era-comms-ai]
     pricing_ref: comms-full
     note: ERA Drive и ERA Office — отдельные лицензии (optional / upsell)
+  comms-partner-migration:
+    title: ERA Comms Partner (Migration + Bridge)
+    editions: [era-comms-migration, era-outlook-bridge]
+    pricing_ref: comms-partner-bundle
+    note: docs/Comms-Partner-Edition-Bundle.md
+  comms-partner-hardening:
+    title: ERA Comms Partner (Migration + Bridge + Moderation)
+    editions: [era-comms-migration, era-outlook-bridge, era-mail-moderation]
+    pricing_ref: comms-partner-hardening
+    note: >
+      IceWarp coexistence: migrate history, Outlook without connector,
+      outbound moderation without replacing MTA. docs/Comms-Partner-Edition-Bundle.md

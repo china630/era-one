@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.26.4-alpine AS build
+WORKDIR /src
+COPY deploy/dockerfiles/go.work.mail-api ./go.work
+COPY gen/go gen/go
+COPY services/comms/mail services/comms/mail
+COPY services/comms/calendar services/comms/calendar
+COPY services/comms/internal/httpauth services/comms/internal/httpauth
+COPY services/platform services/platform
+COPY services/license services/license
+COPY ui/drive ui/drive
+COPY ui/docs ui/docs
+WORKDIR /src/services/comms/mail
+RUN go build -o /out/mail-api ./cmd/mail-api
+
+FROM alpine:3.20
+COPY --from=build /out/mail-api /usr/local/bin/era-mail-api
+EXPOSE 8150
+ENTRYPOINT ["/usr/local/bin/era-mail-api"]

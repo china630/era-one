@@ -1,0 +1,17 @@
+{
+  "tenantId": "t-demo",
+  "entries": [
+    {
+      "principal": "user:u-owner",
+      "role": "DRIVE_ACL_ROLE_OWNER"
+    },
+    {
+      "principal": "tenant:members",
+      "role": "DRIVE_ACL_ROLE_READ"
+    },
+    {
+      "principal": "group:finance",
+      "role": "DRIVE_ACL_ROLE_WRITE"
+    }
+  ]
+}

@@ -2,11 +2,13 @@
 
 > **ONE AGENT. ONE PLATFORM. ONE CONTROL.**
 
-**Версия:** 1.6
-**Дата:** 4 июля 2026 г.
+**Версия:** 1.7
+**Дата:** 30 июля 2026 г.
 **Аудитория:** отдел продаж, пресейл, дистрибьюторы
 **Назначение:** внутренний справочник изданий с **честным статусом готовности** (GA / GA-опция / MVP / Roadmap),
-сверенным с [`ADR-Implementation-Matrix.md`](../ADR-Implementation-Matrix.md).
+сверенным с [`ADR-Implementation-Matrix.md`](../ADR-Implementation-Matrix.md)
+и инженерной приёмкой [`ERA-Product-Acceptance-Standard.md`](../products/ERA-Product-Acceptance-Standard.md)
+(`ga` в editions = Pilot-ready + field; MVP ≠ GA).
 Клиентские датащиты (`datasheets/`) — без этих пометок.
 
 > **Главная мысль для клиента:** ERA — это **единая платформа** с **одним лёгким агентом**
@@ -36,13 +38,20 @@
 | 11 | **ERA Provision** | **MVP** | PXE/imaging bare-metal, unattended-установка | IT-Ops |
 | 12 | **ERA PAM** | **MVP** | Vault, SSH/RDP-прокси, запись привилегированных сессий | PAM |
 | 13 | **ERA Observe** | **MVP** | SNMP, NetFlow, discovery (agentless) | Сеть |
+| 14 | **ERA Perimeter** | **MVP** | WAF reverse-proxy, NGFW policy API, session DLP (с PAM) | Edge |
+| 15 | **ERA Resolve** | **MVP** | DNS DDR: Guard / Trace / Atlas | DNS |
 
-**Легенда:** **GA** — в продукте сегодня · **GA-опция** — GA по отдельной лицензии ·
+**Легенда:** **GA** — software GA в продукте сегодня (soft DoD закрыт; полевые гейты Core — §4 / F-GA-5/8/15) ·
+**GA-опция** — GA по отдельной лицензии ·
 **MVP** — код готов, автотесты/golden в CI (monitor-ready); до GA — стенд/полевые прогоны и внешние гейты (§4) ·
 **Roadmap** — в дорожной карте, кода нет.
 
+Инженерная приёмка: [`ERA-Product-Acceptance-Standard.md`](../products/ERA-Product-Acceptance-Standard.md) —
+**Scaffold ≠ Pilot-ready**; Comms/Office `mvp` пока RT-09 / RT-O09 открыты.
+
 > **Правило продаж:** MVP ≠ Roadmap (код есть и покрыт тестами), но и ≠ GA. Клиенту MVP-издания
 > предлагаются **как пилот с поэтапным rollout** и явными GA-гейтами (§4), не как «готовый продукт».
+> Core/AI/Response = software GA: не обещать «прогнанный 10k на их кластере» без field proof.
 
 > **Терминология:** **ERA Core** = база *XDR*. **ERA Manage** = *IT-Ops*. Разные издания.
 > Именование в RFQ/RFP — [`ERA-Naming-and-RFQ-Guide.md`](./ERA-Naming-and-RFQ-Guide.md).
@@ -76,21 +85,32 @@
 - Generic JSON/CEF → Envelope в `era-collectors` (ADR-0017 §3 ✅).
 
 ### ERA Manage — MVP
-- ITAM/CMDB + финансовый ITAM (ADR-0011 ✅), deploy/patch, App/USB Control, BitLocker, EPM-lite, Virtual Patching
-  (ADR-0012 — monitor-ready 🟡). **GA-гейт:** WHQL-подпись драйвера для боевого enforce/блокировки.
+- ITAM/CMDB + финансовый ITAM (ADR-0011 ✅), deploy/patch, App/USB Control, BitLocker, Virtual Patching
+  (ADR-0012 — **monitor-complete ✅** · **lab decision + `effect=telemetry_only` ✅**; OS block ⏸ WHQL, см. `ERA-Manage-WHQL-Program.md`).
+  **UI:** Control shell `/ui/control/manage/` — usable lab (P0–P4).
+  **GA-гейт:** WHQL-подпись драйвера для боевого kernel enforce.
 
 ### ERA Service — MVP
-- ITSM-lite, портал, SLA (ADR-0016 §4 ✅, server MVP). **GA-гейт:** field rollout.
+- ITSM-lite, портал, SLA (ADR-0016 §4 ✅, **server code ✅ / field ⏸**). **GA-гейт:** field rollout.
 
 ### ERA Provision — MVP
-- PXE/imaging, post-install enroll агента (ADR-0016 §3 ✅, server MVP). **GA-гейт:** field rollout.
+- PXE/imaging, post-install enroll агента (ADR-0016 §3 ✅, **server code ✅ / field ⏸**). **GA-гейт:** field PXE на железе.
 
 ### ERA PAM — MVP
-- Vault (AES-GCM + Shamir), checkout RBAC/TTL, SSH-прокси с записью сессий (ADR-0013 ✅).
-  **GA-гейт:** RDP-прокси (security-review), HSM-аудит.
+- Vault (AES-GCM + Shamir), checkout RBAC/TTL, SSH + **RDP TCP relay** + Phase 2 broker inject / session policy / metadata recording (ADR-0013 ✅).
+  **GA-гейт:** Guacamole video / pen-test / HSM-аудит.
 
 ### ERA Observe — MVP
-- SNMP/NetFlow/discovery (Path A+B, ADR-0020 ✅ MVP) или интеграция PRTG/Zabbix. **GA-гейт:** боевой SNMP-poll на стенде.
+- SNMP (HOST-RESOURCES + PollReal) / NetFlow UDP / discovery Path A+B (ADR-0020 ✅). **GA-гейт:** field lab / полный NMS.
+
+### ERA Perimeter — MVP + Phase 2 code
+- WAF body+CRS-lite · NGFW policy + opt-in host apply · session DLP + content inspect (ADR-0031 ✅). **GA-гейт:** field/pen-test; не Palo-класс ASIC.
+
+### ERA Resolve — MVP + Phase 2 code
+- DNS DDR Guard/Trace/Atlas + DoH + Atlas packs (Update Service) + agent DnsEvent stub (ADR-0031 ✅). **GA-гейт:** field DNS :53; live commercial TI — external/content.
+
+### ERA Control AI — GA + Phase 3 lite
+- Investigate + forensic trail + **recommended_actions** human-on-loop (confirm/reject, SOAR draft). **Non-claim:** автономное закрытие инцидента.
 
 ---
 
@@ -117,16 +137,19 @@
 | Exposure score | ERA Exposure | ✅ | — |
 | BYO-EDR adapters | era-collectors | ✅ | доп. коннекторы по спросу |
 | CMDB + финансовый ITAM | ERA Manage | ✅ | field rollout |
-| BitLocker mgmt | ERA Manage | 🟡 monitor | хранение ключей на пилоте |
-| Application Control | ERA Manage | 🟡 monitor | **WHQL-подпись драйвера** + security-review |
-| Device Control (USB) | ERA Manage | 🟡 monitor | **WHQL-подпись драйвера** + security-review |
-| Virtual Patching | ERA Manage | 🟡 monitor | **WHQL-подпись драйвера** + security-review |
+| BitLocker mgmt | ERA Manage | ✅ monitor-complete | ключ только escrow; WHQL не нужен для monitor |
+| Application Control | ERA Manage | ✅ decision+telemetry (`effect=telemetry_only`) | **WHQL** для OS/kernel block |
+| Device Control (USB) | ERA Manage | ✅ decision+telemetry (`effect=telemetry_only`) | **WHQL** для OS/kernel block |
+| Virtual Patching | ERA Manage | ✅ monitor-only | **WHQL** для kernel |
 | Развёртывание ПО / патчи | ERA Manage | ✅ | пилот rollout |
-| ITSM-lite | ERA Service | ✅ | field rollout |
-| OS Provisioning | ERA Provision | ✅ | пилот rollout |
+| ITSM-lite | ERA Service | ✅ server | field rollout |
+| OS Provisioning | ERA Provision | ✅ server | field PXE |
 | PAM (vault/checkout/SSH) | ERA PAM | ✅ | — |
-| PAM (RDP-прокси, HSM) | ERA PAM | 🟡 | RDP security-review, HSM-аудит |
-| Network monitoring | ERA Observe | 🟡 MVP | боевой SNMP-poll на стенде (или PRTG-интеграция) |
+| PAM (RDP TCP + broker P2) | ERA PAM | ✅ Phase 2 code | Guacamole video / HSM-аудит |
+| Network monitoring | ERA Observe | ✅ Path A+B | field lab / полный NMS ❌ |
+| WAF + NGFW + content-DLP | ERA Perimeter | ✅ Phase 2 code | field/pen-test; ASIC NGFW ❌ |
+| DNS DDR + DoH + Atlas packs | ERA Resolve | ✅ Phase 2 code | field DNS; live TI SaaS ⏸ |
+| AI Agentic recommend | ERA Control AI | ✅ human-on-loop | autonomous close ❌ |
 | Масштаб 10k ev/s, soak 7×24 | ERA Core | 🟡 | прогон на sizing-сервере (см. `Field-Server-Sizing.md`) |
 
 > **Вне продукта (ADR-0016):** MDM/Mobile UEM и VPN/ZTNA — зона интеграции.
@@ -140,10 +163,10 @@
 |---|---|---|
 | Vulnerability Management | **ERA Vuln** | GA-опция |
 | Базовый UEM (CMDB/ITAM/deploy) | **ERA Manage** | MVP |
-| Application Control | **ERA Manage** | MVP (monitor; боевой enforce — WHQL-гейт) |
+| Application Control | **ERA Manage** | MVP (monitor + lab decision `effect=telemetry_only`; OS block — WHQL-гейт) |
 | BitLocker | **ERA Manage** | MVP |
 | Доп. SOC-аналитика | **ERA Control AI + Response** | GA |
-| Password Manager Pro (PAM) | **ERA PAM** | MVP (SSH — ✅; RDP — гейт) |
+| Password Manager Pro (PAM) | **ERA PAM** | MVP (SSH + RDP TCP ✅; inject/video — гейт) |
 
 ---
 
@@ -191,7 +214,8 @@ health Minimal, TI off) + DPA + одностраничная схема пото
 self-hosted для госа.
 
 **Статус:** Sovereign Hybrid — **MVP «Hybrid-0»** (ADR-0018 ✅: relay, lease, Update Service, CRL,
-egress-audit; ступени 3–4 и TI-share B/C — Roadmap). Доставка контента по типам — ADR-0018 §3.2.1.
+egress-audit; ступени 3–4 и TI-share — Roadmap, см. [`Hybrid-Roadmap-3-4.md`](../Hybrid-Roadmap-3-4.md)).
+Доставка контента по типам — ADR-0018 §3.2.1.
 Detection content governance — [`ADR-0022`](../adr/0022-detection-content-governance.md).
 Клиенту не обещать как GA; текущий фокус — Sovereign on-prem.
 

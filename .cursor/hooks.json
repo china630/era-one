@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "node .cursor/hooks/before-shell.mjs",
+        "failClosed": true
+      }
+    ],
+    "stop": [
+      {
+        "command": "node .cursor/hooks/stop-closeout.mjs",
+        "loop_limit": 1
+      }
+    ]
+  }
+}

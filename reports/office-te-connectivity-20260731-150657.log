@@ -1,0 +1,29 @@
+[PASS] workspace http://127.0.0.1:8170/healthz
+[PASS] identity http://127.0.0.1:8160/healthz
+[PASS] drive-api http://127.0.0.1:8175/healthz
+[PASS] docs-engine http://127.0.0.1:8142/healthz
+[PASS] tables-engine http://127.0.0.1:8143/healthz
+[PASS] presentations-engine http://127.0.0.1:8144/healthz
+[PASS] docs-projects http://127.0.0.1:8145/healthz
+[PASS] docs-ai http://127.0.0.1:8146/healthz
+[PASS] UI /drive/ (200)
+[PASS] UI /docs/ (200)
+[PASS] UI /tables/ (200)
+[PASS] UI /presentations/ (200)
+[PASS] UI /projects/ (200)
+[PASS] UI /office-ai/ (200)
+[PASS] staging token for alice@mail.gov.az
+[PASS] GET /api/v1/drive/folders/_root/children via BFF (200)
+[PASS] Drive rejects header-only spoof (HTTP 401)
+[PASS] POST /api/v1/docs -> ca598a6c-cbaf-45b6-8451-65ff56afa819
+[PASS] GET /api/v1/docs/ca598a6c-cbaf-45b6-8451-65ff56afa819
+[PASS] POST /api/v1/docs/ca598a6c-cbaf-45b6-8451-65ff56afa819/snapshot (PutVersion)
+[PASS] POST /api/v1/docs/import te-import-a-150656.docx (HTTP 400; want 400 not 409/502)
+[PASS] POST /api/v1/docs/import te-import-b-150656.docx (HTTP 400; want 400 not 409/502)
+[PASS] POST /api/v1/tables -> 9f894d0f-306a-486c-89a2-9f27e45b6ae4
+[PASS] GET /api/v1/tables/9f894d0f-306a-486c-89a2-9f27e45b6ae4
+[PASS] POST /api/v1/presentations -> e152253a-6a10-4b04-985c-d3f2576f8948
+[PASS] GET /api/v1/presentations/e152253a-6a10-4b04-985c-d3f2576f8948
+[PASS] GET /api/v1/projects/board
+[FAIL] Projects API - Cannot overwrite variable PID because it is read-only or constant.
+[PASS] POST /api/v1/docs-ai/summarize

@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1
+FROM rust:1.88-bookworm AS build
+WORKDIR /src
+RUN apt-get update && apt-get install -y --no-install-recommends protobuf-compiler && rm -rf /var/lib/apt/lists/*
+COPY deploy/dockerfiles/Cargo.workspace.docs-engine.toml ./Cargo.toml
+COPY Cargo.lock ./
+COPY crates/era-docs-core crates/era-docs-core
+COPY crates/era-office-storage crates/era-office-storage
+COPY services/platform/office-richtext services/platform/office-richtext
+COPY services/platform/docs-engine services/platform/docs-engine
+COPY proto proto
+RUN cargo build --release -p era-docs-engine
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates wget && rm -rf /var/lib/apt/lists/*
+COPY --from=build /src/target/release/era-docs-engine /usr/local/bin/era-docs-engine
+EXPOSE 8142
+ENTRYPOINT ["/usr/local/bin/era-docs-engine"]

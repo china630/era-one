@@ -30,10 +30,35 @@ modules:
 
   comms-mail-connect:
     title: "ERA Mail Connect"
-    desc: "Migration: webmail + BFF к внешнему IMAP/JMAP/EWS (без native backend)"
+    desc: "Hybrid: webmail + BFF к внешнему IMAP/JMAP/EWS (без native backend)"
     eu_year: 4
     availability: roadmap
-    tier: migration
+    tier: hybrid
+
+  comms-migration:
+    title: "ERA Comms Migration"
+    desc: "Bulk migration source→target (CG, Lotus, IMAP, PST → ERA Mail, IceWarp, …)"
+    pricing_model: per_mailbox_one_time
+    eu_one_time: 1
+    availability: roadmap
+    tier: upsell
+    vendor_matrix: docs/Comms-Migration-Vendor-Matrix.md
+
+  comms-outlook-bridge:
+    title: "ERA Outlook Bridge"
+    desc: "Server EWS/Autodiscover façade для Outlook без desktop plugin"
+    eu_year: 3
+    availability: roadmap
+    tier: upsell
+    note: "Per-mailbox/year или project license — deal-desk"
+
+  comms-mail-moderation:
+    title: "ERA Mail Moderation"
+    desc: "Outbound SMTP moderation: hold → manager/curator Approve/Reject (IceWarp/any MTA)"
+    eu_year: 2
+    availability: roadmap
+    tier: upsell
+    note: "Per-user/year или project license — deal-desk; PRD-Mail-Moderation.md"
 
   comms-conference:
     title: "ERA Conference"
@@ -65,5 +90,11 @@ bundles:
     title: "ERA Mail (Server + Client)"
     modules: [comms-mail-server]
     discount: 0.00
+
+  - key: comms-partner-hardening
+    title: "ERA Comms Partner (Migration + Bridge + Moderation)"
+    modules: [comms-migration, comms-outlook-bridge, comms-mail-moderation]
+    discount: 0.00
+    note: "Deal-desk; Migration one-time + Bridge/Moderation annual"
 
 disclaimer: "Roadmap; индикатив. Не публичная оферта."

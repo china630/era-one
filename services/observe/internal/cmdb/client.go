@@ -88,3 +88,18 @@ func (c *Client) ListNetwork(ctx context.Context) ([]NetworkAsset, error) {
 	}
 	return wrap.Assets, nil
 }
+
+// GetNetwork возвращает устройство по node_id из списка CMDB.
+func (c *Client) GetNetwork(ctx context.Context, nodeID string) (*NetworkAsset, error) {
+	assets, err := c.ListNetwork(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for i := range assets {
+		if assets[i].NodeID == nodeID {
+			a := assets[i]
+			return &a, nil
+		}
+	}
+	return nil, fmt.Errorf("device %s not found", nodeID)
+}

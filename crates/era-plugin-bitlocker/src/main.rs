@@ -13,6 +13,9 @@ struct BitlockerStatus {
     protection: String,
     #[serde(skip_serializing_if = "String::is_empty")]
     escrow_pending: String,
+    /// true вне Windows (lab/sim); на Windows — false когда читаем реальный статус.
+    simulated: bool,
+    hook: String,
 }
 
 /// Читает protection из ERA_BITLOCKER_STATUS или дефолт on.
@@ -30,6 +33,10 @@ fn read_protection() -> String {
     }
 }
 
+fn is_simulated() -> bool {
+    !cfg!(windows)
+}
+
 fn main() -> Result<()> {
     let volume = std::env::var("ERA_BITLOCKER_VOLUME").unwrap_or_else(|_| "C:".into());
     let mut rec = BitlockerStatus {
@@ -38,6 +45,8 @@ fn main() -> Result<()> {
         volume_id: volume,
         protection: read_protection(),
         escrow_pending: String::new(),
+        simulated: is_simulated(),
+        hook: "simulated".into(),
     };
     if std::env::var("ERA_BITLOCKER_ESCROW_REQUEST")
         .map(|v| v == "1")
@@ -52,6 +61,8 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
+    use std::path::PathBuf;
 
     #[test]
     fn status_from_env() {
@@ -62,15 +73,28 @@ mod tests {
     }
 
     #[test]
-    fn status_json_stable() {
+    fn non_windows_is_simulated() {
+        if !cfg!(windows) {
+            assert!(is_simulated());
+        }
+    }
+
+    #[test]
+    fn golden_volume_status() {
         let rec = BitlockerStatus {
             domain: "bitlocker".into(),
             kind: "volume_status".into(),
             volume_id: "C:".into(),
             protection: "on".into(),
             escrow_pending: String::new(),
+            simulated: true,
+            hook: "simulated".into(),
         };
-        let j = serde_json::to_string(&rec).unwrap();
-        assert!(j.contains("\"protection\":\"on\""));
+        let got = serde_json::to_string(&rec).unwrap();
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("testdata")
+            .join("volume_status.golden.json");
+        let want = fs::read_to_string(path).unwrap().trim().to_string();
+        assert_eq!(got, want);
     }
 }

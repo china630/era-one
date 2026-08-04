@@ -1,0 +1,221 @@
+# ERA Communications — base compose (no ERA_*_DEV bypass flags; use .dev.yml for lab).
+# Usage: docker compose -f deploy/docker-compose.comms.yml up -d
+# Lab/dev overlay: ... -f deploy/docker-compose.comms.dev.yml
+# Prod honesty: ALWAYS merge docker-compose.comms.prod.yml which sets ERA_MAIL_DEV/ERA_BRIDGE_DEV/ERA_MM_DEV to "0"
+# (compose merge does not unset keys — prod overlay must override explicitly).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: era
+      POSTGRES_PASSWORD: era_dev_only
+      POSTGRES_DB: era
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U era"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  comms-migrate:
+    image: postgres:16-alpine
+    environment:
+      PGPASSWORD: era_dev_only
+    volumes:
+      - ../deploy/postgres/migrations/comms:/migrations:ro
+    command: >
+      sh -c "until pg_isready -h postgres -U era; do sleep 1; done;
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/001_initial.sql;
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/002_migration.sql;
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/003_mail_moderation.sql;
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/004_moderation_quorum.sql;
+      psql postgres://era:era_dev_only@postgres:5432/era -f /migrations/005_chat.sql"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  minio:
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: era
+      MINIO_ROOT_PASSWORD: era_dev_only
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      CLICKHOUSE_USER: era
+      CLICKHOUSE_PASSWORD: era_dev_only
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "8123:8123"
+      - "19000:9000"
+    volumes:
+      - ../deploy/clickhouse/004_comms_mail_audit.sql:/docker-entrypoint-initdb.d/004_comms_mail_audit.sql:ro
+      - ../deploy/clickhouse/005_comms_chat_vcs_audit.sql:/docker-entrypoint-initdb.d/005_comms_chat_vcs_audit.sql:ro
+      - ../deploy/clickhouse/006_comms_ai_inference_audit.sql:/docker-entrypoint-initdb.d/006_comms_ai_inference_audit.sql:ro
+      - ../deploy/clickhouse/007_comms_migration_audit.sql:/docker-entrypoint-initdb.d/007_comms_migration_audit.sql:ro
+      - ../deploy/clickhouse/008_comms_mail_moderation_audit.sql:/docker-entrypoint-initdb.d/008_comms_mail_moderation_audit.sql:ro
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  era-mail-api:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.mail-api
+    environment:
+      ERA_COMMS_DATABASE_URL: postgres://era:era_dev_only@postgres:5432/era?sslmode=disable
+      ERA_MAIL_HTTP_ADDR: ":8150"
+      ERA_MINIO_ENDPOINT: minio:9000
+      ERA_MINIO_BUCKET: era-comms
+      ERA_MINIO_ACCESS_KEY: era
+      ERA_MINIO_SECRET_KEY: era_dev_only
+      ERA_CH_ADDR: clickhouse:9000
+      ERA_CH_USER: era
+      ERA_CH_PASSWORD: era_dev_only
+      ERA_MAIL_AUDIT_REQUIRE: "1"
+      ERA_INTERNAL_TOKEN: lab-internal-token
+      ERA_IDENTITY_JWT_SECRET: dev-only-change-in-prod
+      ERA_MAIL_CORE_ADDR: era-mail-core:8152
+    ports:
+      - "8150:8150"
+    depends_on:
+      comms-migrate:
+        condition: service_completed_successfully
+      minio:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8150/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  era-mail-core:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.mail-core
+    environment:
+      ERA_MAIL_API_URL: http://era-mail-api:8150
+      ERA_MAIL_SMTP_PORT: "2525"
+      ERA_MAIL_IMAP_PORT: "1143"
+      ERA_MAIL_AUDIT_URL: http://era-mail-api:8150/internal/v1/audit
+      ERA_INTERNAL_TOKEN: lab-internal-token
+      ERA_MAIL_ADMIN_HOST: "0.0.0.0"
+      ERA_MAIL_ADMIN_PORT: "8152"
+    ports:
+      - "2525:2525"
+      - "1143:1143"
+      - "8152:8152"
+    depends_on:
+      era-mail-api:
+        condition: service_healthy
+
+  identity-api:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.identity-api
+    environment:
+      ERA_IDENTITY_HTTP_ADDR: ":8160"
+      ERA_IDENTITY_ISSUER: http://identity-api:8160
+      ERA_IDENTITY_JWT_SECRET: dev-only-change-in-prod
+      ERA_COMMS_DATABASE_URL: postgres://era:era_dev_only@postgres:5432/era?sslmode=disable
+    ports:
+      - "8160:8160"
+    depends_on:
+      comms-migrate:
+        condition: service_completed_successfully
+
+  ui-mail:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.ui-mail
+    environment:
+      ERA_MAIL_API_URL: http://era-mail-api:8150
+      ERA_IDENTITY_ISSUER: http://identity-api:8160
+      ERA_IDENTITY_JWT_SECRET: dev-only-change-in-prod
+    ports:
+      - "8180:8180"
+    depends_on:
+      - era-mail-api
+      - identity-api
+
+  era-migration-api:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.migration-api
+    environment:
+      ERA_MAIL_API_URL: http://era-mail-api:8150
+      ERA_CH_ADDR: clickhouse:9000
+      ERA_CH_USER: era
+      ERA_CH_PASSWORD: era_dev_only
+    ports:
+      - "8350:8350"
+    depends_on:
+      era-mail-api:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+
+  era-mail-bridge:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.mail-bridge
+    environment:
+      ERA_BRIDGE_TLS: "1"
+      ERA_CH_ADDR: clickhouse:9000
+      ERA_CH_USER: era
+      ERA_CH_PASSWORD: era_dev_only
+    ports:
+      - "8151:8151"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
+  era-mail-moderation:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.mail-moderation
+    environment:
+      ERA_MM_HTTP_ADDR: ":8360"
+      ERA_MM_SMTP_ADDR: ":2525"
+      ERA_MM_PUBLIC_BASE: ${ERA_MM_PUBLIC_BASE:-http://127.0.0.1:8360}
+      ERA_MM_LOCAL_DOMAINS: ${ERA_MM_LOCAL_DOMAINS:-company.local}
+      ERA_MM_RULES_YAML: ${ERA_MM_RULES_YAML:-/rules/novices-external.yaml}
+      ERA_MM_UPSTREAM: ${ERA_MM_UPSTREAM:-}
+      ERA_MM_NOTIFY_SMTP: ${ERA_MM_NOTIFY_SMTP:-}
+      ERA_MM_POSTGRES_DSN: ${ERA_MM_POSTGRES_DSN:-}
+      ERA_MM_LDAP_JSON: ${ERA_MM_LDAP_JSON:-}
+      ERA_MM_FROM: ${ERA_MM_FROM:-moderation@company.local}
+      ERA_MM_TOKEN_SECRET: ${ERA_MM_TOKEN_SECRET:-dev-mm-token-not-for-prod}
+      ERA_CH_ADDR: clickhouse:9000
+      ERA_CH_USER: era
+      ERA_CH_PASSWORD: era_dev_only
+      ERA_LICENSE_MODULES: "comms-mail-moderation"
+    volumes:
+      - ../services/comms/mail-moderation/testdata/rules:/rules:ro
+    ports:
+      - "8360:8360"
+      - "2535:2525"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy

@@ -8,6 +8,7 @@ type memoryStore struct {
 	requests  []*ServiceRequest
 	problems  []*Problem
 	changes   []*Change
+	comments  []*Comment
 }
 
 func NewMemory() Repository {
@@ -67,7 +68,34 @@ func (m *memoryStore) CreateRequest(r *ServiceRequest) {
 	if r.Status == "" {
 		r.Status = StatusNew
 	}
+	if r.SLAStatus == "" {
+		r.SLAStatus = "none"
+	}
 	m.requests = append(m.requests, r)
+}
+
+func (m *memoryStore) GetRequest(id string) (*ServiceRequest, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, x := range m.requests {
+		if x.ID == id {
+			return x, true
+		}
+	}
+	return nil, false
+}
+
+func (m *memoryStore) UpdateRequest(id string, fn func(*ServiceRequest)) (*ServiceRequest, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, x := range m.requests {
+		if x.ID == id {
+			fn(x)
+			x.UpdatedAt = nowUTC()
+			return x, true
+		}
+	}
+	return nil, false
 }
 
 func (m *memoryStore) ListRequests() []*ServiceRequest {
@@ -81,11 +109,40 @@ func (m *memoryStore) ListRequests() []*ServiceRequest {
 func (m *memoryStore) CreateProblem(p *Problem) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	p.CreatedAt = nowUTC()
+	now := nowUTC()
+	p.CreatedAt = now
+	p.UpdatedAt = now
 	if p.Status == "" {
 		p.Status = StatusNew
 	}
+	if p.SLAStatus == "" {
+		p.SLAStatus = "none"
+	}
 	m.problems = append(m.problems, p)
+}
+
+func (m *memoryStore) GetProblem(id string) (*Problem, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, x := range m.problems {
+		if x.ID == id {
+			return x, true
+		}
+	}
+	return nil, false
+}
+
+func (m *memoryStore) UpdateProblem(id string, fn func(*Problem)) (*Problem, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, x := range m.problems {
+		if x.ID == id {
+			fn(x)
+			x.UpdatedAt = nowUTC()
+			return x, true
+		}
+	}
+	return nil, false
 }
 
 func (m *memoryStore) ListProblems() []*Problem {
@@ -97,15 +154,63 @@ func (m *memoryStore) ListProblems() []*Problem {
 func (m *memoryStore) CreateChange(c *Change) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	c.CreatedAt = nowUTC()
+	now := nowUTC()
+	c.CreatedAt = now
+	c.UpdatedAt = now
 	if c.Status == "" {
 		c.Status = StatusNew
 	}
+	if c.SLAStatus == "" {
+		c.SLAStatus = "none"
+	}
 	m.changes = append(m.changes, c)
+}
+
+func (m *memoryStore) GetChange(id string) (*Change, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	for _, x := range m.changes {
+		if x.ID == id {
+			return x, true
+		}
+	}
+	return nil, false
+}
+
+func (m *memoryStore) UpdateChange(id string, fn func(*Change)) (*Change, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for _, x := range m.changes {
+		if x.ID == id {
+			fn(x)
+			x.UpdatedAt = nowUTC()
+			return x, true
+		}
+	}
+	return nil, false
 }
 
 func (m *memoryStore) ListChanges() []*Change {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return append([]*Change(nil), m.changes...)
+}
+
+func (m *memoryStore) AddComment(c *Comment) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	c.CreatedAt = nowUTC()
+	m.comments = append(m.comments, c)
+}
+
+func (m *memoryStore) ListComments(kind TicketKind, ticketID string) []*Comment {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var out []*Comment
+	for _, c := range m.comments {
+		if c.Kind == kind && c.TicketID == ticketID {
+			out = append(out, c)
+		}
+	}
+	return out
 }

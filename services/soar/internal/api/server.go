@@ -9,6 +9,18 @@ import (
 	"era/services/soar/internal/playbooks"
 )
 
+// PlaybookInfo — запись каталога известных плейбуков.
+type PlaybookInfo struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+var playbookCatalog = []PlaybookInfo{
+	{Name: "isolate_host", Description: "Isolate a host via firewall / agent quarantine"},
+	{Name: "block_ip", Description: "Block an IP at the perimeter"},
+	{Name: "create_ticket", Description: "Create an incident ticket linked to a case"},
+}
+
 type Server struct {
 	Eng  *playbooks.Engine
 	Gate *licensegate.Gate
@@ -23,6 +35,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
+	mux.HandleFunc("/api/v1/playbooks", s.handlePlaybooksCatalog)
 	mux.HandleFunc("/api/v1/playbooks/", s.handlePlaybook)
 	mux.HandleFunc("/api/v1/actions", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -31,7 +44,57 @@ func (s *Server) Routes() http.Handler {
 		}
 		writeJSON(w, http.StatusOK, map[string]any{"actions": s.Eng.Actions()})
 	})
+	mux.HandleFunc("/api/v1/actions/", s.handleAction)
 	return mux
+}
+
+func (s *Server) handlePlaybooksCatalog(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"playbooks": playbookCatalog})
+}
+
+func (s *Server) handleAction(w http.ResponseWriter, r *http.Request) {
+	path := strings.TrimPrefix(r.URL.Path, "/api/v1/actions/")
+	parts := strings.Split(strings.Trim(path, "/"), "/")
+	if parts[0] == "" {
+		http.NotFound(w, r)
+		return
+	}
+	id := parts[0]
+	if len(parts) == 1 {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		a, ok := s.Eng.ActionByID(id)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		writeJSON(w, http.StatusOK, a)
+		return
+	}
+	if len(parts) == 2 && parts[1] == "retry" {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		if !s.Gate.Allow(licensegate.ModuleResponse) {
+			http.Error(w, "module response not licensed", http.StatusForbidden)
+			return
+		}
+		a, ok := s.Eng.Retry(id)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		writeJSON(w, http.StatusOK, a)
+		return
+	}
+	http.NotFound(w, r)
 }
 
 func (s *Server) handlePlaybook(w http.ResponseWriter, r *http.Request) {

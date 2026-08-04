@@ -1,0 +1,37 @@
+[package]
+name = "era-tables-engine"
+version = "0.1.0"
+edition = "2021"
+description = "ERA Tables engine — HTTP/WS, Drive bind (ADR-0026; core in era-tables-core)"
+publish = false
+
+[lib]
+name = "era_tables_engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "era-tables-engine"
+path = "src/main.rs"
+
+[dependencies]
+era-tables-core = { path = "../../../crates/era-tables-core" }
+era-office-storage = { path = "../../../crates/era-office-storage" }
+async-trait = "0.1"
+jsonwebtoken = "9"
+anyhow = "1"
+axum = { version = "0.7", features = ["ws"] }
+futures-util = "0.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+jsonwebtoken = "9"
+tokio-tungstenite = "0.24"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde_json = "1"

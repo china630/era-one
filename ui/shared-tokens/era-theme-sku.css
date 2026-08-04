@@ -1,0 +1,33 @@
+/* Office / Comms SKU chrome accents (primary CTA / focus). */
+[data-sku="drive"] {
+  --era-accent: #1a73e8;
+  --era-accent-soft: #e8f0fe;
+}
+[data-sku="docs"] {
+  --era-accent: #1a56db;
+  --era-accent-soft: #e8f0fe;
+}
+[data-sku="tables"] {
+  --era-accent: #0f9d58;
+  --era-accent-soft: #e6f4ea;
+}
+[data-sku="pres"] {
+  --era-accent: #e37400;
+  --era-accent-soft: #fef7e0;
+}
+[data-sku="projects"] {
+  --era-accent: #7c3aed;
+  --era-accent-soft: #f3e8ff;
+}
+[data-sku="ai"] {
+  --era-accent: #d93025;
+  --era-accent-soft: #fce8e6;
+}
+[data-sku="suite"] {
+  --era-accent: #0b5fff;
+  --era-accent-soft: #dbe8ff;
+}
+[data-sku="mail"] {
+  --era-accent: #188038;
+  --era-accent-soft: #e6f4ea;
+}

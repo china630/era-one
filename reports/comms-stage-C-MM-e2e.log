@@ -1,0 +1,13 @@
+==> C-MM e2e 2026-07-29 14:51:11
+go test ./services/comms/mail-moderation/... -count=1
+?   	era/services/comms/mail-moderation/cmd/mail-moderation	[no test files]
+ok  	era/services/comms/mail-moderation/internal/adminapi	0.072s
+ok  	era/services/comms/mail-moderation/internal/audit	0.066s
+ok  	era/services/comms/mail-moderation/internal/engine	0.066s
+ok  	era/services/comms/mail-moderation/internal/hold	0.057s
+ok  	era/services/comms/mail-moderation/internal/milter	0.068s
+ok  	era/services/comms/mail-moderation/internal/notify	0.056s
+ok  	era/services/comms/mail-moderation/internal/policy	0.071s
+ok  	era/services/comms/mail-moderation/internal/resolve	0.041s
+ok  	era/services/comms/mail-moderation/internal/smtpproxy	0.042s
+C-MM E2E PASS

@@ -570,6 +570,27 @@ services:
       ERA_OBSERVE_SNMP_SIM: "0"
       ERA_PRODUCTION: "1"
 
+  resolve:
+    <<: *go-service
+    profiles: [resolve]
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.golang-service
+      args:
+        SERVICE_DIR: resolve
+        MAIN_PKG: ./cmd/resolve
+    container_name: era-prod-resolve
+    ports:
+      - "8134:8134"
+      - "5353:5353/udp"
+    environment:
+      ERA_HTTP_ADDR: ":8134"
+      ERA_RESOLVE_DNS_ADDR: ":5353"
+      ERA_TENANT_ID: default
+      ERA_UI_DIR: /ui/resolve
+    volumes:
+      - ../ui/resolve:/ui/resolve:ro
+
   # Postgres для control-plane — profile `pg` (P0-4)
   postgres:
     image: postgres:16-alpine

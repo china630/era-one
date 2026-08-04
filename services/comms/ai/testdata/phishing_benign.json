@@ -1,0 +1,6 @@
+{
+  "from": "newsletter@company.local",
+  "subject": "Weekly update",
+  "body": "Here is your weekly digest with project milestones.",
+  "headers": {}
+}

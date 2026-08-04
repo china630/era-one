@@ -1,6 +1,6 @@
 # ERA XDR — Pilot Readiness Checklist (Wave GA-1)
 
-
+**Приёмка:** [`Control-Acceptance-System.md`](products/Control-Acceptance-System.md) · [`Control-Sprint-Index.md`](Control-Sprint-Index.md) · Evidence: [`Control-Evidence-Rules.md`](Control-Evidence-Rules.md)
 
 **Заказчик:** ____________________  
 

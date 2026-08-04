@@ -1,0 +1,52 @@
+rules:
+  - id: bypass-exec
+    priority: 1
+    stop_processing: true
+    conditions:
+      bypass_groups: [executives]
+      exclude_system: true
+    moderator:
+      mode: static
+      static: [admin@company.local]
+  - id: novices-external
+    priority: 10
+    stop_processing: true
+    conditions:
+      sender_groups: [novices]
+      external_only: true
+      exclude_system: true
+    moderator:
+      mode: manager
+      fallback: [hr-moderation@company.local]
+    ttl_hours: 72
+    notify_on_hold: true
+  - id: keyword-legal
+    priority: 20
+    stop_processing: true
+    conditions:
+      sender_groups: [novices]
+      keywords: [Договор, Смета]
+      external_only: true
+    moderator:
+      mode: static
+      static: [legal@company.local]
+  - id: vip-domain
+    priority: 30
+    stop_processing: true
+    conditions:
+      sender_groups: [novices]
+      recipient_domains: [vip-customer.com]
+    moderator:
+      mode: ldap_attr
+      ldap_attr: extensionAttribute1
+      fallback: [vip-desk@company.local]
+  - id: curator-override
+    priority: 5
+    stop_processing: true
+    conditions:
+      sender_groups: [novices]
+      external_only: true
+      # applied only when resolve uses curator_map / per-sender — see golden cases
+    moderator:
+      mode: curator_map
+      fallback: [curator@company.local]

@@ -1,0 +1,98 @@
+/* Shared ERA chrome: brand, account chip, product switcher, focus.
+ * Theme Matrix Phase B. Sync to control-shell via scripts/sync-era-chrome.ps1 */
+.era-product-switcher {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.era-product-switcher > button {
+  border: 1px solid var(--era-line, var(--border, #d8dee4));
+  background: var(--era-surface, var(--card, #fff));
+  color: var(--era-ink, var(--text, #1a1f24));
+  border-radius: var(--era-radius, 6px);
+  padding: 0.28rem 0.55rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.era-product-switcher > button:hover {
+  border-color: var(--era-accent);
+  color: var(--era-accent);
+}
+.era-product-switcher > button:focus-visible {
+  outline: 2px solid var(--era-accent);
+  outline-offset: 2px;
+}
+.era-product-switcher-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  min-width: 11rem;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  background: var(--era-surface, var(--card, #fff));
+  border: 1px solid var(--era-line, var(--border, #d8dee4));
+  border-radius: 8px;
+  box-shadow: var(--era-shadow, 0 8px 24px rgba(0, 0, 0, 0.12));
+  z-index: 40;
+}
+.era-product-switcher-menu[hidden] { display: none !important; }
+.era-product-switcher-menu a,
+.era-product-switcher-menu span {
+  display: block;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--era-ink, var(--text, #1a1f24));
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.era-product-switcher-menu a:hover {
+  background: var(--era-accent-soft);
+  color: var(--era-accent);
+}
+.era-product-switcher-menu a[aria-current="page"] {
+  background: var(--era-accent-soft);
+  color: var(--era-accent);
+}
+.era-product-switcher-menu .disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  color: var(--era-muted, var(--muted, #8b949e));
+}
+.era-chrome-focus :focus-visible {
+  outline: 2px solid var(--era-accent);
+  outline-offset: 2px;
+}
+body.era-control .era-product-switcher > button,
+body.era-control .era-product-switcher-menu {
+  background: var(--era-surface);
+  border-color: var(--era-line);
+  color: var(--era-ink);
+}
+body.era-control .era-sidebar .era-product-switcher {
+  margin-top: auto;
+  padding: 0.75rem 0.35rem 0.25rem;
+  border-top: 1px solid var(--era-line);
+}
+body.era-control .era-sidebar .era-product-switcher > button {
+  width: 100%;
+  text-align: left;
+}
+body.era-control .era-sidebar .era-product-switcher-menu {
+  right: auto;
+  left: 0;
+  bottom: calc(100% + 0.25rem);
+  top: auto;
+}
+body.era-control .era-meta .era-user-chip {
+  background: var(--era-accent-soft);
+  color: var(--era-ink);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}

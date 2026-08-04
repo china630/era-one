@@ -19,6 +19,14 @@ func runParityScenario(t *testing.T, st Repository) {
 	if len(st.ListRequests()) != 1 {
 		t.Fatal("requests")
 	}
+	st.CreateProblem(&Problem{ID: "p1", Title: "prob", Status: StatusNew})
+	if len(st.ListProblems()) != 1 {
+		t.Fatal("problems")
+	}
+	st.CreateChange(&Change{ID: "c1", Title: "chg", Status: StatusNew, Risk: "low"})
+	if len(st.ListChanges()) != 1 {
+		t.Fatal("changes")
+	}
 }
 
 func TestMemorySQLiteParity(t *testing.T) {

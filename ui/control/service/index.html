@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ERA Control — Service</title><link rel="stylesheet" href="/control-assets/control.css"/><link rel="stylesheet" href="/control-assets/era-chrome.css"/></head>
+<body><main>
+<div class="era-topbar"><h1>Service Desk</h1><div class="era-meta"><span id="era-role-meta"></span></div></div>
+<div class="era-card"><h2>Incidents</h2>
+<button class="era-btn secondary" id="inc">List</button>
+<pre id="out" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+<div class="era-card"><h2>Requests / Problems / Changes</h2>
+<button class="era-btn secondary" data-p="requests">Requests</button>
+<button class="era-btn secondary" data-p="problems">Problems</button>
+<button class="era-btn secondary" data-p="changes">Changes</button>
+<pre id="rpc" class="era-muted" style="white-space:pre-wrap;font-size:0.8rem"></pre></div>
+</main>
+<script src="/control-assets/era-chrome.js"></script>
+<script src="/control-assets/shell.js"></script>
+<script>
+EraControl.mountShell("service");
+document.getElementById("inc").onclick=function(){EraControl.x("service","/api/v1/incidents").then(function(r){document.getElementById("out").textContent=JSON.stringify(r.json,null,2);});};
+document.querySelectorAll("[data-p]").forEach(function(b){
+  b.onclick=function(){EraControl.x("service","/api/v1/"+b.getAttribute("data-p")).then(function(r){document.getElementById("rpc").textContent=JSON.stringify(r.json,null,2);});};
+});
+document.getElementById("inc").click();
+</script></body></html>

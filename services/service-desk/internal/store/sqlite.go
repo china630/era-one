@@ -82,11 +82,33 @@ func (s *sqliteStore) migrate() error {
   node_id TEXT,
   created_at TEXT NOT NULL
 )`,
+		`CREATE TABLE IF NOT EXISTS comments (
+  id TEXT PRIMARY KEY,
+  ticket_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  author TEXT NOT NULL,
+  body TEXT NOT NULL,
+  created_at TEXT NOT NULL
+)`,
 	}
 	for _, q := range stmts {
 		if _, err := s.db.Exec(q); err != nil {
 			return err
 		}
+	}
+	// Best-effort columns for detail/PATCH (existing DBs).
+	alters := []string{
+		`ALTER TABLE service_requests ADD COLUMN assignee TEXT`,
+		`ALTER TABLE service_requests ADD COLUMN sla_status TEXT`,
+		`ALTER TABLE problems ADD COLUMN assignee TEXT`,
+		`ALTER TABLE problems ADD COLUMN sla_status TEXT`,
+		`ALTER TABLE problems ADD COLUMN updated_at TEXT`,
+		`ALTER TABLE changes ADD COLUMN assignee TEXT`,
+		`ALTER TABLE changes ADD COLUMN sla_status TEXT`,
+		`ALTER TABLE changes ADD COLUMN updated_at TEXT`,
+	}
+	for _, q := range alters {
+		_, _ = s.db.Exec(q)
 	}
 	return nil
 }
@@ -189,25 +211,48 @@ func (s *sqliteStore) CreateRequest(r *ServiceRequest) {
 	if r.Status == "" {
 		r.Status = StatusNew
 	}
-	_, _ = s.db.Exec(`INSERT INTO service_requests(id,tenant_id,title,category,status,node_id,requester,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)`,
-		r.ID, r.TenantID, r.Title, r.Category, r.Status, r.NodeID, r.Requester, r.CreatedAt.Format(time.RFC3339Nano), r.UpdatedAt.Format(time.RFC3339Nano))
+	if r.SLAStatus == "" {
+		r.SLAStatus = "none"
+	}
+	_, _ = s.db.Exec(`INSERT INTO service_requests(id,tenant_id,title,category,status,node_id,requester,created_at,updated_at,assignee,sla_status) VALUES(?,?,?,?,?,?,?,?,?,?,?)`,
+		r.ID, r.TenantID, r.Title, r.Category, r.Status, r.NodeID, r.Requester, r.CreatedAt.Format(time.RFC3339Nano), r.UpdatedAt.Format(time.RFC3339Nano), r.Assignee, r.SLAStatus)
+}
+
+func (s *sqliteStore) GetRequest(id string) (*ServiceRequest, bool) {
+	row := s.db.QueryRow(`SELECT id,tenant_id,title,category,status,node_id,requester,created_at,updated_at,COALESCE(assignee,''),COALESCE(sla_status,'none') FROM service_requests WHERE id=?`, id)
+	var r ServiceRequest
+	var ca, ua string
+	if err := row.Scan(&r.ID, &r.TenantID, &r.Title, &r.Category, &r.Status, &r.NodeID, &r.Requester, &ca, &ua, &r.Assignee, &r.SLAStatus); err != nil {
+		return nil, false
+	}
+	r.CreatedAt, _ = time.Parse(time.RFC3339Nano, ca)
+	r.UpdatedAt, _ = time.Parse(time.RFC3339Nano, ua)
+	return &r, true
+}
+
+func (s *sqliteStore) UpdateRequest(id string, fn func(*ServiceRequest)) (*ServiceRequest, bool) {
+	r, ok := s.GetRequest(id)
+	if !ok {
+		return nil, false
+	}
+	fn(r)
+	r.UpdatedAt = nowUTC()
+	_, _ = s.db.Exec(`UPDATE service_requests SET title=?,category=?,status=?,node_id=?,requester=?,assignee=?,sla_status=?,updated_at=? WHERE id=?`,
+		r.Title, r.Category, r.Status, r.NodeID, r.Requester, r.Assignee, r.SLAStatus, r.UpdatedAt.Format(time.RFC3339Nano), id)
+	return r, true
 }
 
 func (s *sqliteStore) ListRequests() []*ServiceRequest {
-	rows, err := s.db.Query(`SELECT id,tenant_id,title,category,status,node_id,requester,created_at,updated_at FROM service_requests ORDER BY updated_at DESC`)
+	rows, err := s.db.Query(`SELECT id,tenant_id,title,category,status,node_id,requester,created_at,updated_at,COALESCE(assignee,''),COALESCE(sla_status,'none') FROM service_requests ORDER BY updated_at DESC`)
 	if err != nil {
 		return nil
 	}
 	defer rows.Close()
-	return scanRequests(rows)
-}
-
-func scanRequests(rows *sql.Rows) []*ServiceRequest {
 	var out []*ServiceRequest
 	for rows.Next() {
 		var r ServiceRequest
 		var ca, ua string
-		if rows.Scan(&r.ID, &r.TenantID, &r.Title, &r.Category, &r.Status, &r.NodeID, &r.Requester, &ca, &ua) != nil {
+		if rows.Scan(&r.ID, &r.TenantID, &r.Title, &r.Category, &r.Status, &r.NodeID, &r.Requester, &ca, &ua, &r.Assignee, &r.SLAStatus) != nil {
 			continue
 		}
 		r.CreatedAt, _ = time.Parse(time.RFC3339Nano, ca)
@@ -218,16 +263,47 @@ func scanRequests(rows *sql.Rows) []*ServiceRequest {
 }
 
 func (s *sqliteStore) CreateProblem(p *Problem) {
-	p.CreatedAt = nowUTC()
+	now := nowUTC()
+	p.CreatedAt = now
+	p.UpdatedAt = now
 	if p.Status == "" {
 		p.Status = StatusNew
 	}
-	_, _ = s.db.Exec(`INSERT INTO problems(id,tenant_id,title,status,node_id,created_at) VALUES(?,?,?,?,?,?)`,
-		p.ID, p.TenantID, p.Title, p.Status, p.NodeID, p.CreatedAt.Format(time.RFC3339Nano))
+	if p.SLAStatus == "" {
+		p.SLAStatus = "none"
+	}
+	_, _ = s.db.Exec(`INSERT INTO problems(id,tenant_id,title,status,node_id,created_at,assignee,sla_status,updated_at) VALUES(?,?,?,?,?,?,?,?,?)`,
+		p.ID, p.TenantID, p.Title, p.Status, p.NodeID, p.CreatedAt.Format(time.RFC3339Nano), p.Assignee, p.SLAStatus, p.UpdatedAt.Format(time.RFC3339Nano))
+}
+
+func (s *sqliteStore) GetProblem(id string) (*Problem, bool) {
+	row := s.db.QueryRow(`SELECT id,tenant_id,title,status,node_id,created_at,COALESCE(assignee,''),COALESCE(sla_status,'none'),COALESCE(updated_at,'') FROM problems WHERE id=?`, id)
+	var p Problem
+	var ca, ua string
+	if err := row.Scan(&p.ID, &p.TenantID, &p.Title, &p.Status, &p.NodeID, &ca, &p.Assignee, &p.SLAStatus, &ua); err != nil {
+		return nil, false
+	}
+	p.CreatedAt, _ = time.Parse(time.RFC3339Nano, ca)
+	if ua != "" {
+		p.UpdatedAt, _ = time.Parse(time.RFC3339Nano, ua)
+	}
+	return &p, true
+}
+
+func (s *sqliteStore) UpdateProblem(id string, fn func(*Problem)) (*Problem, bool) {
+	p, ok := s.GetProblem(id)
+	if !ok {
+		return nil, false
+	}
+	fn(p)
+	p.UpdatedAt = nowUTC()
+	_, _ = s.db.Exec(`UPDATE problems SET title=?,status=?,node_id=?,assignee=?,sla_status=?,updated_at=? WHERE id=?`,
+		p.Title, p.Status, p.NodeID, p.Assignee, p.SLAStatus, p.UpdatedAt.Format(time.RFC3339Nano), id)
+	return p, true
 }
 
 func (s *sqliteStore) ListProblems() []*Problem {
-	rows, err := s.db.Query(`SELECT id,tenant_id,title,status,node_id,created_at FROM problems ORDER BY created_at DESC`)
+	rows, err := s.db.Query(`SELECT id,tenant_id,title,status,node_id,created_at,COALESCE(assignee,''),COALESCE(sla_status,'none'),COALESCE(updated_at,'') FROM problems ORDER BY created_at DESC`)
 	if err != nil {
 		return nil
 	}
@@ -235,27 +311,61 @@ func (s *sqliteStore) ListProblems() []*Problem {
 	var out []*Problem
 	for rows.Next() {
 		var p Problem
-		var ca string
-		if rows.Scan(&p.ID, &p.TenantID, &p.Title, &p.Status, &p.NodeID, &ca) != nil {
+		var ca, ua string
+		if rows.Scan(&p.ID, &p.TenantID, &p.Title, &p.Status, &p.NodeID, &ca, &p.Assignee, &p.SLAStatus, &ua) != nil {
 			continue
 		}
 		p.CreatedAt, _ = time.Parse(time.RFC3339Nano, ca)
+		if ua != "" {
+			p.UpdatedAt, _ = time.Parse(time.RFC3339Nano, ua)
+		}
 		out = append(out, &p)
 	}
 	return out
 }
 
 func (s *sqliteStore) CreateChange(c *Change) {
-	c.CreatedAt = nowUTC()
+	now := nowUTC()
+	c.CreatedAt = now
+	c.UpdatedAt = now
 	if c.Status == "" {
 		c.Status = StatusNew
 	}
-	_, _ = s.db.Exec(`INSERT INTO changes(id,tenant_id,title,status,risk,node_id,created_at) VALUES(?,?,?,?,?,?,?)`,
-		c.ID, c.TenantID, c.Title, c.Status, c.Risk, c.NodeID, c.CreatedAt.Format(time.RFC3339Nano))
+	if c.SLAStatus == "" {
+		c.SLAStatus = "none"
+	}
+	_, _ = s.db.Exec(`INSERT INTO changes(id,tenant_id,title,status,risk,node_id,created_at,assignee,sla_status,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)`,
+		c.ID, c.TenantID, c.Title, c.Status, c.Risk, c.NodeID, c.CreatedAt.Format(time.RFC3339Nano), c.Assignee, c.SLAStatus, c.UpdatedAt.Format(time.RFC3339Nano))
+}
+
+func (s *sqliteStore) GetChange(id string) (*Change, bool) {
+	row := s.db.QueryRow(`SELECT id,tenant_id,title,status,risk,node_id,created_at,COALESCE(assignee,''),COALESCE(sla_status,'none'),COALESCE(updated_at,'') FROM changes WHERE id=?`, id)
+	var c Change
+	var ca, ua string
+	if err := row.Scan(&c.ID, &c.TenantID, &c.Title, &c.Status, &c.Risk, &c.NodeID, &ca, &c.Assignee, &c.SLAStatus, &ua); err != nil {
+		return nil, false
+	}
+	c.CreatedAt, _ = time.Parse(time.RFC3339Nano, ca)
+	if ua != "" {
+		c.UpdatedAt, _ = time.Parse(time.RFC3339Nano, ua)
+	}
+	return &c, true
+}
+
+func (s *sqliteStore) UpdateChange(id string, fn func(*Change)) (*Change, bool) {
+	c, ok := s.GetChange(id)
+	if !ok {
+		return nil, false
+	}
+	fn(c)
+	c.UpdatedAt = nowUTC()
+	_, _ = s.db.Exec(`UPDATE changes SET title=?,status=?,risk=?,node_id=?,assignee=?,sla_status=?,updated_at=? WHERE id=?`,
+		c.Title, c.Status, c.Risk, c.NodeID, c.Assignee, c.SLAStatus, c.UpdatedAt.Format(time.RFC3339Nano), id)
+	return c, true
 }
 
 func (s *sqliteStore) ListChanges() []*Change {
-	rows, err := s.db.Query(`SELECT id,tenant_id,title,status,risk,node_id,created_at FROM changes ORDER BY created_at DESC`)
+	rows, err := s.db.Query(`SELECT id,tenant_id,title,status,risk,node_id,created_at,COALESCE(assignee,''),COALESCE(sla_status,'none'),COALESCE(updated_at,'') FROM changes ORDER BY created_at DESC`)
 	if err != nil {
 		return nil
 	}
@@ -263,8 +373,36 @@ func (s *sqliteStore) ListChanges() []*Change {
 	var out []*Change
 	for rows.Next() {
 		var c Change
+		var ca, ua string
+		if rows.Scan(&c.ID, &c.TenantID, &c.Title, &c.Status, &c.Risk, &c.NodeID, &ca, &c.Assignee, &c.SLAStatus, &ua) != nil {
+			continue
+		}
+		c.CreatedAt, _ = time.Parse(time.RFC3339Nano, ca)
+		if ua != "" {
+			c.UpdatedAt, _ = time.Parse(time.RFC3339Nano, ua)
+		}
+		out = append(out, &c)
+	}
+	return out
+}
+
+func (s *sqliteStore) AddComment(c *Comment) {
+	c.CreatedAt = nowUTC()
+	_, _ = s.db.Exec(`INSERT INTO comments(id,ticket_id,kind,author,body,created_at) VALUES(?,?,?,?,?,?)`,
+		c.ID, c.TicketID, c.Kind, c.Author, c.Body, c.CreatedAt.Format(time.RFC3339Nano))
+}
+
+func (s *sqliteStore) ListComments(kind TicketKind, ticketID string) []*Comment {
+	rows, err := s.db.Query(`SELECT id,ticket_id,kind,author,body,created_at FROM comments WHERE kind=? AND ticket_id=? ORDER BY created_at ASC`, kind, ticketID)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var out []*Comment
+	for rows.Next() {
+		var c Comment
 		var ca string
-		if rows.Scan(&c.ID, &c.TenantID, &c.Title, &c.Status, &c.Risk, &c.NodeID, &ca) != nil {
+		if rows.Scan(&c.ID, &c.TicketID, &c.Kind, &c.Author, &c.Body, &ca) != nil {
 			continue
 		}
 		c.CreatedAt, _ = time.Parse(time.RFC3339Nano, ca)

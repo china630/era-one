@@ -1,0 +1,4 @@
+==> office stage gate O-T-4 20260730-010834
+[PASS] O-T-4/ws :: cargo test -p era-tables-engine --test ws_sheet_coedit --quiet
+[PASS] O-T-4/sync :: cargo test -p era-tables-engine sync --quiet
+STAGE GATE PASS (O-T-4)

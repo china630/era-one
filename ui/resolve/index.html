@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ERA Resolve</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 720px; }
+    h1 { font-size: 1.4rem; }
+    label { display: block; margin-top: 0.75rem; }
+    input, button { padding: 0.4rem 0.6rem; }
+    pre { background: #f4f4f4; padding: 1rem; overflow: auto; }
+    section { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h1>ERA Resolve — Guard verdict</h1>
+  <p>ONE QUERY. ONE POLICY. ONE VERDICT.</p>
+  <label>QNAME <input id="qname" value="lab.malware.test" size="40"></label>
+  <label>QTYPE <input id="qtype" value="A" size="6"></label>
+  <p><button id="go">Verdict</button></p>
+  <pre id="out"></pre>
+
+  <section>
+    <h2>Pack status + DoH</h2>
+    <p>Atlas: <span id="packMeta">…</span></p>
+    <label><input type="checkbox" id="doh" checked> DoH enabled (`/dns-query` on :8443)</label>
+    <p>
+      <button id="saveSettings">Save settings</button>
+      <button id="reloadPack">Reload pack dir</button>
+    </p>
+    <pre id="status"></pre>
+  </section>
+
+  <script>
+    const API = '';
+    async function refresh() {
+      const h = await fetch(API + '/healthz').then(r => r.json());
+      document.getElementById('packMeta').textContent = JSON.stringify(h.pack || {});
+      document.getElementById('doh').checked = !!h.doh_enabled;
+      const s = await fetch(API + '/api/v1/resolve/settings').then(r => r.json());
+      document.getElementById('doh').checked = !!s.doh_enabled;
+    }
+    document.getElementById('go').onclick = async () => {
+      const body = {
+        qname: document.getElementById('qname').value,
+        qtype: document.getElementById('qtype').value || 'A'
+      };
+      const r = await fetch(API + '/api/v1/resolve/verdict', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+      });
+      document.getElementById('out').textContent = await r.text();
+    };
+    document.getElementById('saveSettings').onclick = async () => {
+      const r = await fetch(API + '/api/v1/resolve/settings', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ doh_enabled: document.getElementById('doh').checked })
+      });
+      document.getElementById('status').textContent = await r.text();
+      refresh();
+    };
+    document.getElementById('reloadPack').onclick = async () => {
+      const r = await fetch(API + '/api/v1/resolve/packs/reload', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+      });
+      document.getElementById('status').textContent = await r.text();
+      refresh();
+    };
+    refresh().catch(e => { document.getElementById('status').textContent = String(e); });
+  </script>
+</body>
+</html>

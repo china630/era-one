@@ -1,0 +1,36 @@
+# ERA Comms AI — Ollama overlay (L-4)
+# Usage:
+#   docker compose -f deploy/docker-compose.comms.yml -f deploy/docker-compose.comms.dev.yml \
+#     -f deploy/docker-compose.comms.ai.yml up -d
+# Heuristic fallback when Ollama is down (ERA_OLLAMA_URL unreachable).
+
+services:
+  ollama:
+    image: ollama/ollama:0.6.5
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  comms-ai:
+    build:
+      context: ..
+      dockerfile: deploy/dockerfiles/Dockerfile.comms-ai
+    environment:
+      ERA_COMMS_AI_DEV: "1"
+      ERA_OLLAMA_URL: http://ollama:11434
+      ERA_OLLAMA_MODEL: ${ERA_OLLAMA_MODEL:-llama3.2}
+      ERA_LICENSE_MODULES: "comms-ai"
+    ports:
+      - "8096:8096"
+    depends_on:
+      - ollama
+
+volumes:
+  ollama_data:

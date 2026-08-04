@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERA Presentations</title>
+  <link rel="stylesheet" href="/office-assets/office.css"/>
+  <link rel="stylesheet" href="/office-assets/menubar.css"/>
+  <style>
+    :root { --slide-bg: #ffffff; --pasteboard: #f0f0f0; }
+    #deckMeta { font-size: .75rem; color: var(--era-muted); margin: 0; }
+    .workspace {
+      display: grid;
+      grid-template-columns: 8.5rem minmax(0, 1fr);
+      gap: 0.5rem;
+      min-height: 0;
+      height: 100%;
+      background: var(--pasteboard);
+      border-radius: 4px;
+      padding: 0.35rem;
+    }
+    @media (max-width: 720px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+    #filmstrip {
+      list-style: none; margin: 0; padding: 0.25rem;
+      border: 1px solid var(--era-line); border-radius: 4px;
+      max-height: 100%; overflow: auto;
+      background: #fff;
+    }
+    #filmstrip li {
+      border: 1px solid var(--era-line);
+      border-radius: 3px;
+      margin-bottom: .35rem;
+      padding: .4rem .45rem; cursor: pointer; font-size: .8rem;
+      background: #fafafa;
+    }
+    #filmstrip li:hover { background: #f4f7fb; }
+    #filmstrip li.active { background: var(--era-accent-soft); font-weight: 600; border-color: #a8c7fa; }
+    #filmstrip li .n { color: var(--era-muted); margin-right: .35rem; }
+    .stage-wrap {
+      border: none;
+      background: transparent;
+      padding: 0.35rem 0.5rem 0.25rem;
+      display: flex; flex-direction: column; gap: .35rem;
+      min-height: 0; overflow: hidden;
+      align-items: stretch;
+    }
+    .slide-canvas {
+      aspect-ratio: 16 / 9;
+      width: min(100%, calc((100vh - 14.5rem) * 16 / 9));
+      max-height: min(58vh, calc(100vh - 14.5rem));
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #dadce0;
+      border-radius: 2px;
+      color: #202124;
+      padding: 1.25rem 1.5rem;
+      display: flex; flex-direction: column; gap: .55rem;
+      box-shadow: 0 1px 3px rgba(60, 64, 67, 0.15);
+      overflow: auto;
+    }
+    .slide-canvas.layout-title_only #slideBody,
+    .slide-canvas.layout-title_only #slideBody2 { display: none; }
+    .slide-canvas.layout-title_only #slideTitle {
+      font-size: 2rem; flex: 1; display: flex; align-items: center;
+    }
+    .slide-canvas.layout-section #slideTitle {
+      font-size: 2rem; text-transform: uppercase; letter-spacing: .08em;
+      border-bottom: 2px solid #dadce0; padding-bottom: .5rem;
+    }
+    .slide-canvas.layout-section #slideBody,
+    .slide-canvas.layout-section #slideBody2 { display: none; }
+    .slide-canvas.layout-two_column {
+      display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr;
+      gap: .75rem;
+    }
+    .slide-canvas.layout-two_column #slideTitle { grid-column: 1 / -1; }
+    .slide-canvas.layout-two_column #slideBody2 { display: block; }
+    #slideBody2 {
+      display: none; font-size: 1.05rem; line-height: 1.45; min-height: 4rem;
+      white-space: pre-wrap;
+    }
+    #presentOverlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: #0a0f14; color: #f5f7fa;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    #presentOverlay.active { display: flex; }
+    #presentSlide {
+      width: min(96vw, 1100px); aspect-ratio: 16/9;
+      background: #ffffff;
+      color: #202124;
+      border-radius: 6px; padding: 2rem 2.5rem;
+      display: flex; flex-direction: column; gap: 1rem;
+      box-shadow: 0 12px 40px rgba(0,0,0,.5);
+    }
+    #presentSlide h1 { font-size: 2.25rem; margin: 0; color: #202124; }
+    #presentSlide .body { font-size: 1.25rem; white-space: pre-wrap; flex: 1; color: #202124; }
+    #presentSlide.two_col .body-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; flex: 1; }
+    #presentHint { margin-top: 1rem; color: #9aa8b8; font-size: .9rem; }
+    #speakerNotes {
+      width: 100%; min-height: 2.25rem; max-height: 5.5rem; margin-top: 0; resize: vertical;
+      font: inherit; padding: .35rem .5rem; border: 1px solid var(--era-line);
+      border-radius: 4px; background: #fafbfc; font-size: .85rem;
+    }
+    #speakerNotesLabel { display: block; font-size: .75rem; color: var(--era-muted); margin: 0; }
+    .nav-row { flex-shrink: 0; }
+    #presentNotes {
+      margin-top: .75rem; max-width: min(96vw, 1400px); width: 100%;
+      font-size: .9rem; color: #c5d0dc; white-space: pre-wrap;
+      border-top: 1px solid rgba(255,255,255,.12); padding-top: .65rem;
+      max-height: 18vh; overflow: auto;
+    }
+    #presentNotes:empty { display: none; }
+    #filmstrip li[draggable="true"] { cursor: grab; }
+    .slide-canvas [contenteditable] {
+      outline: none; border-radius: 2px;
+      color: #202124;
+    }
+    .slide-canvas [contenteditable]:focus {
+      background: #e8f0fe;
+      outline: 2px solid #1a73e8;
+    }
+    .pres-frame .pres-block:empty:before {
+      content: attr(data-placeholder);
+      color: #9aa0a6;
+    }
+    .pres-frame { outline: none; white-space: pre-wrap; word-wrap: break-word; }
+    .pres-frame .pres-block {
+      outline: none; min-height: 1.2em; white-space: pre-wrap;
+    }
+    .pres-frame .pres-block + .pres-block { margin-top: 0.35rem; }
+    #slideTitle {
+      font-size: 1.75rem; font-weight: 650; min-height: 2.2rem;
+      letter-spacing: -.02em; color: #202124;
+    }
+    #slideTitle .pres-block { font-size: inherit; font-weight: inherit; }
+    #slideBody {
+      font-size: 1.05rem; line-height: 1.45; flex: 1; min-height: 4rem;
+      color: #3c4043;
+    }
+    .nav-row { display: flex; gap: .5rem; align-items: center; color: var(--era-muted); font-size: .85rem; }
+    .empty-state { color: var(--era-muted); }
+  </style>
+</head>
+<body class="era-app era-pres-app">
+  <header class="era-topbar">
+    <a class="era-brand" href="/drive/" data-icon="brand">
+      <span class="era-brand-mark">ERA Office</span>
+      <span class="era-brand-mod">Presentations</span>
+    </a>
+        <nav class="era-nav" aria-label="Office modules">
+      <a href="/drive/" data-mod="drive">Drive</a>
+      <a href="/docs/" data-mod="docs">Documents</a>
+      <a href="/tables/" data-mod="tables">Tables</a>
+      <a href="/presentations/" data-mod="pres">Presentations</a>
+      <a href="/projects/" data-mod="projects">Projects</a>
+      <a href="/office-ai/" data-mod="ai">Office AI</a>
+      <a href="/mail/" data-mod="mail">Mail</a>
+    </nav>
+    <div class="era-topbar-right">
+      <span id="userChip" class="era-user-chip" title="Signed-in user"><span class="era-user-lamp on" aria-hidden="true"></span><span class="era-user-label">—</span></span>
+    </div>
+  </header>
+
+  <div class="era-doc-header">
+    <div class="era-doc-header-main">
+      <input id="deckTitle" class="era-doc-title" type="text" value="Untitled presentation" data-fallback="Untitled presentation" aria-label="Deck title"/>
+      <div class="era-doc-header-meta">
+        <span id="deckMeta">Opening…</span>
+      </div>
+    </div>
+    <div class="era-doc-header-actions">
+      <span id="savePill" class="era-save-pill" data-state="idle">All changes saved</span>
+      <button id="presentBtn" type="button" class="era-btn" data-icon="present">Slideshow</button>
+      <button id="commentsToggleBtn" type="button" class="era-btn" data-icon="comment" title="Comments" aria-pressed="false">Comments</button>
+      <button id="shareBtn" type="button" class="era-btn era-btn-primary" data-icon="share" title="Share">Share</button>
+    </div>
+  </div>
+
+  <nav id="menubar" class="era-menubar" aria-label="Presentation menus">
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">File</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="file.new"><span>New</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.import"><span>Import</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.share"><span>Share</span></button>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-icon="download" aria-haspopup="true"><span>Download</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="file.export"><span>Microsoft PowerPoint (.pptx)</span></button>
+            <button type="button" class="era-menu-item era-plus" data-cmd="file.odp" title="ERA+ — OpenDocument presentation"><span>OpenDocument (.odp)</span><span class="era-badge">ERA+</span></button>
+          </div>
+        </div>
+        <button type="button" class="era-menu-item" data-cmd="file.print"><span>Print setup</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="file.save"><span>Save</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Edit</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="edit.undo"><span>Undo</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.redo"><span>Redo</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.find"><span>Find</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">View</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="view.present"><span>Present</span></button>
+        <button type="button" class="era-menu-item" data-cmd="view.filmstrip"><span>Filmstrip</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Insert</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="insert.image"><span>Image</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Format</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="format.bold"><span>Bold</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.alignLeft"><span>Align left</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.alignCenter"><span>Align center</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.alignRight"><span>Align right</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="format.fontInc"><span>Increase font</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.fontDec"><span>Decrease font</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Slide</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="slide.new"><span>New slide</span></button>
+        <button type="button" class="era-menu-item" data-cmd="slide.duplicate"><span>Duplicate slide</span></button>
+        <button type="button" class="era-menu-item" data-cmd="slide.delete"><span>Delete slide</span></button>
+        <button type="button" class="era-menu-item" data-cmd="slide.bg"><span>Background…</span></button>
+        <button type="button" class="era-menu-item" data-cmd="slide.master"><span>Edit master</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Arrange</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="slide.up"><span>Move slide up</span></button>
+        <button type="button" class="era-menu-item" data-cmd="slide.down"><span>Move slide down</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Tools</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="edit.find"><span>Find</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Help</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="help.about"><span>About ERA Presentations</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="era-main era-main-fluid">
+    <p id="authStatus" class="era-status" role="status" aria-live="polite"></p>
+    <div id="teBanner" class="era-banner-warn" role="note">
+      <span>ERA Presentations — deck editing in your contour (not PowerPoint). Transitions are soft client effects; see Help → About.</span>
+      <button type="button" class="era-banner-dismiss" data-dismiss="1" aria-label="Dismiss">✕</button>
+    </div>
+    <div class="era-toolbar-rail">
+      <div id="toolbar" class="era-toolbar" role="toolbar" aria-label="Slide formatting">
+        <div class="era-toolbar-group era-toolbar-file">
+          <button id="newDeckBtn" type="button" class="era-icon-btn" data-icon="add" title="New presentation" aria-label="New"></button>
+          <button id="saveBtn" type="button" class="era-icon-btn" data-icon="save" title="Save" aria-label="Save"></button>
+          <button id="importBtn" type="button" class="era-icon-btn" data-icon="upload" title="Import" aria-label="Import"></button>
+          <button id="exportBtn" type="button" class="era-icon-btn" data-icon="download" title="Export" aria-label="Export"></button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <button id="addSlideBtn" type="button" class="era-icon-btn" data-icon="add" title="New slide" aria-label="New slide"></button>
+          <button id="undoBtn" type="button" class="era-icon-btn" data-icon="undo" title="Undo" aria-label="Undo"></button>
+          <button id="redoBtn" type="button" class="era-icon-btn" data-icon="redo" title="Redo" aria-label="Redo"></button>
+          <button id="printBtn" type="button" class="era-icon-btn" data-icon="print" title="Print" aria-label="Print"></button>
+          <button id="formatPainterBtn" type="button" class="era-icon-btn" data-icon="formatPainter" title="Paint format" aria-label="Paint format"></button>
+          <select id="zoomSelect" class="era-input" aria-label="Zoom" title="Zoom">
+            <option value="fit">Fit</option>
+            <option value="100">100%</option>
+            <option value="75">75%</option>
+            <option value="125">125%</option>
+          </select>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <select id="fontSelect" class="era-input era-font-select" aria-label="Font" title="Font">
+            <option value="Arial" selected>Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Segoe UI">Segoe UI</option>
+          </select>
+          <div class="era-font-size-stepper" title="Font size">
+            <button id="fontDecBtn" type="button" class="era-icon-btn" data-tip="Decrease font size" aria-label="Decrease font size">-</button>
+            <select id="sizeSelect" class="era-input era-font-size" aria-label="Font size" data-tip="Font size">
+              <option value="14">14</option>
+              <option value="18" selected>18</option>
+              <option value="24">24</option>
+              <option value="32">32</option>
+              <option value="40">40</option>
+            </select>
+            <button id="fontIncBtn" type="button" class="era-icon-btn" data-tip="Increase font size" aria-label="Increase font size">+</button>
+          </div>
+          <button id="boldTextBtn" type="button" class="era-icon-btn" data-icon="bold" title="Bold" aria-label="Bold"></button>
+          <button id="insertImageBtn" type="button" class="era-icon-btn" data-icon="image" title="Insert image" aria-label="Insert image"></button>
+          <button id="commentSlideBtn" type="button" class="era-icon-btn" data-icon="comment" title="Add comment" aria-label="Add comment"></button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <button id="backgroundChromeBtn" type="button" class="era-pres-chrome-btn" data-tip="Background">Background</button>
+          <button id="layoutChromeBtn" type="button" class="era-pres-chrome-btn" data-tip="Layout">Layout</button>
+          <button id="themeChromeBtn" type="button" class="era-pres-chrome-btn" data-tip="Theme">Theme</button>
+          <button id="transitionChromeBtn" type="button" class="era-pres-chrome-btn" data-tip="Slide transition" title="Transition">Transition</button>
+          <button id="themeBgBtn" type="button" class="era-btn" hidden data-tip="Background">Background</button>
+          <select id="layoutSelect" class="era-input" aria-label="Slide layout" data-tip="Layout" hidden>
+            <option value="title_body">Title + body</option>
+            <option value="title_only">Title only</option>
+            <option value="section">Section</option>
+            <option value="two_column">Two column</option>
+          </select>
+          <button id="dupSlideBtn" type="button" class="era-btn" data-tip="Duplicate slide">Duplicate</button>
+          <button id="moveUpBtn" type="button" class="era-icon-btn" data-icon="move" data-tip="Move slide up" aria-label="Move up"></button>
+          <button id="moveDownBtn" type="button" class="era-icon-btn" data-icon="move" data-tip="Move slide down" aria-label="Move down"></button>
+          <input id="findSlideInput" type="search" class="era-input era-find-input" placeholder="Find" aria-label="Find in slides"/>
+          <button id="findSlideBtn" type="button" class="era-icon-btn" data-icon="search" data-tip="Find next" aria-label="Find next"></button>
+        </div>
+      </div>
+    </div>
+    <div class="era-canvas-wrap era-has-side era-workspace-split" id="presCanvasWrap">
+      <p class="empty-state" id="emptyHint" hidden>Create a new deck, import pptx, or open one from Drive.</p>
+      <div class="workspace" id="workspace" hidden>
+        <ul id="filmstrip" aria-label="Slides"></ul>
+        <div class="stage-wrap">
+          <div class="slide-canvas layout-title_body">
+            <div id="slideTitle" class="pres-frame" data-frame="title" data-placeholder="Title"></div>
+            <div id="slideBody" class="pres-frame" data-frame="body" data-placeholder="Body"></div>
+            <div id="slideBody2" class="pres-frame" data-frame="body2" data-placeholder="Column 2"></div>
+            <img id="slideImage" alt="" hidden style="max-width:40%;max-height:35%;object-fit:contain;margin-top:auto;align-self:flex-end"/>
+          </div>
+          <label id="speakerNotesLabel" for="speakerNotes">Click to add speaker notes</label>
+          <textarea id="speakerNotes" placeholder="Speaker notes…" aria-label="Speaker notes"></textarea>
+          <div class="nav-row">
+            <button id="prevBtn" type="button" class="era-btn">‹</button>
+            <button id="nextBtn" type="button" class="era-btn">›</button>
+          </div>
+        </div>
+      </div>
+      <aside id="themePanel" class="era-side-panel" hidden>
+        <div class="era-side-panel-head">
+          <strong>Themes</strong>
+          <button type="button" class="era-icon-btn" id="themePanelClose" aria-label="Close">✕</button>
+        </div>
+        <p class="era-hint">Applies the deck theme background to this slide.</p>
+        <div id="themeCards"></div>
+      </aside>
+      <aside id="transitionPanel" class="era-side-panel" hidden>
+        <div class="era-side-panel-head">
+          <strong>Motion</strong>
+          <button type="button" class="era-icon-btn" id="transitionPanelClose" aria-label="Close">✕</button>
+        </div>
+        <p class="era-hint">Transitions play in Slideshow. Morph is a soft cross-fade/scale effect.</p>
+        <label class="era-label">Slide transition
+          <select id="transitionSelect" class="era-input" aria-label="Transition type">
+            <option value="none">None</option>
+            <option value="fade">Fade</option>
+            <option value="push">Push</option>
+            <option value="wipe">Wipe</option>
+            <option value="morph">Morph</option>
+          </select>
+        </label>
+        <label class="era-label" style="display:block;margin-top:.65rem">Object animation
+          <select id="animationSelect" class="era-input" aria-label="Animation type">
+            <option value="none">None</option>
+            <option value="appear">Appear (stagger)</option>
+          </select>
+        </label>
+        <button type="button" class="era-btn era-btn-primary" id="transitionApplyBtn" style="margin-top:.5rem">Apply to this slide</button>
+        <button type="button" class="era-btn" id="transitionApplyAllBtn" style="margin-top:.35rem">Apply to all slides</button>
+      </aside>
+      <aside id="commentsPanel" class="era-comments-rail" hidden aria-label="Comments">
+        <div class="era-comments-head">
+          <strong>Comments</strong>
+          <button type="button" class="era-icon-btn" id="commentsCloseBtn" aria-label="Close comments">✕</button>
+        </div>
+        <p class="era-hint era-comments-hint">Append to speaker notes · click to jump</p>
+        <ul id="commentsList" class="era-comments-list"></ul>
+      </aside>
+    </div>
+    <footer class="era-status-bar" aria-label="Deck stats">
+      <span id="slidePos" class="era-sheet-stats">Slide 0 / 0</span>
+    </footer>
+  </main>
+
+  <div id="presentOverlay" aria-modal="true" role="dialog" aria-label="Slideshow">
+    <div id="presentSlide">
+      <h1 id="presentTitle"></h1>
+      <div class="body-wrap">
+        <div class="body" id="presentBody"></div>
+        <div class="body" id="presentBody2"></div>
+      </div>
+      <img id="presentImage" alt="" hidden style="max-width:40%;max-height:32%;object-fit:contain;align-self:flex-end;margin-top:auto"/>
+    </div>
+    <div id="presentNotes" aria-label="Speaker notes"></div>
+    <div id="presentHint">← → navigate · Esc exit</div>
+  </div>
+
+  <dialog id="shareDlg">
+    <form method="dialog" style="padding:1rem;min-width:18rem;max-width:24rem">
+      <h3 style="margin-top:0">Share</h3>
+      <p id="shareAclHint" class="era-hint">Copy link · ACL is managed in Drive (Share on the Drive object).</p>
+      <label class="era-label">Link
+        <input id="shareLinkInput" class="era-input" type="text" readonly style="width:100%;margin-top:.25rem"/>
+      </label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="button" id="shareCopyBtn" class="era-btn">Copy link</button>
+        <a id="shareDriveLink" class="era-btn" href="/drive/">Manage ACL in Drive</a>
+        <button type="submit" value="ok" class="era-btn era-btn-primary">Done</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="backgroundDlg">
+    <form method="dialog" style="padding:1rem;min-width:18rem;max-width:24rem">
+      <h3 style="margin-top:0">Background</h3>
+      <p class="era-hint">Color or CSS for this slide (or deck theme).</p>
+      <label class="era-label">Color
+        <input id="bgColorInput" type="color" value="#ffffff" style="display:block;margin-top:.35rem"/>
+      </label>
+      <label class="era-label" style="display:block;margin-top:.65rem">CSS / gradient
+        <input id="bgCssInput" class="era-input" type="text" style="width:100%;margin-top:.25rem" placeholder="#fff or linear-gradient(...)"/>
+      </label>
+      <label style="display:flex;align-items:center;gap:.35rem;margin-top:.65rem">
+        <input id="bgDeckChk" type="checkbox"/> Apply as deck theme
+      </label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="ok" class="era-btn era-btn-primary" id="bgDlgDone">Done</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="layoutDlg">
+    <form method="dialog" style="padding:1rem;min-width:20rem;max-width:28rem">
+      <h3 style="margin-top:0">Layout</h3>
+      <div id="layoutPresets" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"></div>
+      <div style="margin-top:1rem;display:flex;justify-content:flex-end">
+        <button type="submit" value="cancel" class="era-btn">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="masterDlg">
+    <form method="dialog" style="padding:1rem;min-width:18rem;max-width:24rem">
+      <h3 style="margin-top:0">Edit master</h3>
+      <p class="era-hint">Deck defaults for theme and new slides.</p>
+      <label style="display:block">Theme background (CSS)
+        <input id="masterThemeBg" class="era-input" type="text" style="width:100%"
+               placeholder="e.g. #1e2936 or linear-gradient(...)" aria-label="Theme background CSS"/>
+      </label>
+      <label style="display:block;margin-top:.5rem">Default layout
+        <select id="masterDefaultLayout" class="era-input" aria-label="Default layout">
+          <option value="title_body">Title + body</option>
+          <option value="title_only">Title only</option>
+          <option value="section">Section</option>
+          <option value="two_column">Two column</option>
+        </select>
+      </label>
+      <label style="display:block;margin-top:.5rem">Default title placeholder
+        <input id="masterTitlePlaceholder" class="era-input" type="text" style="width:100%"
+               placeholder="New slide" aria-label="Default title placeholder"/>
+      </label>
+      <label style="display:block;margin-top:.5rem">Default body placeholder
+        <input id="masterBodyPlaceholder" class="era-input" type="text" style="width:100%"
+               placeholder="Body" aria-label="Default body placeholder"/>
+      </label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="ok" class="era-btn era-btn-primary" id="masterDlgApply">Apply</button>
+      </div>
+    </form>
+  </dialog>
+
+  <input type="file" id="file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" hidden/>
+  <style>
+    #printRoot { display: none; }
+    #printRoot .print-slide {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 90vh;
+      padding: 1.5rem 2rem;
+      page-break-after: always;
+      break-after: page;
+      color: #202124;
+    }
+    #printRoot .print-slide:last-child { page-break-after: auto; }
+    #printRoot .print-slide h1 { font-size: 1.75rem; margin: 0 0 1rem; }
+    #printRoot .print-body { font-size: 1.1rem; white-space: pre-wrap; margin-bottom: .75rem; }
+    #printRoot .print-image { max-width: 45%; max-height: 35vh; display: block; margin-top: 1rem; }
+    #printRoot .print-notes { font-size: .85rem; color: #5f6368; border-top: 1px solid #dadce0; margin-top: 1.5rem; padding-top: .5rem; }
+    @media print {
+      .era-topbar, .era-menubar, .era-toolbar-rail, .era-toolbar, .era-editor-chrome-actions,
+      #authStatus, #filmstrip, .nav-row, #presentOverlay, #emptyHint, .era-status-bar,
+      #workspace, .era-main > .era-canvas-wrap { display: none !important; }
+      body.era-printing #printRoot { display: block !important; }
+      body.era-app { background: #fff; }
+    }
+  </style>
+  <script src="/office-assets/icons.js"></script>
+  <script src="/office-assets/menubar.js"></script>
+  <script src="/office-assets/shell.js"></script>
+  <script src="/office-assets/toolbar-chrome.js"></script>
+  <script src="/office-assets/richtext-editor.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

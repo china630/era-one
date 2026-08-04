@@ -1,0 +1,58 @@
+=== meet ===
+ok  	era/ui/meet	0.039s
+
+=== mail_api ===
+ok  	era/services/comms/mail/internal/api	0.305s
+ok  	era/services/comms/mail/internal/ews	0.351s
+--- FAIL: TestFolderSyncGolden (0.06s)
+    handler_test.go:63: body=03016a000000564e033100014b033100014f50510331000152033000015303496e626f7800015403320001015051033200015203300001530343616c656e646172000154033800010150510333000152033000015303436f6e746163747300015403390001010101 want=03016a000000564e033100014b033100014f50510331000152033000015303496e626f7800015403320001010101
+FAIL
+FAIL	era/services/comms/mail/internal/activesync	0.232s
+FAIL
+
+=== vcs ===
+?   	era/services/comms/vcs/cmd/vcs-api	[no test files]
+ok  	era/services/comms/vcs/internal/adapter	0.047s
+ok  	era/services/comms/vcs/internal/api	0.047s
+?   	era/services/comms/vcs/internal/audit	[no test files]
+?   	era/services/comms/vcs/internal/store	[no test files]
+
+=== connect ===
+?   	era/services/comms/mail-connect/cmd/mail-connect-api	[no test files]
+ok  	era/services/comms/mail-connect/internal/api	0.049s
+?   	era/services/comms/mail-connect/internal/audit	[no test files]
+ok  	era/services/comms/mail-connect/internal/autodiscover	0.042s
+ok  	era/services/comms/mail-connect/internal/sync	0.049s
+
+=== bridge ===
+?   	era/services/comms/mail-bridge/cmd/mail-bridge-api	[no test files]
+ok  	era/services/comms/mail-bridge/internal/api	0.074s
+?   	era/services/comms/mail-bridge/internal/audit	[no test files]
+ok  	era/services/comms/mail-bridge/internal/autodiscover	0.069s
+?   	era/services/comms/mail-bridge/internal/proxy	[no test files]
+?   	era/services/comms/mail-bridge/internal/upstream	[no test files]
+ok  	era/services/comms/mail-bridge/internal/upstream/exchange	0.070s
+ok  	era/services/comms/mail-bridge/internal/upstream/icewarp	0.077s
+ok  	era/services/comms/mail-bridge/internal/upstream/imap_generic	0.273s
+ok  	era/services/comms/mail-bridge/internal/upstream/synthetic	0.075s
+
+=== mm ===
+?   	era/services/comms/mail-moderation/cmd/mail-moderation	[no test files]
+ok  	era/services/comms/mail-moderation/internal/adminapi	0.095s
+ok  	era/services/comms/mail-moderation/internal/audit	0.088s
+ok  	era/services/comms/mail-moderation/internal/classify	0.069s
+ok  	era/services/comms/mail-moderation/internal/engine	0.094s
+ok  	era/services/comms/mail-moderation/internal/hold	0.071s
+ok  	era/services/comms/mail-moderation/internal/milter	0.060s
+ok  	era/services/comms/mail-moderation/internal/notify	0.094s
+ok  	era/services/comms/mail-moderation/internal/policy	0.089s
+ok  	era/services/comms/mail-moderation/internal/resolve	0.068s
+ok  	era/services/comms/mail-moderation/internal/rules	0.050s
+ok  	era/services/comms/mail-moderation/internal/smtpproxy	0.059s
+
+=== chat ===
+?   	era/services/comms/chat/cmd/chat-api	[no test files]
+ok  	era/services/comms/chat/internal/api	0.045s
+?   	era/services/comms/chat/internal/audit	[no test files]
+ok  	era/services/comms/chat/internal/store	0.044s
+

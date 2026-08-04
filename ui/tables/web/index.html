@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERA Tables</title>
+  <link rel="stylesheet" href="/office-assets/office.css"/>
+  <link rel="stylesheet" href="/office-assets/menubar.css"/>
+  <style>
+    :root {
+      --sel: #dbe8ff;
+      --hdr: #eef2f6;
+    }
+    .era-meta-row {
+      display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
+      justify-content: space-between; margin-bottom: .75rem;
+    }
+    #sheetMeta { font-size: .9rem; color: var(--era-muted); }
+    #formulaBar {
+      display: flex; gap: .5rem; align-items: center;
+      margin-bottom: .75rem; border: 1px solid var(--era-line); border-radius: 4px;
+      padding: .35rem .5rem; background: #fafbfc;
+    }
+    #formulaBar .addr {
+      font-variant-numeric: tabular-nums;
+    }
+    #formulaInput {
+      flex: 1; border: none; background: transparent; font: inherit;
+      outline: none; min-width: 0;
+    }
+    #filterInput { min-width: 8rem; max-width: 14rem; }
+    #sheetTabsBar {
+      display: flex; flex-wrap: nowrap; gap: .35rem; align-items: center;
+    }
+    #sheetTabs { display: flex; flex-wrap: nowrap; gap: .15rem; overflow-x: auto; }
+    #sheetTabs .tab {
+      border: 1px solid var(--era-line); border-radius: 0;
+      padding: .25rem .65rem; font-size: .85rem; background: #f4f7fb;
+      cursor: pointer; white-space: nowrap;
+    }
+    #sheetTabs .tab.active {
+      background: var(--era-surface); font-weight: 600;
+      border-top: 2px solid var(--era-accent);
+    }
+    #gridWrap {
+      overflow: auto;
+      border: 1px solid var(--era-line);
+      border-radius: 4px;
+      overflow-x: scroll;
+      overflow-y: auto;
+      flex: 1 1 0;
+      min-height: 0;
+      height: 0; /* force flex shrink so wheel/scrollbars work inside pane */
+    }
+    #gridPhantom {
+      position: relative;
+      box-sizing: border-box;
+      display: block;
+    }
+    #gridPhantom #grid {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: max-content;
+    }
+    /* Pinned column letters — outside the moving virtual body (no sticky jump). */
+    #colHeadSticky {
+      position: sticky;
+      top: 0;
+      z-index: 12;
+      height: 1.75rem;
+      background: var(--hdr);
+      box-shadow: 0 1px 0 var(--era-line);
+      pointer-events: auto;
+    }
+    #colHeadSticky .col-head-inner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      height: 1.75rem;
+      box-sizing: border-box;
+    }
+    #colHeadSticky .col-head-corner,
+    #colHeadSticky .col-head-cell {
+      box-sizing: border-box;
+      border: 1px solid var(--era-line);
+      border-top: none;
+      height: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--hdr);
+      color: var(--era-muted);
+      font-weight: 600;
+      font-size: .9rem;
+      flex: 0 0 auto;
+      position: relative;
+      user-select: none;
+    }
+    #colHeadSticky .col-head-corner {
+      position: sticky;
+      left: 0;
+      z-index: 13;
+      text-align: center;
+    }
+    #colHeadSticky .col-resize {
+      position: absolute; right: 0; top: 0; bottom: 0; width: 5px;
+      cursor: col-resize; user-select: none;
+    }
+    table.sheet { border-collapse: collapse; table-layout: fixed; }
+    table.sheet th.col-hd, table.sheet td {
+      border: 1px solid var(--era-line);
+      min-width: 5.5rem; max-width: 10rem;
+      height: 1.75rem; padding: .15rem .35rem;
+      font-size: .9rem; text-align: left;
+      box-sizing: border-box;
+    }
+    table.sheet th.rowhd {
+      border: 1px solid var(--era-line);
+      height: 1.75rem;
+      font-size: .9rem;
+      box-sizing: border-box;
+      left: 0; z-index: 4;
+      position: sticky;
+      font-weight: 400;
+      text-align: right;
+      color: var(--era-muted);
+      background: var(--hdr);
+      padding: .15rem .35rem .15rem .2rem;
+      min-width: 2.25rem;
+      max-width: none;
+    }
+    table.sheet thead { display: none; }
+    #activeAddr {
+      font-weight: 600; min-width: 3.5rem; max-width: 5.5rem;
+      color: var(--era-muted); font-variant-numeric: tabular-nums;
+      border: 1px solid transparent; border-radius: 3px;
+      padding: .1rem .25rem; background: transparent; font: inherit;
+    }
+    #activeAddr:focus {
+      border-color: var(--era-accent); color: var(--era-ink); outline: none;
+      background: #fff;
+    }
+    table.sheet.freeze-on th.rowhd,
+    table.sheet.freeze-on td:first-child {
+      box-shadow: 1px 0 0 var(--era-line);
+      z-index: 3;
+    }
+    table.sheet tr.frozen-row > th.rowhd,
+    table.sheet tr.frozen-row > td {
+      position: sticky;
+      z-index: 2;
+      background: var(--era-surface, #fff);
+    }
+    table.sheet .frozen-col {
+      position: sticky;
+      z-index: 3;
+      background: var(--era-surface, #fff);
+      box-shadow: 1px 0 0 var(--era-line);
+    }
+    table.sheet tr.filter-hidden { display: none; }
+    #grid.sheet-protected { outline: 2px solid #c9a227; outline-offset: -2px; }
+    table.sheet td.in-sel { background: rgba(26, 115, 232, 0.14); }
+    table.sheet td.selected {
+      background: var(--sel);
+      outline: 2px solid var(--era-accent);
+      outline-offset: -2px;
+      z-index: 1;
+      position: relative;
+    }
+    table.sheet td.formula { font-style: italic; color: #163; }
+    table.sheet td.merged { background: #f7fafc; vertical-align: middle; }
+    table.sheet td.range-protected { background: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(201,162,39,.12) 4px, rgba(201,162,39,.12) 8px); }
+    table.sheet td[contenteditable="true"] { outline: none; white-space: nowrap; overflow: hidden; }
+    table.sheet td { cursor: cell; user-select: none; }
+    table.sheet td[contenteditable="true"] { cursor: text; user-select: text; }
+    .empty-state { color: var(--era-muted); padding: 1rem 0; }
+  </style>
+</head>
+<body class="era-app era-tables-app" data-line="office" data-sku="tables">
+  <header class="era-topbar">
+    <a class="era-brand" href="/drive/" data-icon="brand">
+      <span class="era-brand-mark">ERA Office</span>
+      <span class="era-brand-mod">Tables</span>
+    </a>
+        <nav class="era-nav" aria-label="Office modules">
+      <a href="/drive/" data-mod="drive">Drive</a>
+      <a href="/docs/" data-mod="docs">Documents</a>
+      <a href="/tables/" data-mod="tables">Tables</a>
+      <a href="/presentations/" data-mod="pres">Presentations</a>
+      <a href="/projects/" data-mod="projects">Projects</a>
+      <a href="/office-ai/" data-mod="ai">Office AI</a>
+      <a href="/mail/" data-mod="mail">Mail</a>
+    </nav>
+    <div class="era-topbar-right">
+      <span id="userChip" class="era-user-chip" title="Signed-in user"><span class="era-user-lamp on" aria-hidden="true"></span><span class="era-user-label">—</span></span>
+    </div>
+  </header>
+
+  <div class="era-doc-header">
+    <div class="era-doc-header-main">
+      <input id="sheetTitle" class="era-doc-title" type="text" value="Untitled spreadsheet" data-fallback="Untitled spreadsheet" aria-label="Sheet title" readonly/>
+      <div class="era-doc-header-meta">
+        <span id="sheetMeta">Opening…</span>
+        <div class="era-presence" id="presence" title="Live peer presence">
+          <span class="chip" id="presenceYou">You</span>
+          <span id="presencePeers">Peers: —</span>
+        </div>
+      </div>
+    </div>
+    <div class="era-doc-header-actions">
+      <span id="savePill" class="era-save-pill" data-state="idle">Edits sync live</span>
+      <button id="commentsToggleBtn" type="button" class="era-btn" data-icon="comment" title="Comments" aria-pressed="false">Comments</button>
+      <button id="shareBtn" type="button" class="era-btn era-btn-primary" data-icon="share" title="Share">Share</button>
+    </div>
+  </div>
+
+  <nav id="menubar" class="era-menubar" aria-label="Sheet menus">
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">File</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="file.new"><span>New</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.import"><span>Import Excel (.xlsx)</span></button>
+        <button type="button" class="era-menu-item era-plus" data-cmd="file.importOds" title="ERA+ — import OpenDocument"><span>Import OpenDocument (.ods)</span><span class="era-badge">ERA+</span></button>
+        <button type="button" class="era-menu-item" data-cmd="file.share"><span>Share</span></button>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-icon="download" aria-haspopup="true"><span>Download</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="file.export"><span>Microsoft Excel (.xlsx)</span></button>
+            <button type="button" class="era-menu-item" data-cmd="file.csv"><span>Comma-separated values (.csv)</span></button>
+            <button type="button" class="era-menu-item era-plus" data-cmd="file.ods" title="ERA+ — OpenDocument spreadsheet"><span>OpenDocument (.ods)</span><span class="era-badge">ERA+</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Edit</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="edit.find"><span>Find</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.fillDown"><span>Fill down</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.fillRight"><span>Fill right</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.clear"><span>Clear values</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.pasteValues"><span>Paste values</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.delRow"><span>Delete row</span></button>
+        <button type="button" class="era-menu-item" data-cmd="edit.delCol"><span>Delete column</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">View</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="view.freeze"><span>Freeze header</span></button>
+        <button type="button" class="era-menu-item" data-cmd="view.formula"><span>Formula bar</span></button>
+        <button type="button" class="era-menu-item era-plus" data-cmd="view.freezePanes" title="ERA+ — freeze rows/cols above/left of active cell"><span>Freeze panes…</span><span class="era-badge">ERA+</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Insert</button>
+      <div class="era-menu-panel" role="menu">
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-cmd="insert.fnMenu" data-icon="function" aria-haspopup="true"><span>Functions</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="insert.sum"><span>SUM</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.average"><span>AVERAGE</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.min"><span>MIN</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.max"><span>MAX</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.round"><span>ROUND</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.count"><span>COUNT</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.countif"><span>COUNTIF</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.if"><span>IF</span></button>
+          </div>
+        </div>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-cmd="insert.sheetMenu" data-icon="table" aria-haspopup="true"><span>Sheet &amp; charts</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="insert.row"><span>Insert row</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.col"><span>Insert column</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.chart" title="Bar chart from a numeric range"><span>Chart</span></button>
+            <button type="button" class="era-menu-item" data-cmd="insert.sparkline"><span>Sparkline</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Format</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="format.number"><span>Number 0.00</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.percent"><span>Percent</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.plain"><span>Automatic</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.merge"><span>Merge cells</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.unmerge"><span>Unmerge</span></button>
+        <div class="era-menu-sep" role="separator"></div>
+        <button type="button" class="era-menu-item" data-cmd="format.bold"><span>Bold</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.alignLeft"><span>Align left</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.alignCenter"><span>Align center</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.alignRight"><span>Align right</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.wrap"><span>Wrap text</span></button>
+        <button type="button" class="era-menu-item" data-cmd="format.border"><span>Borders</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Data</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="data.sort"><span>Sort A→Z</span></button>
+        <button type="button" class="era-menu-item" data-cmd="data.sortDesc"><span>Sort Z→A</span></button>
+        <button type="button" class="era-menu-item" data-cmd="data.filter"><span>Focus filter</span></button>
+        <button type="button" class="era-menu-item" data-cmd="data.filterOpts"><span>Filter options…</span></button>
+        <button type="button" class="era-menu-item era-plus" data-cmd="data.subtotal" title="ERA+ — SUM by group (left column); summary rows below data"><span>Subtotal</span><span class="era-badge">ERA+</span></button>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-cmd="data.protectMenu" data-icon="settings" aria-haspopup="true"><span>Protect</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="data.protect"><span>Protect / Unprotect sheet</span></button>
+            <button type="button" class="era-menu-item" data-cmd="data.protectRanges"><span>Protect ranges…</span></button>
+          </div>
+        </div>
+        <div class="era-submenu">
+          <button type="button" class="era-menu-item era-submenu-btn" data-cmd="data.analysisMenu" data-icon="chart" aria-haspopup="true"><span>Analysis</span><span class="era-submenu-caret" aria-hidden="true">›</span></button>
+          <div class="era-submenu-panel" role="menu">
+            <button type="button" class="era-menu-item" data-cmd="data.whatif"><span>What-if</span></button>
+            <button type="button" class="era-menu-item" data-cmd="data.scenarios"><span>Scenarios</span></button>
+            <button type="button" class="era-menu-item" data-cmd="data.consolidate"><span>Consolidate</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Tools</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="edit.find"><span>Find</span></button>
+        <button type="button" class="era-menu-item" data-cmd="data.filterOpts"><span>Create a filter</span></button>
+      </div>
+    </div>
+    <div class="era-menu">
+      <button type="button" class="era-menu-btn" aria-expanded="false" aria-haspopup="true">Help</button>
+      <div class="era-menu-panel" role="menu">
+        <button type="button" class="era-menu-item" data-cmd="help.about"><span>About ERA Tables</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="era-main era-main-fluid">
+    <p id="authStatus" class="era-status" role="status" aria-live="polite"></p>
+    <div id="teBanner" class="era-banner-warn" role="note">
+      <span>ERA Tables — collaborative sheets in your contour (not Excel). Charts and Subtotal are contour helpers; see Help → About.</span>
+      <button type="button" class="era-banner-dismiss" data-dismiss="1" aria-label="Dismiss">✕</button>
+    </div>
+    <div class="era-toolbar-rail">
+      <div id="toolbar" class="era-toolbar" role="toolbar" aria-label="Sheet formatting">
+        <div class="era-toolbar-group era-toolbar-file">
+          <button id="newSheetBtn" type="button" class="era-icon-btn" data-icon="add" title="New sheet" aria-label="New sheet"></button>
+          <button id="saveSheetBtn" type="button" class="era-icon-btn" data-icon="save" title="Save (sync live)" aria-label="Save"></button>
+          <button id="importBtn" type="button" class="era-icon-btn" data-icon="upload" title="Import" aria-label="Import"></button>
+          <button id="exportBtn" type="button" class="era-icon-btn" data-icon="download" title="Export" aria-label="Export"></button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <button id="printBtn" type="button" class="era-icon-btn" data-icon="print" title="Print" aria-label="Print"></button>
+          <button id="pasteValuesBtn" type="button" class="era-icon-btn" data-icon="paste" title="Paste values" aria-label="Paste values"></button>
+          <button id="formatPainterBtn" type="button" class="era-icon-btn" data-icon="formatPainter" title="Paint format" aria-label="Paint format"></button>
+          <select id="zoomSelect" class="era-input" aria-label="Zoom" title="Zoom">
+            <option value="100">100%</option>
+            <option value="75">75%</option>
+            <option value="90">90%</option>
+            <option value="125">125%</option>
+            <option value="150">150%</option>
+          </select>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <button id="pctBtn" type="button" class="era-btn" title="Percent format">%</button>
+          <button id="decBtn" type="button" class="era-btn" title="Number 0.00">.00</button>
+          <select id="numberFormat" class="era-input" aria-label="Number format" title="Number format">
+            <option value="">123</option>
+            <option value="0.00">0.00</option>
+            <option value="%">%</option>
+            <option value="date">Date</option>
+          </select>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <select id="fontSelect" class="era-input era-font-select" aria-label="Font" data-tip="Font">
+            <option value="Arial" selected>Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Segoe UI">Segoe UI</option>
+          </select>
+          <div class="era-font-size-stepper">
+            <button id="fontDecTbBtn" type="button" class="era-icon-btn" data-tip="Decrease font size" aria-label="Decrease font size">-</button>
+            <select id="sizeSelect" class="era-input era-font-size" aria-label="Font size" data-tip="Font size">
+              <option value="10" selected>10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+              <option value="14">14</option>
+              <option value="16">16</option>
+              <option value="18">18</option>
+              <option value="24">24</option>
+            </select>
+            <button id="fontIncTbBtn" type="button" class="era-icon-btn" data-tip="Increase font size" aria-label="Increase font size">+</button>
+          </div>
+          <button id="cellBoldBtn" type="button" class="era-icon-btn" data-icon="bold" data-tip="Bold" aria-label="Bold"></button>
+          <div class="era-btn-menu" id="borderMenu">
+            <button id="cellBorderBtn" type="button" class="era-icon-btn era-btn-menu-trigger" data-icon="border" data-tip="Borders" aria-label="Borders"><span class="era-btn-menu-caret">▾</span></button>
+            <div class="era-btn-menu-panel" role="menu" style="min-width:9rem;padding:.35rem">
+              <button type="button" class="era-menu-item" data-border="tblr"><span>All borders</span></button>
+              <button type="button" class="era-menu-item" data-border="tblr-outer"><span>Outer</span></button>
+              <button type="button" class="era-menu-item" data-border="t"><span>Top</span></button>
+              <button type="button" class="era-menu-item" data-border="b"><span>Bottom</span></button>
+              <button type="button" class="era-menu-item" data-border="l"><span>Left</span></button>
+              <button type="button" class="era-menu-item" data-border="r"><span>Right</span></button>
+              <button type="button" class="era-menu-item" data-border=""><span>No border</span></button>
+            </div>
+          </div>
+          <button id="mergeBtn" type="button" class="era-icon-btn" data-icon="table" data-tip="Merge cells" aria-label="Merge cells"></button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <div class="era-btn-menu" id="alignMenu">
+            <button type="button" class="era-icon-btn era-btn-menu-trigger" data-icon="alignLeft" data-tip="Align" aria-label="Align"><span class="era-btn-menu-caret">▾</span></button>
+            <div class="era-btn-menu-panel era-menu-row" role="menu">
+              <button id="cellAlignLeftBtn" type="button" class="era-icon-btn" data-icon="alignLeft" data-tip="Align left" aria-label="Align left"></button>
+              <button id="cellAlignCenterBtn" type="button" class="era-icon-btn" data-icon="alignCenter" data-tip="Align center" aria-label="Align center"></button>
+              <button id="cellAlignRightBtn" type="button" class="era-icon-btn" data-icon="alignRight" data-tip="Align right" aria-label="Align right"></button>
+            </div>
+          </div>
+          <button id="cellWrapBtn" type="button" class="era-icon-btn" data-icon="wrap" data-tip="Wrap text" aria-label="Wrap text"></button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <button id="linkCellBtn" type="button" class="era-icon-btn" data-icon="link" data-tip="Insert link" aria-label="Insert link"></button>
+          <button id="commentCellBtn" type="button" class="era-icon-btn" data-icon="comment" data-tip="Cell note" aria-label="Comment"></button>
+          <button id="chartBtn" type="button" class="era-icon-btn" data-icon="chart" title="Insert chart" aria-label="Insert chart"></button>
+          <button id="filterTbBtn" type="button" class="era-icon-btn" data-icon="filter" title="Filter" aria-label="Filter"></button>
+          <button id="sumBtn" type="button" class="era-btn" data-icon="function" title="Insert =SUM()">Σ</button>
+          <button id="avgBtn" type="button" class="era-btn" title="Insert =AVERAGE()" hidden>AVG</button>
+          <button id="minBtn" type="button" class="era-btn" title="Insert =MIN()" hidden>MIN</button>
+          <button id="maxBtn" type="button" class="era-btn" title="Insert =MAX()" hidden>MAX</button>
+          <button id="roundBtn" type="button" class="era-btn" title="Insert =ROUND()" hidden>ROUND</button>
+          <button id="countBtn" type="button" class="era-btn" title="Insert =COUNT()" hidden>COUNT</button>
+          <button id="countifBtn" type="button" class="era-btn" title="Insert =COUNTIF()" hidden>COUNTIF</button>
+          <button id="ifBtn" type="button" class="era-btn" title="Insert =IF()" hidden>IF</button>
+        </div>
+        <span class="sep" aria-hidden="true"></span>
+        <div class="era-toolbar-group">
+          <button id="fillDownBtn" type="button" class="era-icon-btn" data-icon="move" title="Fill down" aria-label="Fill down"></button>
+          <button id="fillRightBtn" type="button" class="era-icon-btn" data-icon="move" title="Fill right" aria-label="Fill right"></button>
+          <button id="insertRowBtn" type="button" class="era-icon-btn" data-icon="add" title="Insert row" aria-label="Insert row"></button>
+          <button id="freezeBtn" type="button" class="era-icon-btn" data-icon="freeze" title="Freeze header" aria-label="Freeze header"></button>
+          <button id="sortColBtn" type="button" class="era-icon-btn" data-icon="sort" title="Sort A→Z" aria-label="Sort A to Z"></button>
+          <input id="findCellInput" type="search" class="era-input era-find-input" placeholder="Find" aria-label="Find in sheet"/>
+          <button id="findCellBtn" type="button" class="era-icon-btn" data-icon="search" title="Find next" aria-label="Find next"></button>
+          <input id="filterInput" type="search" class="era-input era-find-input" placeholder="Filter" aria-label="Filter rows"/>
+        </div>
+      </div>
+    </div>
+    <div class="era-canvas-wrap era-workspace-split">
+      <div class="era-sheet-pane">
+        <div id="formulaBar">
+          <input id="activeAddr" class="addr" type="text" value="A1" aria-label="Cell address" title="Type address and press Enter (e.g. A5656)" spellcheck="false" autocomplete="off"/>
+          <input id="formulaInput" type="text" placeholder="Value or =SUM(A1:A2)" autocomplete="off" disabled/>
+        </div>
+        <p class="empty-state" id="emptyHint" hidden>Create a new sheet, import xlsx, or open one from Drive.</p>
+        <div id="gridWrap" aria-label="Spreadsheet grid" tabindex="0">
+          <div id="gridPhantom">
+            <div id="colHeadSticky" aria-hidden="false"></div>
+            <div id="grid"></div>
+          </div>
+        </div>
+        <div id="chartHost" style="margin-top:.35rem;min-height:0"></div>
+        <div id="sheetTabsBar">
+          <button id="addSheetTabBtn" type="button" class="era-btn" data-tip="Add worksheet" title="Add worksheet tab">+</button>
+          <div id="sheetTabs" aria-label="Sheet tabs"></div>
+          <button id="addRowsBtn" type="button" class="era-btn" data-tip="Scroll / reveal +100 rows" title="Jump the view down by 100 rows (capacity 10 000)">↓ +100 rows</button>
+          <button id="addColsBtn" type="button" class="era-btn" data-tip="Scroll / reveal more columns" title="Jump the view right toward column WW">→ +cols</button>
+        </div>
+      </div>
+      <aside id="commentsPanel" class="era-comments-rail" hidden aria-label="Comments">
+        <div class="era-comments-head">
+          <strong>Comments</strong>
+          <button type="button" class="era-icon-btn" id="commentsCloseBtn" aria-label="Close comments">✕</button>
+        </div>
+        <p class="era-hint era-comments-hint">Cell notes · persist with sheet</p>
+        <ul id="commentsList" class="era-comments-list"></ul>
+      </aside>
+    </div>
+    <footer class="era-status-bar" aria-label="Sheet stats">
+      <span id="sheetStats" class="era-sheet-stats">View 40 × Z · capacity 10000 × WW</span>
+    </footer>
+  </main>
+
+  <input type="file" id="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden/>
+  <input type="file" id="odsFile" accept=".ods,application/vnd.oasis.opendocument.spreadsheet" hidden/>
+
+  <dialog id="filterOptsDlg">
+    <form method="dialog" style="padding:1rem;min-width:18rem">
+      <h3 style="margin-top:0">Filter options</h3>
+      <label>Column
+        <select id="filterOptsCol" class="era-input" style="width:100%;display:block;margin-top:.25rem"></select>
+      </label>
+      <label style="display:block;margin-top:.5rem">Match
+        <select id="filterOptsMode" class="era-input" style="width:100%;display:block;margin-top:.25rem">
+          <option value="contains">Contains</option>
+          <option value="equals">Equals</option>
+          <option value="empty">Is empty</option>
+          <option value="notempty">Is not empty</option>
+        </select>
+      </label>
+      <label style="display:block;margin-top:.5rem">Value
+        <input id="filterOptsVal" class="era-input" style="width:100%;margin-top:.25rem"/>
+      </label>
+      <p class="era-hint" style="margin:.75rem 0 .25rem">AND (optional second column)</p>
+      <label>Column
+        <select id="filterOptsAndCol" class="era-input" style="width:100%;display:block;margin-top:.25rem"></select>
+      </label>
+      <label style="display:block;margin-top:.5rem">Match
+        <select id="filterOptsAndMode" class="era-input" style="width:100%;display:block;margin-top:.25rem">
+          <option value="contains">Contains</option>
+          <option value="equals">Equals</option>
+          <option value="empty">Is empty</option>
+          <option value="notempty">Is not empty</option>
+        </select>
+      </label>
+      <label style="display:block;margin-top:.5rem">Value
+        <input id="filterOptsAndVal" class="era-input" style="width:100%;margin-top:.25rem" placeholder="leave empty to skip"/>
+      </label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="submit" value="clear" class="era-btn">Clear</button>
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="apply" class="era-btn era-btn-primary">Apply</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="whatIfDlg">
+    <form method="dialog" style="padding:1rem;min-width:20rem">
+      <h3 style="margin-top:0">What-if (Goal Seek)</h3>
+      <p class="era-hint" style="margin:.25rem 0 .75rem">Binary search on a monotonic formula cell. Preview before apply.</p>
+      <label style="display:block">Set formula cell
+        <input id="whatIfFormula" class="era-input" style="width:100%;margin-top:.25rem" value="B1" autocomplete="off"/>
+      </label>
+      <label style="display:block;margin-top:.5rem">To value
+        <input id="whatIfTarget" class="era-input" style="width:100%;margin-top:.25rem" value="100" autocomplete="off"/>
+      </label>
+      <label style="display:block;margin-top:.5rem">By changing cell
+        <input id="whatIfChange" class="era-input" style="width:100%;margin-top:.25rem" value="A1" autocomplete="off"/>
+      </label>
+      <pre id="whatIfPreview" class="era-hint" style="margin:.75rem 0 0;white-space:pre-wrap;min-height:2.5rem"></pre>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="button" id="whatIfPreviewBtn" class="era-btn">Preview</button>
+        <button type="submit" value="run" class="era-btn era-btn-primary">Apply</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="scenariosDlg">
+    <form method="dialog" style="padding:1rem;min-width:18rem">
+      <h3 style="margin-top:0">Scenarios</h3>
+      <label style="display:block">Name
+        <input id="scenariosName" class="era-input" style="width:100%;margin-top:.25rem" placeholder="Base case" autocomplete="off"/>
+      </label>
+      <label style="display:block;margin-top:.5rem">Saved
+        <select id="scenariosList" class="era-input" style="width:100%;display:block;margin-top:.25rem" size="4"></select>
+      </label>
+      <p class="era-hint" style="margin:.5rem 0 0">Save snapshots the active column. Apply writes saved cells.</p>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="save" class="era-btn">Save</button>
+        <button type="submit" value="apply" class="era-btn era-btn-primary">Apply</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="consolidateDlg">
+    <form method="dialog" style="padding:1rem;min-width:18rem">
+      <h3 style="margin-top:0">Consolidate (sum)</h3>
+      <label style="display:block">Source sheet
+        <input id="consolidateSheet" class="era-input" style="width:100%;margin-top:.25rem" value="active" placeholder="active · sheet name · or index" autocomplete="off"/>
+      </label>
+      <p class="era-hint" style="margin:.35rem 0 0">Sums values from that tab’s range into the target on the active sheet.</p>
+      <label style="display:block;margin-top:.5rem">Range
+        <input id="consolidateRange" class="era-input" style="width:100%;margin-top:.25rem" value="A1:A3" autocomplete="off"/>
+      </label>
+      <label style="display:block;margin-top:.5rem">Target cell
+        <input id="consolidateTarget" class="era-input" style="width:100%;margin-top:.25rem" value="B1" autocomplete="off"/>
+      </label>
+      <div style="margin-top:1rem;display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap">
+        <button type="submit" value="cancel" class="era-btn">Cancel</button>
+        <button type="submit" value="run" class="era-btn era-btn-primary">Sum → target</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/office-assets/icons.js"></script>
+  <script src="/office-assets/menubar.js"></script>
+  <script src="/office-assets/era-chrome.js"></script>
+  <script src="/office-assets/shell.js"></script>
+  <script src="/office-assets/toolbar-chrome.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

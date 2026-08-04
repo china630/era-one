@@ -72,6 +72,18 @@ docker compose -f deploy/docker-compose.prod.yml --profile scale --profile pg up
 - `run-loadgen-prod.ps1`: ≥10 000 ev/s, duration 300s, 3 runs, **fail=0**
 - Лог: `reports/loadgen-prod.log`
 - Smoke на dev-машине (пониженный порог) — не закрывает AC2; см. `reports/prefield-proof-*.log`
+- **F-GA-5 Pilot-ready:** остаётся **[blocked: field]** до PASS на sizing-сервере (этот runbook + `scripts/run-loadgen-prod.ps1`)
+
+## F-GA-8 — Asset coverage API (soft ✅ · Pilot ⏸)
+
+Метрика покрытия активов уже в control-plane:
+
+| Endpoint / field | Path |
+|------------------|------|
+| Store | `AssetCoverage()` — sqlite / memory / postgres |
+| Health JSON | `coverage` на `/api/v1/health` (и hybrid health `coverage` / `coverage_pct`) |
+
+**Soft scaffold:** API + unit. **Pilot `[x]`:** только когда на пилоте coverage ≥90% (реальные агенты) — не закрывать коммитом.
 
 ## Шаблон фиксации факта
 

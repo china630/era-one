@@ -77,6 +77,7 @@
 - **ERA Control SOC:** `app.customer.local/secure` (MVP) или `secure.customer.local` (позже).
 - **Стек:** React + shared design system (Variant C, ADR-0024); desktop — Tauri (Phase 2);
   mobile — Flutter (Phase 3).
+- **Design tokens:** [`ui/shared-tokens/`](../../ui/shared-tokens/) (`--era-*` canon) + [`docs/ERA-UI-Shell-Theme-Matrix.md`](../ERA-UI-Shell-Theme-Matrix.md); sync via `scripts/sync-era-tokens.ps1`.
 - **Admin:** `admin-portal` (:8140) — отдельная оболочка.
 
 ---

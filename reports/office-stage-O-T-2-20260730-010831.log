@@ -1,0 +1,3 @@
+==> office stage gate O-T-2 20260730-010831
+[PASS] O-T-2/calc :: cargo test -p era-tables-engine calc --quiet
+STAGE GATE PASS (O-T-2)

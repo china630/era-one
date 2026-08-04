@@ -4,17 +4,20 @@
   <meta charset="UTF-8" />
   <title>ERA Provision</title>
   <style>
-    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; }
+    :root { --bg: #0f1419; --card: #1a2332; --text: #e6edf3; --err: #f85149; }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 1.5rem; }
     .card { background: var(--card); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    th, td { padding: 0.5rem; border-bottom: 1px solid #21262d; }
+    th, td { padding: 0.5rem; border-bottom: 1px solid #21262d; text-align: left; }
     button { background: #238636; border: none; color: #fff; padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; }
-    input { background: #0d1117; border: 1px solid #30363d; color: var(--text); padding: 0.5rem; border-radius: 6px; }
+    input { background: #0d1117; border: 1px solid #30363d; color: var(--text); padding: 0.5rem; border-radius: 6px; margin-right: 0.35rem; }
+    #msg { color: var(--err); min-height: 1.2em; }
+    pre { white-space: pre-wrap; font-size: 0.8rem; }
   </style>
 </head>
 <body>
   <h1>ERA Provision — OS Images (air-gap MinIO)</h1>
+  <p id="msg"></p>
   <div class="card">
     <h2>Образы</h2>
     <table><thead><tr><th>ID</th><th>Name</th><th>Platform</th><th>MinIO</th></tr></thead><tbody id="imgs"></tbody></table>
@@ -25,12 +28,15 @@
   </div>
   <div class="card">
     <h2>Post-install enroll</h2>
-    <input id="node" placeholder="node_id" /> <input id="host" placeholder="hostname" />
-    <button id="enroll">Enroll в CMDB</button>
+    <input id="node" placeholder="node_id" />
+    <input id="host" placeholder="hostname" />
+    <button id="enroll" type="button">Enroll в CMDB</button>
   </div>
   <script>
-    const API = 'http://127.0.0.1:8124';
+    const API = '';
+    const msg = (t) => { document.getElementById('msg').textContent = t || ''; };
     async function load() {
+      msg('');
       const imgs = await (await fetch(API + '/api/v1/images')).json();
       const tb = document.getElementById('imgs'); tb.innerHTML = '';
       for (const i of imgs.images || []) {
@@ -42,11 +48,12 @@
       document.getElementById('pxe').textContent = JSON.stringify(pxe, null, 2);
     }
     document.getElementById('enroll').onclick = async () => {
-      await fetch(API + '/api/v1/enroll', { method:'POST', headers:{'Content-Type':'application/json'},
+      const res = await fetch(API + '/api/v1/enroll', { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ agent_id:'agent-'+Date.now(), node_id: document.getElementById('node').value, hostname: document.getElementById('host').value })});
-      alert('enrolled');
+      if (!res.ok) { msg(await res.text()); return; }
+      msg('enrolled OK');
     };
-    load();
+    load().catch(e => msg(String(e)));
   </script>
 </body>
 </html>

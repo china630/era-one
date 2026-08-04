@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sign in — ERA Office</title>
+  <link rel="stylesheet" href="/office-assets/login.css"/>
+</head>
+<body class="era-login">
+  <main class="era-login-shell">
+    <section class="era-login-card" aria-labelledby="loginTitle">
+      <header class="era-login-brand">
+        <div class="era-login-mark" aria-hidden="true">E</div>
+        <div>
+          <p class="era-login-product">ERA Office</p>
+          <h1 id="loginTitle">Sign in</h1>
+        </div>
+      </header>
+
+      <p id="loginSubtitle" class="era-login-sub">Use your ERA account</p>
+
+      <!-- Step: email -->
+      <form id="stepEmail" class="era-login-step" autocomplete="on">
+        <label class="era-login-field">
+          <span>Email</span>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="username" required placeholder="name@company.com"/>
+        </label>
+        <p id="emailError" class="era-login-error" hidden></p>
+        <button type="submit" class="era-login-primary">Next</button>
+        <p class="era-login-alt">
+          <button type="button" id="toCreate" class="era-login-link">Create account</button>
+        </p>
+      </form>
+
+      <!-- Step: password -->
+      <form id="stepPassword" class="era-login-step" hidden autocomplete="on">
+        <button type="button" id="backEmail" class="era-login-chip" aria-label="Change account"></button>
+        <label class="era-login-field">
+          <span>Enter your password</span>
+          <input id="password" name="password" type="password" autocomplete="current-password" required/>
+        </label>
+        <p id="passwordError" class="era-login-error" hidden></p>
+        <button type="submit" class="era-login-primary">Sign in</button>
+        <p class="era-login-alt">
+          <button type="button" id="backFromPassword" class="era-login-link">Use another account</button>
+        </p>
+      </form>
+
+      <!-- Step: create account -->
+      <form id="stepCreate" class="era-login-step" hidden autocomplete="on">
+        <label class="era-login-field">
+          <span>Email</span>
+          <input id="regEmail" name="regEmail" type="email" autocomplete="username" required placeholder="name@company.com"/>
+        </label>
+        <label class="era-login-field">
+          <span>Password</span>
+          <input id="regPassword" name="regPassword" type="password" autocomplete="new-password" required minlength="6"/>
+        </label>
+        <label class="era-login-field">
+          <span>Confirm password</span>
+          <input id="regPassword2" name="regPassword2" type="password" autocomplete="new-password" required minlength="6"/>
+        </label>
+        <p id="createError" class="era-login-error" hidden></p>
+        <button type="submit" class="era-login-primary">Create account</button>
+        <p class="era-login-alt">
+          <button type="button" id="toSignIn" class="era-login-link">Already have an account? Sign in</button>
+        </p>
+      </form>
+    </section>
+
+    <p class="era-login-foot">
+      Lab demo: <code>alice@mail.gov.az</code> / <code>1234</code>
+    </p>
+  </main>
+  <script src="/office-assets/login.js"></script>
+</body>
+</html>

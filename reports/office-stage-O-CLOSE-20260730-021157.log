@@ -1,0 +1,5 @@
+==> office stage gate O-CLOSE 20260730-021157
+[PASS] O-CLOSE/matrix :: powershell -NoProfile -Command "if (Select-String -Path docs/Office-Implementation-Matrix.md -Pattern 'all Scaffold' -Quiet) { exit 0 } else { exit 1 }"
+[PASS] O-CLOSE/drive-auth :: go test -C services/platform ./drive/api/... -run "Spoof|JWTRequired" -count=1
+[PASS] O-CLOSE/docs-ai :: go test -C services/platform ./cmd/docs-ai/... -count=1
+STAGE GATE PASS (O-CLOSE)

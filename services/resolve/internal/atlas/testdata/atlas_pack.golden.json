@@ -1,0 +1,8 @@
+{
+  "id": "atlas-lab-v1",
+  "version": "1.0.0",
+  "domains": [
+    {"domain": "bad.actor.example", "severity": "critical", "source": "lab"},
+    {"domain": "c2.evil.example", "severity": "high", "source": "lab"}
+  ]
+}

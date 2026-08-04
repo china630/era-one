@@ -1,0 +1,3 @@
+==> office stage gate O-P-4 20260730-010652
+[PASS] O-P-4/license :: go test -C services/platform ./licensegate/... -run OfficePresentations -count=1
+STAGE GATE PASS (O-P-4)

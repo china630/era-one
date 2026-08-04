@@ -1,9 +1,10 @@
 # ERA XDR — MVP Sprint-1 Specification
 
-**Версия:** 1.0
-**Дата:** 8 июня 2026 г.
+**Версия:** 1.1
+**Дата:** 30 июля 2026 г.
 **Фаза:** 1 (MVP). Цель — доказать **сквозной конвейер телеметрии** на реальных
-данных (не моках), end-to-end, на одной ноде.
+данных (не моках), end-to-end, на одной ноде.  
+**Приёмка Control (канон):** [`Control-Acceptance-System.md`](products/Control-Acceptance-System.md) · [`Control-Sprint-Index.md`](Control-Sprint-Index.md) — этот файл = исторический backlog S1, не единственная точка приёмки всего репо.
 
 ---
 

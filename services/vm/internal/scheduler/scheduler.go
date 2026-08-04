@@ -81,6 +81,54 @@ func (s *Scheduler) MarkRun(id, status string) {
 	}
 }
 
+// UpdateFields — частичное обновление schedule job.
+type UpdateFields struct {
+	Name        string
+	Targets     []string
+	CronExpr    string
+	Concurrency int
+	Enabled     *bool
+}
+
+// Update патчит job по id; false если не найден.
+func (s *Scheduler) Update(id string, f UpdateFields) (*Job, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	j, ok := s.jobs[id]
+	if !ok {
+		return nil, false
+	}
+	if f.Name != "" {
+		j.Name = f.Name
+	}
+	if f.Targets != nil {
+		j.Targets = append([]string(nil), f.Targets...)
+	}
+	if f.CronExpr != "" {
+		j.CronExpr = f.CronExpr
+		j.NextRun = time.Now().UTC().Add(parseEvery(f.CronExpr))
+	}
+	if f.Concurrency > 0 {
+		j.Concurrency = f.Concurrency
+	}
+	if f.Enabled != nil {
+		j.Enabled = *f.Enabled
+	}
+	cp := *j
+	return &cp, true
+}
+
+// Delete удаляет job по id.
+func (s *Scheduler) Delete(id string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, ok := s.jobs[id]; !ok {
+		return false
+	}
+	delete(s.jobs, id)
+	return true
+}
+
 func parseEvery(expr string) time.Duration {
 	if expr == "" {
 		return 24 * time.Hour

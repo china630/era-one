@@ -30,7 +30,10 @@ func main() {
 	}
 	ch := checkout.NewStore()
 	sess := privilegedsession.NewStore()
-	gate := licensegate.DevAllEnabled()
+	gate, err := licensegate.GateFromEnv(0)
+	if err != nil {
+		log.Fatalf("license: %v", err)
+	}
 	srv := api.New(v, ch, sess, gate, provider.Name())
 	log.Printf("era-pam listening %s state=%s kms=%s", addr, stateDir, provider.Name())
 	log.Fatal(httpserver.Listen(addr, srv.Routes()))

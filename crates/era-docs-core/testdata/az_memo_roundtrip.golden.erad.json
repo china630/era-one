@@ -1,0 +1,35 @@
+{
+  "id": "",
+  "tenant_id": "",
+  "drive_object_id": "",
+  "format": "erad",
+  "blocks": [
+    {
+      "id": "654ef516-d216-4b7d-b517-e96717cfb629",
+      "block_type": "paragraph",
+      "heading_level": 0,
+      "list_type": null,
+      "inlines": [
+        {
+          "text": "Hello memo",
+          "bold": false,
+          "italic": false
+        }
+      ]
+    },
+    {
+      "id": "a99739e3-d33c-4909-ba4d-fa877d85f81c",
+      "block_type": "paragraph",
+      "heading_level": 0,
+      "list_type": null,
+      "inlines": [
+        {
+          "text": "Second line",
+          "bold": false,
+          "italic": false
+        }
+      ]
+    }
+  ],
+  "legacy_features_dropped": false
+}
